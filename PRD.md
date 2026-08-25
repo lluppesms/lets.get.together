@@ -93,6 +93,13 @@ This repository started life as a fork/copy of the `dadabase.demo` project (a .N
 - **Data ownership**: Circle data (membership, events, RSVPs) must never be visible to users outside that circle.
 - **Testing**: Preserve the existing testing posture inherited from the source repo — xUnit tests for services/repositories, Playwright for browser smoke/E2E coverage — updated to exercise circles/events/RSVPs instead of jokes.
 
+### 8.1 Database Requirements
+
+- Application data is stored in **SQL Server**.
+- The application uses a **shared SQL Server database** (not a dedicated database instance).
+- Application objects (tables, views, procedures, etc.) are isolated in a **unique schema** dedicated to this application within that shared database.
+- The application identity is granted rights to its schema only (for example, schema-level read/write/execute as required), and is **not** granted broad rights at the full database level.
+
 ## 9. Open Questions (to resolve during planning)
 
 - Who besides the creator can manually trigger a reminder email — any member, or only the creator?

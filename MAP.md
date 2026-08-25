@@ -28,7 +28,9 @@ Authoritative sources when this document and older prose disagree:
 | Task | Start here | Then inspect |
 | --- | --- | --- |
 | Change a web page or Blazor behavior | `src/web/Website/Pages/`, `Components/`, or `Shared/` | `src/web/Website/Program.cs`, related `.razor.cs`, and scoped `.razor.css` |
+| Change circle/event/RSVP domain logic | `src/web/Data/Repositories/` — `ICircleRepository`, `IEventRepository`, `IRsvpRepository`, `IInvitationCodeRepository`, `IUserRepository` | SQL implementations alongside each interface; `DadABaseDbContext.cs` |
 | Change joke persistence or query behavior | `src/web/Data/Repositories/` and `src/web/Data/` | `IJokeRepository.cs`, `JokeSQLRepository.cs`, `JokeJsonRepository.cs`, `DadABaseDbContext.cs` |
+| Change email notifications | `src/web/Website/Services/SendGridNotificationService.cs` | `Services/Interfaces/INotificationService.cs`; `SendGrid:ApiKey` / `SendGrid:FromEmail` config keys |
 | Change web REST endpoints | `src/web/Website/API/` | controller base classes, repository interface, Swagger configuration |
 | Change the serverless API | `src/function/Function/` | `src/function/DataLayer/`, `Entities/`, and function tests |
 | Change the database schema | `src/database/` | SQL object files, pre/post deployment scripts, `.github/instructions/sql-database-dacpac-instructions.md` |
@@ -62,16 +64,33 @@ The web app supports anonymous access by default. Entra ID authentication is con
 
 `src/web/Data/` is a shared .NET library containing domain models, `DadABaseDbContext`, repository abstractions, and repository implementations.
 
+**Get Together domain repositories** (new — added in project-structure setup):
+- `ICircleRepository` / `CircleSQLRepository` — circle CRUD and membership management.
+- `IEventRepository` / `EventSQLRepository` — event CRUD; enforces circle-member access guard on all writes.
+- `IInvitationCodeRepository` / `InvitationCodeSQLRepository` — invite code generation, validation, redemption, and revocation.
+- `IRsvpRepository` / `RsvpSQLRepository` — Accept/Decline/Maybe upserts with per-circle privacy guard.
+- `IUserRepository` / `UserSQLRepository` — external-identity-to-User resolution, used during onboarding.
+
+All Get Together repositories are registered as `Scoped` in `Program.cs` and are only active when the SQL data source is configured. There is no JSON fallback for circle/event/RSVP data — SQL is required for the Get Together feature set.
+
+**Notification service**: `INotificationService` / `SendGridNotificationService` (in `src/web/Website/Services/`) sends creation and reminder emails. The SendGrid implementation is a stub; expected config keys are `SendGrid:ApiKey`, `SendGrid:FromEmail`, and `SendGrid:FromName`.
+
+**Placeholder pages**: `/circles`, `/events`, and `/calendar` Blazor pages exist at `src/web/Website/Pages/`. They render a construction banner and are ready for implementation.
+
+**Namespace status**: All Get Together code currently lives under `DadABase.*` namespaces (inherited from the source repo). Renaming to `GetTogether.*` is a planned but deferred task; see `.squad/decisions/inbox/mal-project-structure.md`.
+
 `IJokeRepository` is the principal boundary for joke operations. It includes reads (all, recent, one, random, categories, search), writes (add, update, delete, ratings/category updates), import/export operations, and image-description updates.
 
 There are two application data modes:
 
 - `DataSource=JSON`: `JokeJsonRepository` reads the deployed `Data/Jokes.json` file. This is the default template mode and is convenient for local demos without SQL.
-- `DataSource=SQL`, `SQLDB`, or `DATABASE` in the web startup code: `JokeSQLRepository` uses EF Core SQL Server through `DadABaseDbContext` and the configured connection string.
+- `DataSource=SQL`, `SQLDB`, or `DATABASE` in the web startup code: `JokeSQLRepository` uses EF Core SQL Server through `DadABaseDbContext` and the configured connection string. Get Together repositories are also registered when this mode is active.
 
-If SQL is selected without a usable `DefaultConnection`, the web application deliberately falls back to JSON. An unknown data source also falls back to JSON. Do not assume that local development is database-backed.
+If SQL is selected without a usable `DefaultConnection`, the web application deliberately falls back to JSON for joke data. An unknown data source also falls back to JSON. Do not assume that local development is database-backed.
 
-The SQL domain is represented under the `Dad` schema and includes jokes, categories, joke/category associations, and ratings. The SQL database project is the schema authority for deployment; do not treat EF migrations or JSON seed data as a substitute for DACPAC changes.
+The SQL domain is represented under the `Dad` schema and includes jokes, categories, joke/category associations, ratings, and the full Get Together schema (User, Circle, CircleMembership, InvitationCode, Event, RSVP, ReminderLog). The SQL database project is the schema authority for deployment; do not treat EF migrations or JSON seed data as a substitute for DACPAC changes.
+
+For Get Together planning and implementation, SQL Server is expected to be a shared database host with app objects isolated to a unique application schema. Application identities should be granted schema-scoped rights (least privilege) and must not be granted broad full-database permissions.
 
 ### Other hosts and tools
 
@@ -248,6 +267,8 @@ For schema changes:
 2. Check pre/post deployment behavior and seed/patch scripts.
 3. Build and validate the DACPAC using the repository's SQL tooling/pipeline.
 4. Update `MAP.md` if object ownership or deployment flow changes.
+
+Security boundary requirement: keep Get Together objects isolated in their dedicated schema within the shared SQL Server database, and keep runtime/service-principal permissions scoped to that schema unless a justified exception is explicitly approved.
 
 Use `.github/instructions/sql-database-dacpac-instructions.md` before editing SQL or DACPAC workflows. Avoid putting application-only persistence logic in the database project without documenting the boundary.
 

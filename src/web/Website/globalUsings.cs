@@ -12,6 +12,7 @@ global using DadABase.Web;
 global using DadABase.Web.Attributes;
 global using DadABase.Web.Repositories;
 global using DadABase.Web.Services;
+global using DadABase.Web.Services.Interfaces;
 global using Microsoft.AspNetCore.Authentication;
 global using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 global using Microsoft.AspNetCore.Components;

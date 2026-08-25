@@ -113,6 +113,19 @@ else
     builder.Services.AddSingleton<IJokeRepository>(sp => new JokeJsonRepository(jsonFilePath));
 }
 
+// ----- Register Get Together domain repositories (SQL only; no JSON fallback for domain data) -------
+if (useSqlDataSource && !string.IsNullOrWhiteSpace(connectionString))
+{
+    builder.Services.AddScoped<ICircleRepository, CircleSQLRepository>();
+    builder.Services.AddScoped<IEventRepository, EventSQLRepository>();
+    builder.Services.AddScoped<IInvitationCodeRepository, InvitationCodeSQLRepository>();
+    builder.Services.AddScoped<IRsvpRepository, RsvpSQLRepository>();
+    builder.Services.AddScoped<IUserRepository, UserSQLRepository>();
+}
+
+// ----- Notification service (SendGrid) ---------------------------------------------------------------
+builder.Services.AddScoped<INotificationService, SendGridNotificationService>();
+
 builder.Services.AddAiServices(builder.Configuration);
 builder.Services.AddSingleton<IAIHelper, AIHelper>();
 builder.Services.AddSingleton<IJokeImageQueue, JokeImageQueue>();
