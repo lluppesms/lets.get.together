@@ -52,7 +52,7 @@ public class InvitationCodeSQLRepository(DadABaseDbContext context) : IInvitatio
         }
 
         return await _context.InvitationCodes!
-            .Where(ic => ic.CircleId == circleId && ic.RevokedUtc == null)
+            .Where(ic => ic.CircleId == circleId)
             .Include(ic => ic.CreatedByUser)
             .Include(ic => ic.RedeemedByUser)
             .OrderByDescending(ic => ic.CreatedUtc)
@@ -76,6 +76,13 @@ public class InvitationCodeSQLRepository(DadABaseDbContext context) : IInvitatio
     {
         var invitation = await FindValidCodeAsync(code)
             ?? throw new InvalidOperationException("Invitation code is invalid, already used, or expired.");
+
+        var isAlreadyMember = await _context.CircleMemberships!
+            .AnyAsync(m => m.CircleId == invitation.CircleId && m.UserId == newUserId && m.LeftUtc == null);
+        if (isAlreadyMember)
+        {
+            throw new InvalidOperationException("The user is already an active member of this circle.");
+        }
 
         invitation.RedeemedByUserId = newUserId;
         invitation.RedeemedUtc = DateTime.UtcNow;

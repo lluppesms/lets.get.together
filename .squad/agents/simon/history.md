@@ -10,3 +10,11 @@
 ## Learnings
 
 Squad initialized with Firefly casting on 2026-08-25.
+
+- Phase 1 backend seams were already wired through EF Core and DI, but the SQL database project lacked the Get Together table definitions. Added the seven tables and matching constraints/indexes, including the Event alternate key required by RSVP relationships.
+- Added `Event.IsRecurring`, `Event.RsvpMode` (default `PerOccurrence`), and nullable `Event.RecurrenceRule`; kept the existing repository APIs unchanged.
+- Invitation-code listing now returns all statuses for active circle members, and redemption rejects an already-active member. Six focused xUnit tests pass; web and SQL project builds pass.
+
+### 2026-08-25T20:41:56Z — Cross-agent status
+
+The locked Phase 1 decisions require multi-provider authentication and adding Event recurrence fields now. The requested `simon-phase1-blocker.md` inbox record was absent, so no Simon-specific blocker or validation outcome was recorded beyond the supplied handoff requirements.

@@ -50,6 +50,22 @@ public class Event
     public DateTime? EndsUtc { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the event repeats.
+    /// </summary>
+    public bool IsRecurring { get; set; }
+
+    /// <summary>
+    /// Gets or sets the RSVP mode for a recurring event.
+    /// </summary>
+    public RsvpMode RsvpMode { get; set; } = RsvpMode.PerOccurrence;
+
+    /// <summary>
+    /// Gets or sets the recurrence rule for a recurring event.
+    /// </summary>
+    [StringLength(200)]
+    public string? RecurrenceRule { get; set; }
+
+    /// <summary>
     /// Gets or sets the user who created this event.
     /// </summary>
     public int CreatedByUserId { get; set; }

@@ -1,0 +1,167 @@
+.auth-page {
+    display: grid;
+    min-height: 70vh;
+    place-items: center;
+    padding: 2rem 1rem 4rem;
+}
+
+.auth-panel {
+    width: min(100%, 32rem);
+    padding: clamp(1.5rem, 5vw, 3rem);
+    background: var(--card-bg-light);
+    border: 1px solid var(--surface-border-light);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(12px);
+}
+
+.auth-kicker {
+    color: var(--accent-color-strong);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.auth-panel h1 {
+    margin: 0.55rem 0 0.75rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 9vw, 4rem);
+    font-weight: 400;
+    line-height: 0.95;
+}
+
+.auth-intro {
+    margin-bottom: 1.75rem;
+    color: var(--text-secondary-light);
+}
+
+.provider-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.provider-button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.25rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--surface-border-light);
+    border-radius: var(--border-radius-tight);
+    background: rgba(255, 255, 255, 0.68);
+    color: var(--text-primary-light);
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    text-decoration: none;
+    transition: var(--transition-smooth);
+}
+
+.provider-button:not(:disabled):hover {
+    border-color: var(--accent-color-strong);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-0.1rem);
+}
+
+.provider-button:focus-visible,
+.auth-secondary-action a:focus-visible {
+    outline: 0.15rem solid var(--accent-color-strong);
+    outline-offset: 0.2rem;
+}
+
+.provider-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+}
+
+.provider-mark {
+    display: grid;
+    width: 1.55rem;
+    height: 1.55rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.35rem;
+    background: var(--background-light-alt);
+    color: var(--text-primary-light);
+    font-weight: 700;
+}
+
+.provider-google .provider-mark {
+    color: #4285f4;
+}
+
+.provider-facebook .provider-mark {
+    background: #1877f2;
+    color: white;
+    font-family: Georgia, serif;
+    font-size: 1.35rem;
+}
+
+.provider-status {
+    margin-left: auto;
+    color: var(--text-muted-light);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.auth-message {
+    margin: 1rem 0 0;
+    padding: 0.8rem 1rem;
+    border-left: 0.25rem solid var(--accent-color-strong);
+}
+
+.auth-message-warning {
+    background: rgba(255, 243, 205, 0.75);
+}
+
+.auth-secondary-action {
+    margin: 1.75rem 0 0;
+    color: var(--text-muted-light);
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.auth-secondary-action a {
+    color: var(--accent-color-strong);
+    font-weight: 700;
+}
+
+body[data-bs-theme='dark'] .auth-panel,
+.theme-dark .auth-panel {
+    background: var(--card-bg-dark);
+    border-color: var(--surface-border-dark);
+}
+
+body[data-bs-theme='dark'] .auth-intro,
+.theme-dark .auth-intro,
+body[data-bs-theme='dark'] .auth-secondary-action,
+.theme-dark .auth-secondary-action {
+    color: var(--text-secondary-dark);
+}
+
+body[data-bs-theme='dark'] .provider-button,
+.theme-dark .provider-button {
+    background: rgba(8, 20, 39, 0.72);
+    border-color: var(--surface-border-dark);
+    color: var(--text-primary-dark);
+}
+
+body[data-bs-theme='dark'] .provider-status,
+.theme-dark .provider-status {
+    color: var(--text-muted-dark);
+}
+
+@media (max-width: 34rem) {
+    .auth-page {
+        align-items: start;
+        padding-top: 1.25rem;
+    }
+
+    .auth-panel {
+        border-radius: var(--border-radius-tight);
+    }
+}

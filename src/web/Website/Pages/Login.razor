@@ -1,0 +1,55 @@
+@page "/login"
+@namespace DadABase.Web.Pages
+@inject IConfiguration Configuration
+
+<PageTitle>Log in | Get Together</PageTitle>
+
+<main class="auth-page login-page" aria-labelledby="login-heading">
+    <section class="auth-panel">
+        <div class="auth-kicker">Get Together</div>
+        <h1 id="login-heading">Bring your people together.</h1>
+        <p class="auth-intro">Log in to see your circles, upcoming plans, and RSVP status.</p>
+
+        <div class="provider-list" aria-label="Sign-in providers">
+            @if (EntraEnabled)
+            {
+                <a class="provider-button provider-microsoft" href="@MicrosoftSignInUrl">
+                    <span class="provider-mark" aria-hidden="true">M</span>
+                    <span>Continue with Microsoft</span>
+                </a>
+            }
+            else
+            {
+                <button class="provider-button provider-microsoft" type="button" disabled aria-describedby="microsoft-status">
+                    <span class="provider-mark" aria-hidden="true">M</span>
+                    <span>Continue with Microsoft</span>
+                    <span id="microsoft-status" class="provider-status">Not configured</span>
+                </button>
+            }
+            <button class="provider-button provider-google" type="button" disabled aria-describedby="google-status">
+                <span class="provider-mark" aria-hidden="true">G</span>
+                <span>Continue with Google</span>
+                <span id="google-status" class="provider-status">Coming soon</span>
+            </button>
+            <button class="provider-button provider-facebook" type="button" disabled aria-describedby="facebook-status">
+                <span class="provider-mark" aria-hidden="true">f</span>
+                <span>Continue with Facebook</span>
+                <span id="facebook-status" class="provider-status">Coming soon</span>
+            </button>
+        </div>
+
+        @if (!EntraEnabled)
+        {
+            <p class="auth-message auth-message-warning" role="status">
+                Sign-in is not configured in this environment yet. Ask the site owner to configure Microsoft Entra ID.
+            </p>
+        }
+
+        <p class="auth-secondary-action">Have an invitation code? <a href="/signup">Start your signup</a></p>
+    </section>
+</main>
+
+@code {
+    private bool EntraEnabled => !string.IsNullOrWhiteSpace(Configuration["AzureAD:TenantId"]);
+    private string MicrosoftSignInUrl => EntraEnabled ? "/MicrosoftIdentity/Account/SignIn?redirectUri=/" : "/login";
+}

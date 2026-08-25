@@ -35,9 +35,19 @@
   "AzureAD": {
     "TenantId": "",
     "Instance": "https://login.microsoftonline.com/",
-    "Domain": "yourdomain.onmicrosoft.com",
-    "ClientId": "your-client-id",
+    "Domain": "",
+    "ClientId": "",
     "CallbackPath": "/signin-oidc"
+  },
+  "Authentication": {
+    "Google": {
+      "ClientId": "",
+      "ClientSecret": ""
+    },
+    "Facebook": {
+      "AppId": "",
+      "AppSecret": ""
+    }
   },
 
   "APPLICATIONINSIGHTS_CONNECTION_STRING": null,

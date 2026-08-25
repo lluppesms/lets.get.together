@@ -113,10 +113,18 @@ AppSettings__AzureOpenAI__Chat__DeploymentName="gpt-4"
 # Authentication
 AzureAD__TenantId="..."
 AzureAD__ClientId="..."
+Authentication__Google__ClientId="..."
+Authentication__Google__ClientSecret="..."
+Authentication__Facebook__AppId="..."
+Authentication__Facebook__AppSecret="..."
 
 # Application Insights
 APPLICATIONINSIGHTS_CONNECTION_STRING="..."
 ```
+
+The checked-in `src/web/Website/applicationSettings.json` contains empty placeholders for these provider settings. Supply real values only through App Service environment settings, local User Secrets, or the configured Azure Key Vault. Key Vault configuration names use `:` as `--`, for example `Authentication--Google--ClientSecret`.
+
+The current Bicep deployment wiring emits only the `AzureAD__*` settings. Google and Facebook settings are documented as runtime configuration placeholders but are not yet provisioned by Bicep until application authentication registration is implemented.
 
 ## Deployment Decision Tree
 

@@ -46,4 +46,12 @@ Squad initialized with Firefly casting on 2026-08-25.
 
 📌 **Team update (2026-08-25T14:37:59):** All 5 architectural decisions from project structure setup (repository location, JSON fallback policy, notification service registration, namespace deferral, placeholder pages) have been merged into canonical `.squad/decisions.md`. Session logs created at `.squad/log/2026-08-25T14-37-59-structure-setup.md` and `.squad/orchestration-log/2026-08-25T14-37-59-mal.md`. 8 open questions documented for team resolution (OQ-1 through OQ-8).
 
+### 2026-08-26 — Phase 1 Execution Handoff
+
+Converted the eight locked team decisions into a file-level Phase 1 handoff on `task/initial-version`. The ownership boundary is Simon for auth and identity data, Wash for provider configuration, Kaylee for onboarding UI, River for Playwright signup coverage, with recurrence fields tracked as a schema prerequisite and full recurrence behavior deferred to Phase 3.
+
+### 2026-08-25T20:41:56Z — Cross-agent status
+
+Scribe recorded the Phase 1 handoff outcome. Kaylee reported backend contract gaps, River reported missing signup/browser surfaces and provider-aware identity seams, and Wash reported that provider deployment wiring is blocked until runtime auth registration exists. Simon's requested blocker inbox record was absent.
+
 

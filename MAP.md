@@ -6,6 +6,10 @@
 >
 > **Last reviewed:** 2026-08-25
 
+### Backend Phase 1 update (2026-08-25)
+
+The shared data project now includes the locked Event recurrence model (`IsRecurring`, `RsvpMode`, and `RecurrenceRule`) and the SQL database project includes the Get Together tables under the `Dad` schema. Invitation-code listing preserves the full circle audit trail, while redemption continues to require an active circle member and rejects duplicate active membership.
+
 ### Squad team
 
 The repository uses a Firefly-cast Squad team for orchestration. The roster and routing authority are `.squad/team.md` and `.squad/routing.md`; agent charters live under `.squad/agents/`. `prd.md` is the current product requirements source and remains pending owner approval.
@@ -58,6 +62,8 @@ The normal request path is:
 
 Phase 0 starter product surfaces now include placeholder Blazor pages at `/circles`, `/events`, and `/calendar`, with corresponding top navigation links in `src/web/Website/Shared/NavMenu.razor`.
 
+Phase 1 authentication UI surfaces now include `/login`, `/signup`, and `/signup-callback` under `src/web/Website/Pages/`. The shared `LoginDisplay` links anonymous users to `/login`; Microsoft Entra uses the existing Microsoft Identity UI when `AzureAD:TenantId` is configured, while Google and Facebook are displayed as pending providers until backend OAuth registration exists. Signup currently validates invitation-code shape and carries the code to the callback route; server-side validation and redemption remain a contract boundary.
+
 The web app supports anonymous access by default. Entra ID authentication is configured only when `AzureAD:TenantId` is present; individual pages/endpoints can then apply authorization. API key handling is implemented in the web API support code and must be preserved when changing controllers.
 
 ### Data layer
@@ -88,7 +94,7 @@ There are two application data modes:
 
 If SQL is selected without a usable `DefaultConnection`, the web application deliberately falls back to JSON for joke data. An unknown data source also falls back to JSON. Do not assume that local development is database-backed.
 
-The SQL domain is represented under the `Dad` schema and includes jokes, categories, joke/category associations, ratings, and the full Get Together schema (User, Circle, CircleMembership, InvitationCode, Event, RSVP, ReminderLog). The SQL database project is the schema authority for deployment; do not treat EF migrations or JSON seed data as a substitute for DACPAC changes.
+The SQL domain is represented under the `Dad` schema and includes jokes, categories, joke/category associations, ratings, and the full Get Together schema (User, Circle, CircleMembership, InvitationCode, Event, RSVP, ReminderLog). Event recurrence is stored as `IsRecurring`, integer `RsvpMode` (`PerOccurrence` or `Series`), and nullable `RecurrenceRule`. The SQL database project is the schema authority for deployment; do not treat EF migrations or JSON seed data as a substitute for DACPAC changes.
 
 For Get Together planning and implementation, SQL Server is expected to be a shared database host with app objects isolated to a unique application schema. Application identities should be granted schema-scoped rights (least privilege) and must not be granted broad full-database permissions.
 
@@ -168,7 +174,7 @@ Notable web packages include MudBlazor, Azure Identity, Azure OpenAI, Microsoft 
 
 ### Web configuration
 
-`src/web/Website/applicationSettings.json` is a checked-in template/configuration file copied to output. It contains `AppSettings` including `DataSource`, `DefaultConnection`, `ApiKey`, `AdminUserList`, `EnableSwagger`, AI settings, and Blob Storage settings, plus `AzureAD`, `APPLICATIONINSIGHTS_CONNECTION_STRING`, and `VisualStudioTenantId` settings.
+`src/web/Website/applicationSettings.json` is a checked-in template/configuration file copied to output. It contains `AppSettings` including `DataSource`, `DefaultConnection`, `ApiKey`, `AdminUserList`, `EnableSwagger`, AI settings, and Blob Storage settings, plus `AzureAD`, empty `Authentication:Google` and `Authentication:Facebook` provider placeholders, `APPLICATIONINSIGHTS_CONNECTION_STRING`, and `VisualStudioTenantId` settings.
 
 Web startup loads, in this general order:
 
@@ -178,6 +184,8 @@ Web startup loads, in this general order:
 4. Azure Key Vault when `KeyVaultName` is set.
 
 Use environment variables, User Secrets, or Key Vault for real credentials. Do not put connection strings, API keys, tenant credentials, or passwords in committed configuration. `DefaultAzureCredential` is the managed identity/default credential boundary. `VisualStudioTenantId` is a local-development override and must not be used as an Azure deployment substitute.
+
+Provider environment names use double underscores: `AzureAD__*`, `Authentication__Google__*`, and `Authentication__Facebook__*`. Key Vault names use double hyphens for nested keys. Bicep currently wires only `AzureAD__*`; Google and Facebook remain template/documentation placeholders until runtime provider registration is implemented.
 
 The function host uses `appsettings.json` if present, environment variables, and User Secrets. Its startup is in `src/function/Function/Program.cs`.
 

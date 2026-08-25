@@ -33,6 +33,13 @@
     <Build Include="Dad\Tables\JokeCategory.sql" />
     <Build Include="Dad\Tables\JokeJokeCategory.sql" />
     <Build Include="Dad\Tables\JokeRating.sql" />
+    <Build Include="Dad\Tables\User.sql" />
+    <Build Include="Dad\Tables\Circle.sql" />
+    <Build Include="Dad\Tables\CircleMembership.sql" />
+    <Build Include="Dad\Tables\InvitationCode.sql" />
+    <Build Include="Dad\Tables\Event.sql" />
+    <Build Include="Dad\Tables\RSVP.sql" />
+    <Build Include="Dad\Tables\ReminderLog.sql" />
     <Build Include="Dad\Views\vw_Jokes.sql" />
   </ItemGroup>
 </Project>

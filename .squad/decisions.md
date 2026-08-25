@@ -57,6 +57,32 @@ The following questions from the PRD (§9) and design gaps surfaced during struc
 | OQ-7 | Authentication provider support: PRD calls for Google, Microsoft (Entra ID), and Facebook. Current auth is Entra ID only. Is multi-provider OAuth in scope for v1 or just Entra ID initially? | Determines whether `ExternalId` on `User` needs a `Provider` discriminator column. |
 | OQ-8 | `CircleMembership.Role` is stored as a string (default `"Member"`). Are any role-gated operations planned for v1, or does every member have equal standing as the PRD states? If equal standing, the field can be simplified or dropped. | Minor schema concern; does not block current work. |
 
+## Resolved Open Questions (2026-08-26)
+
+### OQ-1 — Reminder permissions — Resolved
+**Decision:** Any active circle member may trigger reminder emails for events in that circle. Authorization is based on active membership, not event ownership or role.
+
+### OQ-2 — Member leave and recurring events — Resolved
+**Decision:** Leaving a circle soft-deletes the membership and deletes that member's RSVP records for the circle. Future occurrences do not retain the departed member's responses.
+
+### OQ-3 — Invitation code limits — Resolved
+**Decision:** No hard per-member invitation-code cap in v1. Generation is logged with member, circle, and timestamp for monitoring; rate limiting may be considered for v1.1 if abuse appears.
+
+### OQ-4 — Declined and expired invitation visibility — Resolved
+**Decision:** Circle invitation listings show all code statuses, including active, consumed, expired, and revoked, with status information available to the generating member.
+
+### OQ-5 — Recurrence vocabulary — Resolved
+**Decision:** v1 recurrence supports weekly, biweekly, and monthly patterns, including the required day/date inputs. Expansion behavior remains Phase 3 scope.
+
+### OQ-6 — Event recurrence fields — Resolved
+**Decision:** Add `IsRecurring`, `RsvpMode`, and `RecurrenceRule` to the Event model and SQL authority now, with a valid migration path. Full recurrence behavior remains Phase 3 scope.
+
+### OQ-7 — Authentication providers — Resolved
+**Decision:** Multi-provider authentication is in v1: Microsoft Entra ID, Google, and Facebook. Provider identity must remain unambiguous in persistence and configuration; credentials stay externalized.
+
+### OQ-8 — Circle membership roles — Resolved
+**Decision:** Keep `CircleMembership.Role`, default new members to `Member`, and defer role-based authorization and role UI to v1.1.
+
 ---
 
 ## Architecture Patterns & Notes

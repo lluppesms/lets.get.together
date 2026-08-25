@@ -22,7 +22,7 @@ public interface IInvitationCodeRepository
     Task<InvitationCode> CreateCodeAsync(int circleId, int createdByUserId, DateTime? expiresUtc = null);
 
     /// <summary>
-    /// Returns all invitation codes created by the specified user for the specified circle.
+    /// Returns all invitation codes for the specified circle, including redeemed, expired, and revoked codes.
     /// </summary>
     Task<IList<InvitationCode>> GetCodesForCircleAsync(int circleId, int requestingUserId);
 

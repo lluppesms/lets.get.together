@@ -1,0 +1,49 @@
+@page "/signup"
+@namespace DadABase.Web.Pages
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager Navigation
+
+<PageTitle>Join a circle | Get Together</PageTitle>
+
+<main class="auth-page signup-page" aria-labelledby="signup-heading">
+    <section class="auth-panel">
+        <div class="auth-kicker">Private by design</div>
+        <h1 id="signup-heading">Join your circle.</h1>
+        <p class="auth-intro">Enter the one-time invitation code from a friend. You will choose a sign-in provider next.</p>
+
+        <EditForm Model="form" OnValidSubmit="ContinueToCallback">
+            <DataAnnotationsValidator />
+            <div class="form-field">
+                <label for="invite-code">Invitation code</label>
+                <InputText id="invite-code" class="form-control" @bind-Value="form.InvitationCode" autocomplete="one-time-code" aria-describedby="invite-help invite-validation" />
+                <div id="invite-help" class="form-help">Codes are single-use and tied to one circle.</div>
+                <ValidationMessage id="invite-validation" For="@(() => form.InvitationCode)" />
+            </div>
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <p class="auth-message auth-message-error" role="alert">@errorMessage</p>
+            }
+            <button class="primary-action" type="submit">Continue</button>
+        </EditForm>
+
+        <p class="auth-secondary-action">Already have an account? <a href="/login">Log in</a></p>
+    </section>
+</main>
+
+@code {
+    private readonly SignupForm form = new();
+    private string errorMessage = string.Empty;
+
+    private void ContinueToCallback()
+    {
+        errorMessage = null;
+        Navigation.NavigateTo($"/signup-callback?invite={Uri.EscapeDataString(form.InvitationCode.Trim())}");
+    }
+
+    private sealed class SignupForm
+    {
+        [Required(ErrorMessage = "Enter your invitation code.")]
+        [StringLength(64, MinimumLength = 4, ErrorMessage = "Invitation codes must be between 4 and 64 characters.")]
+        public string InvitationCode { get; set; } = string.Empty;
+    }
+}
