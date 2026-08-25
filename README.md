@@ -1,89 +1,79 @@
-# 🤣 The Dad-A-Base
+# � Let's Get Together!
 
-> *Where does a geeky Dad store all of his Dad jokes? In a dad-a-base, of course!*
+> *Because "Reply-All: I'm in!" is not an event management system.*
 
-![Dad Joke Level: Expert](https://img.shields.io/badge/Dad%20Joke%20Level-Expert-gold?style=for-the-badge&logo=laughing)
-![Groan Factor](https://img.shields.io/badge/Groan%20Factor-Maximum-purple?style=for-the-badge)
+![Status: Under Construction](https://img.shields.io/badge/Status-Under%20Construction-yellow?style=for-the-badge&logo=hammer)
+![Vibe](https://img.shields.io/badge/Vibe-Low%20Effort%2C%20High%20Fun-purple?style=for-the-badge)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
-![Architecture](https://img.shields.io/badge/Architecture-🏗️%20Over--Engineered%20Perfection-blue?style=for-the-badge)
-
+![Architecture](https://img.shields.io/badge/Architecture-Borrowed%20With%20Love-blue?style=for-the-badge)
 
 ---
 
-## 🎯 What Is This Masterpiece?
+## 🎯 What Is This?
 
-This isn't just a repository. This is a **monument to dad jokes** and a shrine to DevOps best practices, all wrapped in one glorious package. It's the kind of project that makes you say, *"I didn't know I needed this, but now I can't live without it."*
+**Get Together** is a small, friendly app for organizing informal gatherings with actual friends — pickleball on Wednesday, movie night, the standing Friday-morning coffee run, a Habitat for Humanity shift. You create a **circle**, invite people you actually know, post a **thing to do**, and everyone taps *Accept*, *Decline*, or *Maybe*.
 
-Want to see every cutting-edge development and automation practice demonstrated through the lens of corny humor? **You're in the right place.**
+No ticketing. No public event feed. No payments. No algorithm deciding who sees your pickleball game. Just you, your friends, and a calendar.
 
-[![Open in vscode.dev](https://img.shields.io/badge/Open%20in-vscode.dev-blue?style=for-the-badge)][1]
-
-[1]: https://vscode.dev/github/lluppesms/dadabase.demo/
+**See [PRD.md](./PRD.md) for the full product requirements**, and [PRODUCT.md](./PRODUCT.md) / [MAP.md](./MAP.md) for the living project docs.
 
 ---
 
 ## 🤔 Why Does This Exist?
 
-Because when you combine:
-- 🎯 A passion for clean code
-- 😄 An unhealthy collection of dad jokes
-- 🚀 A need to demonstrate DevOps best practices
-- 🤖 Agents begging for a place to call home
+Because organizing five friends for pickleball shouldn't require a group text with 40 replies, three "wait what time again?" messages, and someone showing up on the wrong day.
 
-...you get this magnificent repository.
+**This project is for:**
+- 🏓 Actually getting your circle of friends together, on purpose, on time
+- 📅 Seeing every circle's events in one calendar instead of six group chats
+- ✅ Knowing at a glance who's in, who's out, and who's ghosting
+- 🏗️ Reusing a solid, already-battle-tested .NET/Azure foundation instead of starting from a blank folder
 
-**Perfect for:**
-- 📚 Learning modern .NET development
-- 🏗️ Understanding Infrastructure as Code
-- 🔄 Studying CI/CD pipeline patterns
-- 🗃️ Learning how to SQL schema and data with code
-- 🤖 Seeing how you can integrate AI into an existing app
-- 😂 Telling terrible jokes at work
+> **Heads up:** this repository was bootstrapped from a sibling demo project (a dad-joke app, of all things) purely to inherit its working .NET 10 / Azure / CI-CD scaffolding. The rebrand — new names, new namespaces, new data model — is the first real chunk of work, tracked in the PRD.
 
 ---
 
-## 🚀 Things This Repo Demonstrates
+## 🚀 What's Being Built (and What It's Built On)
 
-| Technology | Description | Status |
+| Piece | Description | Status |
 |------------|-------------|--------|
-| 🔥 **.NET 10 Blazor App** | A beautiful, interactive web app that serves dad jokes with style | ![Production Ready](https://img.shields.io/badge/-Production%20Ready-success) |
-| ⚡ **Azure Function** | Serverless dad joke API - because jokes should be scalable | ![Flex Consumption](https://img.shields.io/badge/-Flex%20Consumption-blue) |
-| 💻 **Console App** | For when you need jokes in your terminal (we don't judge) | ![CLI Jokes](https://img.shields.io/badge/-CLI%20Jokes-yellow) |
-| 🗃️ **SQL Automation** | Schema + seed data deployed via SQL DACPAC because jokes need a a parent before they are fully groan | ![Schema Migration](https://img.shields.io/badge/-Schema%20Migration-lightgrey) |
-| 🤖 **AI Agent Integration** | Seeing how you can integrate AI into an existing app | ![Hallucination%20Free](https://img.shields.io/badge/-Hallucination%20Free-brightgreen) |
-| 🏗️ **Bicep IaC** | Full Azure resource deployment - infrastructure so clean it sparkles | ![100% Declarative](https://img.shields.io/badge/-100%25%20Declarative-informational) |
+| 🔥 **.NET 10 Blazor App** | The web app where circles, events, and RSVPs will live | ![In Progress](https://img.shields.io/badge/-In%20Progress-yellow) |
+| 👥 **Circles & Invitations** | Private friend groups, joined only via single-use invite codes | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) |
+| 📅 **Events & RSVPs** | One-off and recurring events with Accept/Decline/Maybe responses | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) |
+| 📧 **Email Notifications** | Event-created emails and manually-triggered reminders via SendGrid | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) |
+| 🗓️ **Calendar Views** | Month grid + agenda list of everything coming up across your circles | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) |
+| 🗃️ **SQL Automation** | Schema + data deployed via SQL DACPAC (inherited, being re-modeled) | ![Schema Migration](https://img.shields.io/badge/-Schema%20Migration-lightgrey) |
+| 🏗️ **Bicep IaC** | Full Azure resource deployment, inherited as-is | ![100% Declarative](https://img.shields.io/badge/-100%25%20Declarative-informational) |
 | 🔄 **Azure DevOps Pipelines** | Full CI/CD pipelines built with reusable templates | ![Modular](https://img.shields.io/badge/-Modular%20Templates-orange) |
 | 🐙 **GitHub Actions** | Because we support *all* the CI/CD platforms | ![Multi-Platform](https://img.shields.io/badge/-Multi--Platform-blueviolet) |
-| 🔍 **Code Scanning** | Security scanning to keep the jokes safe from hackers | ![Secure](https://img.shields.io/badge/-Secure-red) |
-| 🎭 **Playwright Testing** | Automated smoke tests that actually click buttons | ![End-to-End](https://img.shields.io/badge/-End--to--End-9cf) |
-| ✅ **Unit Testing** | With code coverage, because untested jokes aren't funny | ![High Coverage](https://img.shields.io/badge/-High%20Coverage-brightgreen) |
+| 🔍 **Code Scanning** | Security scanning, because friend data deserves protection | ![Secure](https://img.shields.io/badge/-Secure-red) |
+| 🎭 **Playwright Testing** | Automated browser tests that actually click buttons | ![End-to-End](https://img.shields.io/badge/-End--to--End-9cf) |
+| ✅ **Unit Testing** | With code coverage, because untested RSVPs are worse than no RSVPs | ![High Coverage](https://img.shields.io/badge/-High%20Coverage-brightgreen) |
 | 🪝 **Pre-Commit Hooks** | Auto-format C# and scan for secrets before every commit | ![Developer Experience](https://img.shields.io/badge/-Developer%20Experience-teal) |
+
+> See [PRD.md](./PRD.md) for the full requirements behind each of these.
 
 ---
 
-##  Features That'll Make You Smile
+## 🌱 Planned Features
 
 ### 🌐 The Blazor Web App
-- 🎲 **Random Joke Generator** - Never run out of material at parties
-- 🔍 **Search API** - Find the perfect joke for any occasion  
-- 📂 **Category Browser** - Dad jokes, organized *scientifically*
-- 🤖 **AI Integration** - Generate joke categories and images with GenAI magic
-
-### ⚡ The Azure Function
-- 🚀 Serverless dad jokes that scale to infinity
-- 📊 OpenAPI/Swagger support for the API purists
-- 💪 Built on .NET 10 Isolated Worker
+- 🔑 **Sign in with Google, Microsoft, or Facebook** — no new password to remember
+- 🎟️ **Invite-only signup** — a friend's single-use code gets you in
+- 👥 **Circles** — private friend groups; belong to as many as you like
+- 📅 **One-off and recurring events** — "Friday movie night" or "Pickleball every Saturday"
+- ✅ **Accept / Decline / Maybe RSVPs** — know who's actually showing up
+- 🗓️ **Combined calendar** — every circle's events, one view, month or agenda style
 
 ### 🏗️ Infrastructure as Code
 - 🎯 **Bicep templates** that deploy entire environments with one command
 - 🔐 **Managed Identity** support - no passwords in config files!
-- 📊 **Application Insights** - because we need to monitor joke performance
-- 🗄️ **Azure SQL** - enterprise-grade joke storage
+- 📊 **Application Insights** - because we need to monitor whether anyone actually RSVP'd
+- 🗄️ **Azure SQL** - real storage for circles, events, and RSVPs
 
 ### 🗃️ SQL Database as Code
 - 📝 **Complete schema defined in code** - tables, views, stored procedures, all versioned
 - 📦 **DACPAC deployment** - database changes deployed via automated pipelines
-- 🌱 **Seed data included** - pre-loaded with quality dad jokes for immediate use
 - 🔄 **CI/CD integration** - schema changes flow through the same pipeline as application code
 - ✅ **Schema validation** - ensures database integrity before deployment
 
@@ -92,7 +82,7 @@ Because when you combine:
 - 🔄 **Pipeline integration** - tests run automatically after deployment
 - 🌐 **Multi-browser support** - verify functionality across different browsers
 - 📊 **API testing included** - validate both UI and backend endpoints
-- ✅ **Post-deployment validation** - ensure jokes are actually being delivered correctly
+- ✅ **Post-deployment validation** - ensure an RSVP actually sticks
 
 ---
 
@@ -100,7 +90,7 @@ Because when you combine:
 
 ```bash
 # Clone the repo
-git clone https://github.com/lluppesms/dadabase.demo.git
+git clone https://github.com/lluppesms/lets.get.together.git
 
 # Install npm dependencies (also activates pre-commit hooks)
 npm install
@@ -111,7 +101,7 @@ cd src/web/Website
 # Run the Blazor app
 dotnet run
 
-# Open browser and enjoy the dad jokes!
+# Open browser and go organize something!
 ```
 
 ---
@@ -167,46 +157,6 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for full contributor guidelines.
 
 ---
 
-## 🤖 GenAI-Powered Features
-
-This application has been supercharged with **Generative AI capabilities** to bring your dad jokes to life:
-
-### 🎨 AI Image Generation
-When viewing a joke, the app uses AI to:
-1. 📝 **Analyze the joke content** and understand the humor
-2. 🖼️ **Generate a visual scene description** that captures the essence of the joke
-3. 🎨 **Create an AI-generated image** that illustrates the joke visually (*using the brand new MAI-Image-2 model!*)
-
-Transform text-based dad jokes into visual masterpieces! Each joke can have its own unique, AI-generated illustration that brings the punchline to life.
-
-### 🏷️ Automatic Category Assignment
-When creating a **new joke**, the AI assistant works behind the scenes to:
-- 🧠 **Analyze the joke content** to understand themes, topics, and humor style
-- 🔍 **Intelligently assign relevant categories** automatically
-- ⚡ **Save you time** - no manual categorization needed!
-
-Just write your joke, and the AI figures out whether it's a pun, a knock-knock joke, animal humor, food-related, or any other category. It's like having a comedy curator in your pocket!
-
-> **Powered by Azure Foundry** - Because even dad jokes deserve enterprise-grade AI
-
----
-
-## 🤖 GitHub Copilot Agents and Skills
-
-All of the GitHub Copilot Agents and Skills that used to live in this repo have relocated to a dedicated repository for better maintenance and discoverability. You could say they... moved to a better *repo-hood*. 🏘️
-
-Check out the [my.copilot.skills](https://github.com/lluppesms/my.copilot.skills) repo to see the full collection of AI agents and skills that can be used in this project.
-
-### Loading in VS Code
-
-Load the [VS Code Workspace](./dadabase.demo.gh.code-workspace) to automatically make all shared skills available to GitHub Copilot Chat. The workspace file includes both this repo and the `my.copilot.skills` repo as workspace folders, so Copilot Chat discovers the skills from `.github/skills/` in both repositories.
-
-### Loading in GitHub Copilot CLI
-
-The CLI is a little different and does not support the VS Code Workspace. For details on loading skills into the GitHub Copilot CLI (and what to do about gents, and instructions), see the [Copilot CLI Skills Guide](./Docs/Copilot_CLI_Skills.md).
-
----
-
 ## 🚀 Deployment Options
 
 Choose your adventure:
@@ -224,17 +174,17 @@ Choose your adventure:
 ## 🔄 CI/CD Pipelines and Actions Showcase
 
 ### Azure DevOps Pipelines
-Our Azure DevOps pipelines are like a well-oiled machine... if that machine told puns:
+Our Azure DevOps pipelines, doing the unglamorous work so you don't have to:
 
 | Pipeline | Purpose |
 |----------|---------|
 | 🏗️ `deploy-bicep` | Create all Azure resources |
 | 🌐 `build-deploy-webapp` | Build, test, and deploy the Blazor app to standard Azure App Service |
 | 📦 `build-deploy-containerapp` | Build, test, and deploy the Blazor app to Azure Container Apps |
-| ⚡ `build-deploy-function` | Ship the serverless jokes |
+| ⚡ `build-deploy-function` | Ship the serverless bits |
 | 🗃️ `build-deploy-dacpac` | Deploy SQL schema and seed data |
 | 🔍 `scan-code` | Security scanning (serious stuff) |
-| 🎭 `smoke-test-webapp` | Make sure the jokes are actually funny (automated) |
+| 🎭 `smoke-test-webapp` | Make sure the app is actually working (automated) |
 
 ### GitHub Actions
 Same great taste, GitHub flavor:
@@ -252,24 +202,24 @@ Same great taste, GitHub flavor:
 ## 🏛️ The Grand Architecture
 
 ```
-📁 Dad-A-Base Repository
-├── 🌐 src/web/           → .NET 10 Blazor App (the star of the show)
-├── ⚡ src/function/       → Azure Function (serverless joke delivery)
-├── 💻 src/console/        → Console App (for joke connoisseurs)
+📁 Get Together Repository (currently mid-rebrand from a borrowed scaffold)
+├── 🌐 src/web/           → .NET 10 Blazor App (circles, events, RSVPs)
+├── ⚡ src/function/       → Azure Function (serverless API bits)
+├── 💻 src/console/        → Console App
 ├── 📊 src/sql.database/   → SQL Database Project (DACPAC central)
 ├── 🏗️ infra/Bicep/        → Infrastructure as Code (Bicep flexing)
 ├── 🔄 .azdo/pipelines/    → Azure DevOps CI/CD (YAML wizardry)
 ├── 🐙 .github/workflows/  → GitHub Actions (also YAML wizardry)
-└── 🎭 playwright/         → Automated testing (robot comedy critics)
+└── 🎭 playwright/         → Automated testing (robot event critics)
 ```
 
 ---
 
 ## 🧪 Testing Philosophy
 
-> *"A dad joke without tests is just a dad statement."* - Ancient DevOps Proverb
+> *"An RSVP without tests is just a guess."* - Ancient DevOps Proverb
 
-- ✅ **Unit Tests** with MSTest and Coverlet for code coverage
+- ✅ **Unit Tests** with xUnit and Coverlet for code coverage
 - 🎭 **Playwright Tests** for end-to-end UI validation
 - 📊 **Test results and Code coverage** integrated directly into CI/CD pipelines - because metrics matter
 
@@ -291,9 +241,9 @@ Same great taste, GitHub flavor:
 
 ## 🤝 Contributing
 
-Found a bug? Want to add a feature? Have an even worse dad joke?
+Found a bug? Want to add a feature? Know a friend group that needs this?
 
-Pull requests are welcome! Check out [CONTRIBUTING.md](./CONTRIBUTING.md) for developer setup (including pre-commit hooks), code style, and PR guidelines. Just remember: if your PR doesn't make at least one person groan, is it really worth it?
+Pull requests are welcome! Check out [CONTRIBUTING.md](./CONTRIBUTING.md) for developer setup (including pre-commit hooks), code style, and PR guidelines.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for developer setup and contribution guidelines.
 
@@ -301,12 +251,12 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for developer setup and contribution gu
 
 ## 📜 License
 
-[MIT](./LICENSE) - Because dad jokes should be free for everyone.
+[MIT](./LICENSE) - Because organizing your friends should be free for everyone.
 
 ---
 
-*Made with 💚 and an excessive amount of groaning*
+*Made with 💚 for anyone tired of 40-message group threads*
 
-**Remember: Good code and good jokes both require timing.**
+**Remember: Good code and good gatherings both require timing.**
 
 </div>

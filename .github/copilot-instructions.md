@@ -1,6 +1,6 @@
 # Copilot Instructions
 
-The GitHub repository is `lluppesms/dadabase.demo`. The primary branch is `main`.
+The GitHub repository is `lluppesms/lets.get.together`. The primary branch is `main`.
 
 ## Living Project Document
 
