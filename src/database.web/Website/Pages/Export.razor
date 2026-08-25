@@ -1,0 +1,100 @@
+@page "/export"
+@attribute [Authorize(Roles = "Admin")]
+<PageTitle>Export / Import Data</PageTitle>
+
+<div class="container" style="padding: 25px;">
+
+    @* ── SQL Export ──────────────────────────────────────────── *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <h1>Export Joke Data</h1>
+            <p>Export all jokes and categories from the database.</p>
+            <p class="text-muted small">Data Source: @dataSource</p>
+
+            <div class="d-flex flex-wrap gap-3 mt-4">
+                <button class="btn btn-success" @onclick="DownloadSqlExport" disabled="@isBusy">
+                    @if (isBusy && activeAction == "sql")
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    <i class="fas fa-database me-2"></i>Export as SQL
+                </button>
+
+                <button class="btn btn-success" @onclick="DownloadTabExport" disabled="@isBusy">
+                    @if (isBusy && activeAction == "tab")
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    <i class="fas fa-file-alt me-2"></i>Export as Tab-Delimited
+                </button>
+
+                <button class="btn btn-success" @onclick="DownloadJsonExport" disabled="@isBusy">
+                    @if (isBusy && activeAction == "json")
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    <i class="fas fa-file-code me-2"></i>Export as JSON
+                </button>
+
+                <button class="btn btn-success" @onclick="DownloadBulletedListExport" disabled="@isBusy">
+                    @if (isBusy && activeAction == "bullets")
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    <i class="fas fa-list-ul me-2"></i>Export as Bulleted List
+                </button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(exportStatusMessage))
+            {
+                <div class="alert @exportAlertClass mt-3" role="alert">
+                    @exportStatusMessage
+                </div>
+            }
+        </div>
+    </div>
+
+    @* ── Tab-Delimited Import ─────────────────────────────────── *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2>Import Jokes from File</h2>
+            <p>
+                Select a tab-delimited (<code>.tsv</code>, <code>.txt</code>) or JSON (<code>.json</code>) file previously exported from this application.
+                New jokes and categories will be added; existing jokes (matched by joke text) are skipped.
+            </p>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold" for="importFile">Select file:</label>
+                <InputFile id="importFile" class="form-control" accept=".tsv,.txt,.tab,.json" OnChange="OnImportFileSelected" disabled="@isBusy" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(importFileName))
+            {
+                <p class="text-muted small mb-3">Selected: <strong>@importFileName</strong></p>
+            }
+
+            <div class="form-check mb-3">
+                <InputCheckbox id="replaceAllCheck" class="form-check-input" @bind-Value="importReplaceAll" disabled="@isBusy" />
+                <label class="form-check-label" for="replaceAllCheck">
+                    <strong>Delete and replace all existing jokes</strong>
+                    <span class="text-muted small ms-1">(clears all jokes, categories &amp; ratings, then reseeds identity columns before importing)</span>
+                </label>
+            </div>
+
+            <button class="btn btn-danger" @onclick="RunImport" disabled="@(isBusy || importFileContent == null)">
+                @if (isBusy && activeAction == "import")
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                <i class="fas fa-upload me-2"></i>Import Jokes
+            </button>
+
+            @if (!string.IsNullOrEmpty(importStatusMessage))
+            {
+                <div class="alert @importAlertClass mt-3" role="alert">
+                    @importStatusMessage
+                </div>
+            }
+        </div>
+    </div>
+</div>

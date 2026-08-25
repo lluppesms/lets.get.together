@@ -1,0 +1,75 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Web
+@namespace DadABase.Web.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+
+    <link rel="stylesheet" href="bootstrap/bootstrap.5.3.8.min.css">
+    <link rel="stylesheet" href="fontawesome/css/all.css" />
+
+    <link rel="stylesheet" href="css/site.css" />
+    <link rel="stylesheet" href="DadABase.Web.styles.css" />
+
+    <!-- CSS For MudBlazor -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <!-- /CSS For MudBlazor -->
+
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+
+    <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+<body>
+    <script>
+        // Validate and cleanup localStorage before Blazor initializes
+        (function() {
+            const validThemeModes = ['light', 'dark', 'nineties', 'system'];
+            const themeMode = localStorage.getItem('theme-mode');
+            if (themeMode && !validThemeModes.includes(themeMode)) {
+                console.warn(`Invalid theme-mode value '${themeMode}', clearing.`);
+                localStorage.removeItem('theme-mode');
+            }
+            
+            const hitCount = localStorage.getItem('hit-counter');
+            if (hitCount && isNaN(parseInt(hitCount))) {
+                console.warn(`Invalid hit-counter value '${hitCount}', clearing.`);
+                localStorage.removeItem('hit-counter');
+            }
+        })();
+    </script>
+
+    <component type="typeof(App)" render-mode="ServerPrerendered" />
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">??</a>
+    </div>
+
+    <script src="js/BlazorInterop.js"></script>
+    <script src="_framework/blazor.server.js"></script>
+
+    <!-- Scripts For bootstrap -->
+    <script src="bootstrap/bootstrap.bundle.5.3.8.min.js"></script>
+    <!-- /Scripts For bootstrap -->
+
+    <!-- Scripts For MudBlazor -->
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <!-- /Scripts For MudBlazor -->
+
+    <!-- Scripts For Sweet Alert -->
+    <script src="_content/CurrieTechnologies.Razor.SweetAlert2/sweetAlert2.min.js"></script>
+    <!-- /Scripts For Sweet Alert -->
+</body>
+</html>

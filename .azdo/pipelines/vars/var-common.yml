@@ -1,0 +1,119 @@
+# ----------------------------------------------------------------------------------------------------
+# Variables common to all environments
+# ----------------------------------------------------------------------------------------------------
+variables:
+  # - name: appName
+  #   value: 'this is unique to you - define in a variable group or on the pipeline variables!'
+  # - name: serviceConnectionName
+  #   value: 'this is unique to you - define in a variable group or on the pipeline variables!'
+
+  - name: resourceGroupPrefix
+    value: 'rg-dadabase-azdo'
+  - name: applicationTitle
+    value: 'Dadabase Demo'
+  # - name: location  replaced by RESOURCE_GROUP_LOCATION in the variable group
+  #   value: 'westus'
+
+  - name: webSiteSku 
+    value: 'B1'
+  - name: storageSku 
+    value: 'Standard_LRS'
+
+  - name: webAppFolderName
+    value: 'src/web/'
+  - name: webAppSolutionName
+    value: 'dadabase.net10.web.sln'
+
+  - name: webAppProjectFolderName
+    value: 'Website'
+  - name: webAppProjectName
+    value: 'DadABase.Web'
+  - name: webAppProjectExtension
+    value: 'csproj'
+
+  - name: webTestFolderName 
+    value: 'Tests'
+  - name: webTestProjectName
+    value: 'DadABase.Tests'
+
+  - name: functionAppSku
+    value: 'Y1'
+  - name: functionAppSkuFamily
+    value: 'Y'
+  - name: functionAppSkuTier
+    value: 'Dynamic'
+  - name: functionKind
+    value: 'functionapp,linux'
+
+#  src\function\Function\DadABase.Function.csproj
+  - name: functionFolderName
+    value: 'src/function'
+  - name: functionSolutionName
+    value: 'dadabase.net10.function.sln'
+
+  - name: functionProjectFolderName
+    value: 'Function'
+  - name: functionProjectName
+    value: 'DadABase.Function'
+  - name: functionProjectExtension
+    value: 'csproj'
+
+  - name: functionTestFolderName 
+    value: 'Tests'
+  - name: functionTestProjectName
+    value: 'DadABase.Function.Tests'
+
+  # SQL Deploy must run on Windows
+  - name: sqlAppFolderName
+    value: 'src\sql.database\'
+  - name: sqlAppSolutionName
+    value: 'sql.database.sln'
+  - name: sqlAppProjectName
+    value: 'sql.database'
+
+  - name: consoleAppFolderName
+    value: 'src/console'
+  - name: consoleAppSolutionName
+    value: 'DadABase.Console'
+
+  - name: consoleAppProjectFolderName
+    value: 'DadABase.Console'
+  - name: consoleAppProjectName
+    value: 'DadABase.Console'
+  - name: consoleAppProjectExtension
+    value: 'csproj'
+
+  - name: consoleTestFolderName 
+    value: 'DadABase.Tests'
+  - name: consoleTestProjectName
+    value: 'DadABase.Tests'
+
+  - name: buildPlatform
+    value: 'Any CPU'
+  - name: buildConfiguration
+    value: 'Release'
+  - name: runtime 
+    value: 'win-x64'
+
+  - name: CONTAINER_IMAGE
+    value: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+
+  - name: playwrightUITestType
+    value: 'ui'
+  - name: playwrightUITestPath
+    value: 'playwright/ui-tests'
+
+  - name: playwrightBasicTestType
+    value: 'basic'
+  - name: playwrightBasicTestPath
+    value: 'playwright/basic-tests'
+
+  - name: playwrightAPITestType
+    value: 'api'
+  - name: playwrightAPITestPath
+    value: 'playwright/api-tests'
+
+  - name: workingDirectoryInfra
+    value: '/infra/bicep'
+  - name: workingDirectoryIgnore
+    value: '/Docs'

@@ -1,0 +1,42 @@
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <NotAuthorized>
+                <div class="container" style="padding: 25px;">
+                    <div class="alert alert-warning">
+                        <h4>Access Denied</h4>
+                        <p>You are not authorized to access this page.</p>
+                        @if (IsAuthEnabled)
+                        {
+                            <p><a href="/MicrosoftIdentity/Account/SignIn">Please sign in</a> to continue.</p>
+                        }
+                        else
+                        {
+                            <p>Authentication is not configured for this environment.</p>
+                        }
+                    </div>
+                </div>
+            </NotAuthorized>
+            <Authorizing>
+                <div class="container" style="padding: 25px;">
+                    <p>Checking authorization...</p>
+                </div>
+            </Authorizing>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+    [Inject] private IConfiguration Configuration { get; set; } = default!;
+
+    private bool IsAuthEnabled => !string.IsNullOrWhiteSpace(Configuration["AzureAD:TenantId"]);
+}

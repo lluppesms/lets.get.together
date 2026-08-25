@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build">
+  <Sdk Name="Microsoft.Build.Sql" Version="2.0.0" />
+  <PropertyGroup>
+    <Name>sql.database</Name>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.SqlAzureV12DatabaseSchemaProvider</DSP>
+    <ModelCollation>1033,CI</ModelCollation>
+    <EnableDefaultSqlItems>False</EnableDefaultSqlItems>
+    <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
+    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <ProjectGuid>{8b3e4f01-6a8c-4d2e-9f3a-1c5d7e8f9a0b}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <PreDeploy Include="Dad\Pre.Deployment.sql" />
+    <PostDeploy Include="Dad\Post.Deployment.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Schemas\" />
+    <Folder Include="Dad\" />
+    <Folder Include="Dad\Stored Procedures" />
+    <Folder Include="Dad\Tables" />
+    <Folder Include="Dad\Views" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="Schemas\Dad.sql" />
+    <Build Include="Dad\Stored Procedures\usp_Get_Random_Joke.sql" />
+    <Build Include="Dad\Stored Procedures\usp_Joke_Import.sql" />
+    <Build Include="Dad\Stored Procedures\usp_Joke_Reseed_Identities.sql" />
+    <Build Include="Dad\Stored Procedures\usp_Joke_Search.sql" />
+    <Build Include="Dad\Stored Procedures\usp_Joke_Update_ImageTxt.sql" />
+    <Build Include="Dad\Tables\Joke.sql" />
+    <Build Include="Dad\Tables\JokeCategory.sql" />
+    <Build Include="Dad\Tables\JokeJokeCategory.sql" />
+    <Build Include="Dad\Tables\JokeRating.sql" />
+    <Build Include="Dad\Views\vw_Jokes.sql" />
+  </ItemGroup>
+</Project>

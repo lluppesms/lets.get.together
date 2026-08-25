@@ -1,0 +1,16 @@
+﻿
+<NavLink class="nav-tab-top" href="" Match="NavLinkMatch.All">
+  <MudIcon Icon="@Icons.Material.Filled.Home" Class="WhiteIcon" Style="padding-bottom: 6px;" /> <span class="nav-item-text">Home</span>
+</NavLink>
+<NavLink class="nav-tab-top" href="Search">
+  <MudIcon Icon="@Icons.Material.Filled.Search" Class="WhiteIcon" Style="padding-bottom: 6px;" /> <span class="nav-item-text">Search</span>
+</NavLink>
+<NavLink class="nav-tab-top" href="About">
+  <MudIcon Icon="@Icons.Material.Filled.Info" Class="WhiteIcon" Style="padding-bottom: 6px;" /> <span class="nav-item-text">About</span>
+</NavLink>
+<ThemeSwitcher />
+<AuthorizeView Roles="Admin">
+  <NavLink class="nav-tab-top" href="Admin">
+    <MudIcon Icon="@Icons.Material.Filled.Key" Class="WhiteIcon" Style="padding-bottom: 6px;" /> <span class="nav-item-text">Admin</span>
+  </NavLink>
+</AuthorizeView>

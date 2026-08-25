@@ -1,0 +1,130 @@
+.joke-wrapper {
+    margin: 1.5rem 0;
+    animation: fadeInCard 0.5s ease-out;
+}
+
+.JokeCard {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(175deg, rgba(255, 255, 255, 0.72), rgba(228, 245, 248, 0.82));
+    border: 1px solid var(--surface-border-light);
+    box-shadow: var(--shadow-md);
+    color: var(--text-primary-light);
+    transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.22, 1), box-shadow 0.28s cubic-bezier(0.2, 0.9, 0.22, 1);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+.JokeCard::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 -55%;
+    width: 38%;
+    background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    transform: skewX(-18deg);
+    transition: left 0.55s cubic-bezier(0.2, 0.9, 0.22, 1);
+    pointer-events: none;
+}
+
+.JokeCard:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.JokeCard:hover::after {
+    left: 120%;
+}
+
+body[data-bs-theme='dark'] .JokeCard,
+.theme-dark .JokeCard {
+    background: linear-gradient(180deg, rgba(10, 25, 48, 0.96), rgba(8, 17, 31, 0.84)), var(--card-bg-dark);
+    border: 1px solid var(--surface-border-dark);
+    color: var(--text-primary-dark);
+    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.5);
+}
+
+.JokeCategory {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.9rem;
+    margin-bottom: 1rem;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    color: white;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    font-family: 'IBM Plex Mono', 'Courier New', Courier, monospace;
+    text-transform: uppercase;
+}
+
+.JokeText {
+    color: inherit;
+}
+
+body[data-bs-theme='dark'] .JokeText,
+.theme-dark .JokeText {
+    color: var(--text-primary-dark);
+}
+
+@keyframes fadeInCard {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.joke-attribution {
+    font-style: normal;
+    color: var(--text-secondary-light);
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+body[data-bs-theme='dark'] .joke-attribution,
+.theme-dark .joke-attribution {
+    color: var(--text-secondary-dark);
+}
+
+/* Positioned within .JokeCard which already has position: relative */
+.joke-edit-link {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(0, 183, 201, 0.15);
+    color: var(--accent-color-strong);
+    text-decoration: none;
+    opacity: 0.65;
+    transition: opacity 0.2s ease, background 0.2s ease;
+    border: 1px solid rgba(0, 137, 199, 0.32);
+    line-height: 1.4;
+    z-index: 1;
+}
+
+.joke-edit-link:hover {
+    opacity: 1;
+    background: rgba(0, 183, 201, 0.28);
+    color: var(--accent-color-strong);
+    text-decoration: none;
+}
+
+body[data-bs-theme='dark'] .joke-edit-link,
+.theme-dark .joke-edit-link {
+    background: rgba(255, 209, 102, 0.16);
+    color: var(--highlight-color);
+    border-color: rgba(255, 209, 102, 0.32);
+}
+
+body[data-bs-theme='dark'] .joke-edit-link:hover,
+.theme-dark .joke-edit-link:hover {
+    background: rgba(255, 209, 102, 0.26);
+    color: var(--highlight-color);
+}

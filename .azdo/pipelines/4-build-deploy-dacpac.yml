@@ -1,0 +1,70 @@
+# ------------------------------------------------------------------------------------------------------------------------
+# Pipeline to build and deploy Database Objects Only to existing resources
+# See readme file for info about variable group "SQLDeployDemo"
+# ------------------------------------------------------------------------------------------------------------------------
+name: $(date:yyyy).$(date:MM).$(date:dd)$(rev:.r) ${{ parameters.deployToEnvironment }}
+pool:
+  vmImage: windows-latest # dacpac restore only runs on Windows...
+
+# ----------------------------------------------------------------------------------------------------
+trigger:
+  # this repo is set so that nothing is run automatically...
+  - none
+  # batch: true
+  # branches:
+  #   include:
+  #     - main
+  # paths:
+  #   include:
+  #     - 'src\sql.database/*'
+  #   exclude: 
+  #     - '**/*.yml'
+  #     - '**/*.yaml'
+  #     - '**/*.bicep'
+  #     - '**/*.md'
+
+# ----------------------------------------------------------------------------------------------------
+parameters:
+  - name: deployToEnvironment
+    displayName: Deploy To
+    type: string
+    values:
+      - DEV
+      - QA
+      - PROD
+      - DEV-QA-PROD
+    default: DEV
+  - name: loginAccountType
+    displayName: Login Type
+    type: string
+    values:
+      - SVC_PRINCIPAL
+      - LOCAL_SQL
+    default: SVC_PRINCIPAL
+
+# ----------------------------------------------------------------------------------------------------
+variables:
+  - group: Dadabase.Demo
+  - template: vars/var-common.yml
+  - template: vars/var-service-connections.yml
+
+# ----------------------------------------------------------------------------------------------------
+stages:
+- ${{ if ne(parameters.deployToEnvironment, 'DEV-QA-PROD') }}:
+  - template: stages/dacpac-deploy-stages.yml
+    parameters:
+      environments: ['DEV']
+      singleEnvironment: 'true'
+      appFolderName: $(sqlAppFolderName)
+      appSolutionName: $(sqlAppSolutionName)
+      appProjectName: $(sqlAppProjectName)
+      loginAccountType: ${{ parameters.loginAccountType }}
+
+- ${{ if eq(parameters.deployToEnvironment, 'DEV-QA-PROD') }}:
+  - template: stages/dacpac-deploy-stages.yml
+    parameters:
+      environments: ['DEV','QA','PROD']
+      appFolderName: $(sqlAppFolderName)
+      appSolutionName: $(sqlAppSolutionName)
+      appProjectName: $(sqlAppProjectName)
+      loginAccountType: ${{ parameters.loginAccountType }}

@@ -1,0 +1,41 @@
+# ------------------------------------------------------------------------------------------------------------------------
+# Pipeline to Run Dependabot and create PRs for Dependency Updates in Azure DevOps Repos
+# ------------------------------------------------------------------------------------------------------------------------
+# Task Run:
+#   Check out this extension:
+#     Blog: https://rios.engineer/automate-net-dependency-management-in-azure-devops-with-githubs-dependabot/
+#     Extension Home: https://github.com/mburumaxwell/paklo
+#     Configuration Options: https://www.paklo.app/docs/extensions/azure
+# ------------------------------------------------------------------------------------------------------------------------
+name: $(date:yyyy).$(date:MM).$(date:dd)$(rev:.r)
+
+schedules:
+- cron: '0 3 * * 3'
+  displayName: Scan Every Wednesday
+  branches:
+    include:
+    - main
+  batch: true
+
+pool:
+  vmImage: 'ubuntu-latest' # this requires macos or ubuntu (windows is not supported)
+
+variables:
+  System.Secrets: true # this variable makes secrets protected in the logs
+
+stages:
+- stage: RunDependabotStage
+  displayName: Dependabot
+  jobs:
+  - job: DependabotJob
+    displayName: Run Dependabot
+    steps:
+    - task: dependabot@2
+      displayName: Run Dependabot Task
+      inputs:
+        mergeStrategy: 'squash'           # Merge strategy: squash, rebase, merge
+        # dryRun: true                    # Test logic without creating/updating PRs (default false)
+        # setAutoComplete: true           # Enable auto-complete on created PRs (default false)
+        # autoApprove: true               # Automatically approve created PRs (default false)
+        # targetProjectName: 'myProject'  # Target project (for multi-project pipelines)
+        # targetRepositoryName: 'myRepo'  # Target repository (for multi-repo pipelines)

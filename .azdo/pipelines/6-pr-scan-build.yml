@@ -1,0 +1,30 @@
+# ----------------------------------------------------------------------------------------------------
+# Pipeline to scan/build an app upon Pull Request
+# ----------------------------------------------------------------------------------------------------
+name: $(date:yyyy).$(date:MM).$(date:dd)$(rev:.r)
+pool:
+  vmImage: ubuntu-latest
+
+# ----------------------------------------------------------------------------------------------------
+# FYI -> Set a required branch policy to run this on every check to main 
+# ----------------------------------------------------------------------------------------------------
+trigger:
+  - none
+# pr:
+# - main
+
+# ----------------------------------------------------------------------------------------------------
+variables:
+  - group: Dadabase.Demo
+  - template: vars/var-service-connections.yml
+
+# ----------------------------------------------------------------------------------------------------
+stages:
+- template: stages/scan-code-stages.yml
+  parameters:
+    runMSDevSecOpsScan: true
+    runGHASScan: false
+
+- template: stages/webapp-build-stages.yml
+  parameters:
+    runUnitTests: true

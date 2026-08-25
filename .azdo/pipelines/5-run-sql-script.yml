@@ -1,0 +1,95 @@
+# ------------------------------------------------------------------------------------------------------------------------
+# Pipeline to run one sql file against a database
+# See readme file for info about variable group "SQLDeployDemo"
+# ------------------------------------------------------------------------------------------------------------------------
+name: $(date:yyyy).$(date:MM).$(date:dd)$(rev:.r) ${{ parameters.deployToEnvironment }}
+pool:
+  vmImage: windows-latest # dacpac restore only runs on Windows...
+
+# ----------------------------------------------------------------------------------------------------
+trigger:
+  # since this repo has both AzDO and GHA pipelines, nothing is run automatically...
+  - none
+  # batch: true
+  # branches:
+  #   include:
+  #     - main
+  # paths:
+  #   include:
+  #     - 'src\sql.database/*'
+  #   exclude: 
+  #     - '**/*.yml'
+  #     - '**/*.yaml'
+  #     - '**/*.bicep'
+  #     - '**/*.md'
+
+# ----------------------------------------------------------------------------------------------------
+parameters:
+  - name: deployToEnvironment
+    displayName: Deploy To
+    type: string
+    values:
+      - DEV
+      - QA
+      - PROD
+      - DEV-QA-PROD
+    default: DEV
+  - name: loginAccountType
+    displayName: Login Type
+    type: string
+    values:
+      - SVC_PRINCIPAL
+      - LOCAL_SQL
+    default: SVC_PRINCIPAL
+  - name: scriptName
+    displayName: Action
+    type: string
+    default: 'InsertDefaultData.sql'
+    values:
+      - 'InsertDefaultData.sql'
+      - 'Patch-20260101.sql'
+      - 'Patch-20260102.sql'
+      - 'Patch-20260103.sql'
+      - 'DBCOPY'
+  - name: databaseName
+    displayName: Starting Database
+    type: string
+    default: 'DADABASE'
+  - name: databaseCopyName
+    displayName: Action DBCopy - Copy Database To
+    type: string
+    default: 'DADABASEV001'
+  - name: resourceGroupName
+    displayName: Action DBCopy - Resource Group Name
+    type: string
+    default: 'rg-dadabase'
+
+# ----------------------------------------------------------------------------------------------------
+variables:
+  - group: Dadabase.Demo
+  - template: vars/var-common.yml
+  - template: vars/var-service-connections.yml
+
+# ----------------------------------------------------------------------------------------------------
+stages:
+- ${{ if ne(parameters.deployToEnvironment, 'DEV-QA-PROD') }}:
+  - template: stages/run-sql-stages.yml
+    parameters:
+      environments: ['DEV']
+      sqlFolderName: 'src\sql.database\Patch\'
+      sqlFileName: ${{ parameters.scriptName }}
+      runInDatabase: ${{ parameters.databaseName }}
+      loginAccountType: ${{ parameters.loginAccountType }}
+      resourceGroupName: ${{ parameters.resourceGroupName }}
+      databaseCopyName: ${{ parameters.databaseCopyName }}
+
+- ${{ if eq(parameters.deployToEnvironment, 'DEV-QA-PROD') }}:
+  - template: stages/run-sql-stages.yml
+    parameters:
+      environments: ['DEV','QA','PROD']
+      sqlFolderName: 'src\sql.database\Patch\'
+      sqlFileName: ${{ parameters.scriptName }}
+      runInDatabase: ${{ parameters.databaseName }}
+      loginAccountType: ${{ parameters.loginAccountType }}
+      resourceGroupName: ${{ parameters.resourceGroupName }}
+      databaseCopyName: ${{ parameters.databaseCopyName }}

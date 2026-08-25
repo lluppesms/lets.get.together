@@ -1,0 +1,246 @@
+using Azure.Identity;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
+using DadABase.Web.Models.Application;
+using DadABase.Data;
+using DadABase.Data.Models;
+using DadABase.Data.Repositories;
+using DadABase.Web.Repositories;
+using Microsoft.OpenApi;
+using DadABase.Web.Helpers;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// ----------------------------------------------------------------------------------------------------
+// Add services to the container.
+// ----------------------------------------------------------------------------------------------------
+// ----- Get Application Settings into objects
+var jsonSettingsFile = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "applicationSettings.json");
+builder.Configuration
+  .AddJsonFile(jsonSettingsFile)
+  .AddEnvironmentVariables()
+  .AddUserSecrets(System.Reflection.Assembly.GetExecutingAssembly(), true);
+var appSettings = builder.Configuration.GetSection("AppSettings");
+builder.Services.Configure<AppSettings>(appSettings);
+var settings = appSettings.Get<AppSettings>();
+
+// set the application title from the app settings
+DadABase.Data.Constants.Initialize(settings);
+
+// Add Azure Key Vault if configured
+var keyVaultName = builder.Configuration["KeyVaultName"];
+if (!string.IsNullOrEmpty(keyVaultName))
+{
+    var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
+    builder.Configuration.AddAzureKeyVault(keyVaultUri, Utilities.GetCredentials());
+}
+
+// Register DefaultAzureCredential for managed identity authentication
+builder.Services.AddSingleton<DefaultAzureCredential>(provider =>
+{
+    var creds = new DefaultAzureCredential();
+    // For some local development scenarios, you may need to specify the AD Tenant to make the credentials work.
+    // This is useful when developing with Visual Studio and your account has access to multiple tenants.
+    // NOTE: When VisualStudioTenantId is set, managed identity and environment credentials are excluded,
+    // so this configuration should ONLY be used for local development, never in Azure environments.
+    var visualStudioTenantId = builder.Configuration["VisualStudioTenantId"];
+    if (!string.IsNullOrEmpty(visualStudioTenantId))
+    {
+        Console.WriteLine($"[DIAGNOSTIC] Overwriting tenant for local development credentials. TenantId: {visualStudioTenantId}");
+        creds = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+        {
+            ExcludeEnvironmentCredential = true,
+            ExcludeManagedIdentityCredential = true,
+            TenantId = visualStudioTenantId
+        });
+    }
+    else
+    {
+        Console.WriteLine("[DIAGNOSTIC] VisualStudioTenantId not configured - using DefaultAzureCredential with full credential chain (including Managed Identity)");
+    }
+    return creds;
+});
+
+// Add telemetry
+if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
+{
+    builder.Services.AddOpenTelemetry().UseAzureMonitor();
+}
+builder.Services.AddLogging(builder =>
+{
+    builder.ClearProviders();
+    builder.AddConsole();
+    builder.AddFilter("Microsoft.AspNetCore.Authorization", LogLevel.Warning);
+});
+
+builder.Services.AddSingleton(builder.Configuration);
+builder.Services.AddSingleton<AppSettings>(settings);
+
+// ----- Configure Database Context and Repositories -----------------------------------------------------------------
+var configuredDataSource = appSettings["DataSource"];
+var connectionString = appSettings["DefaultConnection"];
+var useJsonDataSource = string.Equals(configuredDataSource, "JSON", StringComparison.OrdinalIgnoreCase);
+var useSqlDataSource = string.Equals(configuredDataSource, "SQL", StringComparison.OrdinalIgnoreCase)
+    || string.Equals(configuredDataSource, "SQLDB", StringComparison.OrdinalIgnoreCase)
+    || string.Equals(configuredDataSource, "DATABASE", StringComparison.OrdinalIgnoreCase);
+
+if (useSqlDataSource && !string.IsNullOrWhiteSpace(connectionString))
+{
+    Console.WriteLine("Using SQL Database for Joke Source (DataSource=SQL)...");
+    // Use SQL Server database for joke storage
+    builder.Services.AddDbContext<DadABaseDbContext>(options => options.UseSqlServer(connectionString));
+    builder.Services.AddScoped<IJokeRepository, JokeSQLRepository>();
+
+    // Add Identity DbContext (for authentication) - always uses database if connection string exists
+    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+}
+else
+{
+    if (useSqlDataSource && string.IsNullOrWhiteSpace(connectionString))
+    {
+        Console.WriteLine("DataSource=SQL was configured, but DefaultConnection is empty. Falling back to JSON file source.");
+    }
+    else if (!useJsonDataSource && !useSqlDataSource)
+    {
+        Console.WriteLine($"Unknown DataSource '{configuredDataSource}'. Falling back to JSON file source.");
+    }
+    else
+    {
+        Console.WriteLine("Using JSON File for Joke Source (DataSource=JSON)...");
+    }
+
+    // Fallback to JSON file-based joke storage
+    var jsonFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "Data/Jokes.json");
+    builder.Services.AddSingleton<IJokeRepository>(sp => new JokeJsonRepository(jsonFilePath));
+}
+
+builder.Services.AddAiServices(builder.Configuration);
+builder.Services.AddSingleton<IAIHelper, AIHelper>();
+builder.Services.AddSingleton<IJokeImageQueue, JokeImageQueue>();
+builder.Services.AddHostedService<JokeImageQueueService>();
+builder.Services.AddScoped<IBuildInfoService, BuildInfoService>();
+builder.Services.AddScoped<DadABase.Web.Repositories.ThemeService>();
+
+// ----- Configure Authentication ---------------------------------------------------------------------
+var authSettings = builder.Configuration.GetSection("AzureAD");
+var enableAuth = !string.IsNullOrEmpty(authSettings["TenantId"]);
+
+if (enableAuth)
+{
+    // ----- Configure Authentication ---------------------------------------------------------------------
+    builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+      .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAD"));
+    builder.Services.AddControllersWithViews()
+      .AddMicrosoftIdentityUI();
+    // ----- Configure Authorization ----------------------------------------------------------------------
+    // Note: No FallbackPolicy is set, so pages are accessible anonymously by default.
+    // Use [Authorize] attribute on pages/components that require authentication.
+    builder.Services.AddAuthorization();
+    // Add isAdmin claim and admin role membership attribute
+    builder.Services.AddTransient<IClaimsTransformation, MyClaimsTransformation>();
+}
+
+// ----- Configure Context Accessor -------------------------------------------------------------------
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<HttpContextAccessor>();
+
+//// ---- Add third party component startups ------------------------------------------------------------
+builder.Services.AddMudServices();
+builder.Services.AddSweetAlert2(options =>
+{
+    options.Theme = SweetAlertTheme.Default;
+});
+builder.Services.AddBlazoredLocalStorage();
+
+// ----------------------------------------------------------------------------------------------------
+// Configure application
+// ----------------------------------------------------------------------------------------------------
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor()
+    .AddMicrosoftIdentityConsentHandler();
+// you can use this option to allow larger amounts of data to go through your signalrHub and pages and components
+//     builder.Services.AddServerSideBlazor().AddHubOptions(
+//       options => { options.MaximumReceiveMessageSize = 500000; });
+
+// ----- Configure APIs -------------------------------------------------------------------
+
+builder.Services.AddControllers();
+
+//// If using Swagger, configure the API versioning properties of the project.
+//builder.Services.AddApiVersioningConfigured();
+
+// Add a Swagger generator and Automatic Request and Response annotations:
+if (settings.EnableSwagger)
+{
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.DocumentFilter<CustomSwaggerFilter>();
+        options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+        // See https://github.com/domaindrivendev/Swashbuckle.AspNetCore#include-descriptions-from-xml-comments
+        var documentationPath = Path.Combine(AppContext.BaseDirectory, "DadABase.Web.xml");
+        options.IncludeXmlComments(documentationPath);
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Version = "v1",
+            Title = settings.AppTitle, // "The Dad-A-Base",
+            Description = settings.AppDescription, // "An ASP.NET Core Web API for storing Dad Jokes",
+            TermsOfService = new Uri("http://luppes.com/privacy"),
+            License = new OpenApiLicense
+            {
+                Name = "License",
+                Url = new Uri("http://luppes.com/license")
+            }
+        });
+    });
+    // apply a filter to remove things like the auto-generated MicrosoftIdentity APIs
+    builder.Services.AddSwaggerGen(gen =>
+    {
+    });
+}
+
+// ----------------------------------------------------------------------------------------------------
+// Start up application
+// ----------------------------------------------------------------------------------------------------
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+if (settings.EnableSwagger)
+{
+    // Enable middleware to serve the generated OpenAPI definition as JSON files.
+    app.UseSwagger();
+    // Navigate to: https://localhost:<port>/swagger/v1/swagger.json
+    app.UseSwaggerUI();
+}
+
+// required if you want to use html, css, or image files...
+app.UseStaticFiles();
+// if (!app.Environment.IsDevelopment())
+// {
+app.UseHttpsRedirection();
+// }
+
+// routing matches HTTP request and dispatches them to proper endpoings
+app.UseRouting();
+
+if (enableAuth)
+{
+    app.UseAuthentication();
+    app.UseAuthorization();
+}
+
+// Set invariant culture to prevent culture-related exceptions during server-side rendering
+var cultureInfo = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+System.Globalization.CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
+app.MapControllers();
+app.MapBlazorHub();
+app.MapFallbackToPage("/_Host");
+
+app.Run();

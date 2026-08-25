@@ -1,0 +1,45 @@
+@if (myJoke != null)
+{
+    <div class="joke-wrapper">
+        <div class="JokeCard">
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <a href="/jokeeditor?jokeId=@myJoke.JokeId" class="joke-edit-link" title="Edit this joke">Edit</a>
+                </Authorized>
+            </AuthorizeView>
+            <div class="JokeCategory">
+                @myJoke.Categories
+            </div>
+            <div class="JokeText">
+                @((MarkupString)myFullText)
+            </div>
+        </div>
+    </div>
+        @*
+        <AuthorizeView Roles="Admin">
+            @if (!showJokeEditor)
+            {
+                <button @onclick="ShowJokeEditor" class="EditButton"><i class="fa fa-edit" /></button>
+            }
+        </AuthorizeView>
+        <div class="JokeText">
+             @if (showJokeEditor)
+            {
+                <JokeEditComponent JokeToEdit="@editJoke" OnSave="JokeEditorSave" OnCancel="JokeEditorCancel" />
+            }
+            else {
+                @((MarkupString)myFullText)
+            }
+            <br />
+        </div>
+   </div>
+        *@
+   @*
+    @if (supportsRatings && !string.IsNullOrEmpty(myFullText))
+    {
+        <div>
+            <MudRating @bind-SelectedValue="@displayRatingValue" MaxValue="5" Color="Color.Primary" />
+        </div>
+    }
+    *@
+}

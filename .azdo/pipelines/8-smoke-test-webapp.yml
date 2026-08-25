@@ -1,0 +1,77 @@
+# ------------------------------------------------------------------------------------------------------------------------
+# Pipeline to run a UI Smoke Test
+# ------------------------------------------------------------------------------------------------------------------------
+name: $(date:yyyy).$(date:MM).$(date:dd)$(rev:.r) ${{ parameters.deployToEnvironment }}
+pool:
+  vmImage: ubuntu-latest
+
+# ------------------------------------------------------------------------------------------------------------------------
+trigger:
+  - none
+
+# schedules:
+# - cron: '0 12 * * 7'
+#   displayName: Scan Every Saturday
+#   branches:
+#     include:
+#     - main
+
+# ----------------------------------------------------------------------------------------------------
+parameters:
+  - name: environmentToTest
+    displayName: Environment to Test
+    type: string
+    values:
+      - DEV
+      - QA
+      - PROD
+    default: DEV
+  - name: testsToRun
+    displayName: Tests to Run
+    type: string
+    values:
+      - API
+      - UI
+      - BASIC
+      - ALL
+    default: ALL
+
+# ----------------------------------------------------------------------------------------------------
+variables:
+  - group: Dadabase.Demo
+  - template: vars/var-common.yml
+
+# ----------------------------------------------------------------------------------------------------
+stages:
+- ${{ if or(eq(parameters.testsToRun, 'BASIC'), eq(parameters.testsToRun, 'ALL')) }}:
+  - stage: BasicTestWebApp
+    displayName: Basic Test ${{ parameters.environmentToTest }}
+    jobs:
+    - template: jobs/playwright-job.yml
+      parameters:
+        environment: ${{ parameters.environmentToTest }}
+        testType: ${{ variables.playwrightBasicTestType }}
+        testPath: ${{ variables.playwrightBasicTestPath }}
+        debug: true
+
+- ${{ if or(eq(parameters.testsToRun, 'UI'), eq(parameters.testsToRun, 'ALL')) }}:
+  - stage: UITestWebApp
+    displayName: UI Test ${{ parameters.environmentToTest }}
+    jobs:
+    - template: jobs/playwright-job.yml
+      parameters:
+        environment: ${{ parameters.environmentToTest }}
+        testType: ${{ variables.playwrightUITestType }}
+        testPath: ${{ variables.playwrightUITestPath }}
+        debug: true
+
+- ${{ if or(eq(parameters.testsToRun, 'API'), eq(parameters.testsToRun, 'ALL')) }}:
+  - stage: APITestWebApp
+    displayName: API Test ${{ parameters.environmentToTest }}
+    jobs:
+    - template: jobs/playwright-job.yml
+      parameters:
+        environment: ${{ parameters.environmentToTest }}
+        testType: ${{ variables.playwrightAPITestType }}
+        testPath: ${{ variables.playwrightAPITestPath }}
+        debug: true
