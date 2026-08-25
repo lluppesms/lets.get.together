@@ -10,6 +10,10 @@
 
 The shared data project now includes the locked Event recurrence model (`IsRecurring`, `RsvpMode`, and `RecurrenceRule`) and the SQL database project includes the Get Together tables under the `Dad` schema. Invitation-code listing preserves the full circle audit trail, while redemption continues to require an active circle member and rejects duplicate active membership.
 
+### Backend Phase 2 update (2026-08-25)
+
+Circle repositories now support active-member listing, active-only rosters, add/reactivate, and remove operations (including RSVP cleanup). Invitation generation is available to any active member without a hard cap and is logged; circle invite listings retain all statuses and revocation remains active-member guarded.
+
 ### Squad team
 
 The repository uses a Firefly-cast Squad team for orchestration. The roster and routing authority are `.squad/team.md` and `.squad/routing.md`; agent charters live under `.squad/agents/`. `prd.md` is the current product requirements source and remains pending owner approval.
@@ -60,7 +64,7 @@ The normal request path is:
 5. Optional AI helpers call Azure OpenAI / Microsoft Agent or Copilot SDK integrations and can use Blob Storage for generated images.
 6. Optional OpenTelemetry/Azure Monitor configuration emits application telemetry.
 
-Phase 0 starter product surfaces now include placeholder Blazor pages at `/circles`, `/events`, and `/calendar`, with corresponding top navigation links in `src/web/Website/Shared/NavMenu.razor`.
+Phase 2 circle management is implemented at `src/web/Website/Pages/Circles.razor` with scoped responsive styling in `Circles.razor.css`. The authenticated page supports `/circles` and `/circles/{CircleId:int}`, circle switching/detail/member roster, member-editable settings, leave confirmation, and invite generation/history/revocation with locally derived active/consumed/expired/revoked status. It resolves the persisted app user from the authenticated external subject before every circle-scoped repository call and shows an unavailable state when SQL-only repositories are not registered.
 
 Phase 1 authentication UI surfaces now include `/login`, `/signup`, and `/signup-callback` under `src/web/Website/Pages/`. The shared `LoginDisplay` links anonymous users to `/login`; Microsoft Entra uses the existing Microsoft Identity UI when `AzureAD:TenantId` is configured, while Google and Facebook are displayed as pending providers until backend OAuth registration exists. Signup currently validates invitation-code shape and carries the code to the callback route; server-side validation and redemption remain a contract boundary.
 
@@ -232,6 +236,8 @@ dotnet test src/function/DadABase.Net10.Function.sln
 The local config currently targets the deployed application URL by default; inspect the selected config before assuming a local server is used. `package.json` currently declares Playwright dependencies but does not define named `test:*` scripts, so use `npx playwright test` with the appropriate config or the repository's pipeline commands. Install browsers with `npx playwright install` when needed.
 
 `dadabase-playwright-testing` under `.github/skills/` contains project-specific testing guidance and should be consulted for anonymous homepage, category, and search smoke work.
+
+Phase 2 repository access tests in `src/web/Tests/RepositoryTests/GetTogetherAccess_Tests.cs` cover multi-circle listing, active-member rosters, circle privacy guards, invitation lifecycle/statuses, and member leave behavior. No authenticated circle Playwright fixture exists yet.
 
 ## 8. GitHub Actions
 

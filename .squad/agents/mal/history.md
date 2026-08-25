@@ -54,4 +54,10 @@ Converted the eight locked team decisions into a file-level Phase 1 handoff on `
 
 Scribe recorded the Phase 1 handoff outcome. Kaylee reported backend contract gaps, River reported missing signup/browser surfaces and provider-aware identity seams, and Wash reported that provider deployment wiring is blocked until runtime auth registration exists. Simon's requested blocker inbox record was absent.
 
+### 2026-08-25 — Phase 2 Execution Handoff
+
+Locked the Phase 2 circles and membership boundary to the existing repository contracts and DadABase namespaces. Any active member may generate uncapped invitation codes, status visibility is based on existing invitation fields, and `CircleMembership.Role` remains a stored no-op; the focused xUnit repository tests remain the privacy backstop where an authenticated SQL-backed Playwright fixture is unavailable.
+
+📌 Team update (2026-08-25T21-08-16Z): Kaylee's Phase 2 circles UI consumes the existing circle, invitation, and user repository contracts, passes persisted user IDs for circle-scoped calls, and exposes an accessible unavailable state when SQL-only registrations are absent.
+
 

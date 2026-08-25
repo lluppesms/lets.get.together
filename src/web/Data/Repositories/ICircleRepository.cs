@@ -38,6 +38,12 @@ public interface ICircleRepository
     Task<Circle> CreateCircleAsync(Circle circle, int creatorUserId);
 
     /// <summary>
+    /// Adds a user to the circle, or reactivates their previous membership.
+    /// The requesting user must be an active member.
+    /// </summary>
+    Task<CircleMembership> AddMemberAsync(int circleId, int userId, int requestingUserId);
+
+    /// <summary>
     /// Updates circle name/description. Only members may update.
     /// </summary>
     Task UpdateCircleAsync(Circle circle, int requestingUserId);

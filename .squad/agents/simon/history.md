@@ -18,3 +18,9 @@ Squad initialized with Firefly casting on 2026-08-25.
 ### 2026-08-25T20:41:56Z — Cross-agent status
 
 The locked Phase 1 decisions require multi-provider authentication and adding Event recurrence fields now. The requested `simon-phase1-blocker.md` inbox record was absent, so no Simon-specific blocker or validation outcome was recorded beyond the supplied handoff requirements.
+
+### 2026-08-25 — Phase 2 circle repositories
+
+- Completed circle membership operations with active-member authorization, inactive-membership reactivation, active-only roster projections, and RSVP cleanup on removal.
+- Invitation code generation remains uncapped, logs the generator/circle/timestamp, and circle listings preserve every status for active members.
+- Full web tests pass (54) and the website build passes.

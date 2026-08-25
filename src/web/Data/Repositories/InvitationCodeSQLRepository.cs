@@ -6,6 +6,8 @@
 // Invitation Code SQL Repository
 // </summary>
 //-----------------------------------------------------------------------
+using Microsoft.Extensions.Logging;
+
 using DadABase.Data.Models;
 
 namespace DadABase.Data.Repositories;
@@ -13,9 +15,12 @@ namespace DadABase.Data.Repositories;
 /// <summary>
 /// SQL Server implementation of <see cref="IInvitationCodeRepository"/> using EF Core.
 /// </summary>
-public class InvitationCodeSQLRepository(DadABaseDbContext context) : IInvitationCodeRepository
+public class InvitationCodeSQLRepository(
+    DadABaseDbContext context,
+    ILogger<InvitationCodeSQLRepository>? logger = null) : IInvitationCodeRepository
 {
     private readonly DadABaseDbContext _context = context;
+    private readonly ILogger<InvitationCodeSQLRepository>? _logger = logger;
 
     /// <inheritdoc/>
     public async Task<InvitationCode> CreateCodeAsync(int circleId, int createdByUserId, DateTime? expiresUtc = null)
@@ -38,6 +43,12 @@ public class InvitationCodeSQLRepository(DadABaseDbContext context) : IInvitatio
 
         _context.InvitationCodes!.Add(code);
         await _context.SaveChangesAsync();
+        _logger?.LogInformation(
+            "Generated invitation code {InvitationCodeId} for circle {CircleId} by user {UserId} at {CreatedUtc}.",
+            code.InvitationCodeId,
+            circleId,
+            createdByUserId,
+            code.CreatedUtc);
         return code;
     }
 

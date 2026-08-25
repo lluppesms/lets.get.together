@@ -42,6 +42,11 @@
 
 ---
 
+### 2026-08-25: Phase 2 UI Contract — Circle Repositories (Kaylee)
+**By:** Lyle MS Luppes (via Kaylee)
+**What:** The circles UI uses the existing `ICircleRepository`, `IInvitationCodeRepository`, and `IUserRepository` contracts. All circle-scoped calls pass the resolved persisted `UserId`; invite status is derived locally from `RevokedUtc`, redemption fields, and `ExpiresUtc`.
+**Boundary:** These repositories are registered only for SQL-backed startup. The UI resolves them at runtime and presents an accessible unavailable-state alert when they are absent, rather than inventing a JSON implementation or silently assuming a backend contract.
+
 ## Open Questions (Team Input Required)
 
 The following questions from the PRD (§9) and design gaps surfaced during structure setup are unresolved:
