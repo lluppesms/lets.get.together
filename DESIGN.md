@@ -1,6 +1,6 @@
 ---
-name: Dad-A-Base
-description: A playful dad-joke destination and engineering demonstration with a luminous, adaptive interface.
+name: Get Together
+description: A friendly gathering coordinator with a luminous, adaptive interface.
 colors:
   fresh-green: "#2bcf6c"
   fresh-green-deep: "#0d9f4f"
@@ -57,13 +57,13 @@ components:
     padding: "{spacing.card}"
 ---
 
-# Design System: Dad-A-Base
+# Design System: Get Together
 
 ## Overview
 
 **Creative North Star: "The Playful Signal Lab"**
 
-Dad-A-Base pairs a practical joke-finding interface with the visual confidence of a working technical demonstration. The default system is bright and celebratory: Fresh Green and Sky Pulse activate a misty, cyan-washed field while translucent cards keep content legible and grounded. The mood is energetic without becoming a generic enterprise dashboard.
+Get Together pairs a friendly event-coordination interface with the visual confidence of a working technical demonstration. The default system is bright and welcoming: Fresh Green and Sky Pulse activate a misty, cyan-washed field while translucent cards keep content legible and grounded. The mood is energetic without becoming a generic enterprise dashboard.
 
 Display typography is emphatic and friendly; body and utility typography keep searching, filtering, and admin work readable. The system deliberately supports light and dark modes with the same signal palette, while the optional 90s theme is a fully separate celebratory escape hatch rather than a baseline for everyday product surfaces.
 
@@ -100,7 +100,7 @@ The palette reads as a modern signal system: green carries action and freshness,
 **Body Font:** Space Grotesk, with Segoe UI and system fallbacks.
 **Label/Mono Font:** IBM Plex Mono, with Courier fallbacks.
 
-**Character:** The type system is direct and cheerful. Bebas Neue gives public headings an unmistakable, poster-like dad-joke energy; Space Grotesk makes prose and controls practical; IBM Plex Mono identifies navigation, categories, and technical utility language.
+**Character:** The type system is direct and cheerful. Bebas Neue gives public headings an unmistakable, poster-like event energy; Space Grotesk makes prose and controls practical; IBM Plex Mono identifies navigation, categories, and technical utility language.
 
 ### Hierarchy
 - **Display** (400, `clamp(2.4rem, 4.8vw, 4rem)`, 1.02): Uppercase page titles and the primary public moment.

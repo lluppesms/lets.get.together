@@ -32,7 +32,7 @@ assume either `dbo` or the SQL Server default schema.
 
 | Area | Current behavior | Migration effect |
 |------|------------------|------------------|
-| DACPAC project | `src/sql.database/sql.database.sqlproj` models application-owned database objects. | Point project includes at the `Dad` folder, add `Schemas/Dad.sql`, and add a pre-deploy cleanup script. |
+| DACPAC project | `src/database/sql.database.sqlproj` models application-owned database objects. | Point project includes at the `Dad` folder, add `Schemas/Dad.sql`, and add a pre-deploy cleanup script. |
 | SQL tables | Table scripts define `Joke`, `JokeCategory`, `JokeJokeCategory`, and `JokeRating`. | Create tables under `[Dad]`. Drop legacy `[dbo]` tables during the offline cutover and import the export file afterward. |
 | SQL modules | Stored procedures and `vw_Jokes` are created under `[dbo]` and contain unqualified table names. | Drop and recreate modules under `[Dad]`. Explicitly qualify internal references as `[Dad].[...]`. |
 | Seed and patch scripts | `InsertDefaultData.sql`, `InsertDefaultData_v1.sql`, and patch scripts use unqualified or `[dbo]` names. | Qualify all permanent object references as `[Dad].[...]` and update `DBCC CHECKIDENT` names. |
@@ -50,16 +50,16 @@ These objects are owned by the DadABase SQL project and should be moved to the
 | Object type | Object name | Source file |
 |-------------|-------------|-------------|
 | Schema | `Dad` | New SQL project script, such as `Schemas/Dad.sql` |
-| Table | `[Dad].[Joke]` | `src/sql.database/Dad/Tables/Joke.sql` |
-| Table | `[Dad].[JokeCategory]` | `src/sql.database/Dad/Tables/JokeCategory.sql` |
-| Table | `[Dad].[JokeJokeCategory]` | `src/sql.database/Dad/Tables/JokeJokeCategory.sql` |
-| Table | `[Dad].[JokeRating]` | `src/sql.database/Dad/Tables/JokeRating.sql` |
-| View | `[Dad].[vw_Jokes]` | `src/sql.database/Dad/Views/vw_Jokes.sql` |
-| Procedure | `[Dad].[usp_Get_Random_Joke]` | `src/sql.database/Dad/Stored Procedures/usp_Get_Random_Joke.sql` |
-| Procedure | `[Dad].[usp_Joke_Reseed_Identities]` | `src/sql.database/Dad/Stored Procedures/usp_Joke_Reseed_Identities.sql` |
-| Procedure | `[Dad].[usp_Joke_Search]` | `src/sql.database/Dad/Stored Procedures/usp_Joke_Search.sql` |
-| Procedure | `[Dad].[usp_Joke_Import]` | `src/sql.database/Dad/Stored Procedures/usp_Joke_Import.sql` |
-| Procedure | `[Dad].[usp_Joke_Update_ImageTxt]` | `src/sql.database/Dad/Stored Procedures/usp_Joke_Update_ImageTxt.sql` |
+| Table | `[Dad].[Joke]` | `src/database/Dad/Tables/Joke.sql` |
+| Table | `[Dad].[JokeCategory]` | `src/database/Dad/Tables/JokeCategory.sql` |
+| Table | `[Dad].[JokeJokeCategory]` | `src/database/Dad/Tables/JokeJokeCategory.sql` |
+| Table | `[Dad].[JokeRating]` | `src/database/Dad/Tables/JokeRating.sql` |
+| View | `[Dad].[vw_Jokes]` | `src/database/Dad/Views/vw_Jokes.sql` |
+| Procedure | `[Dad].[usp_Get_Random_Joke]` | `src/database/Dad/Stored Procedures/usp_Get_Random_Joke.sql` |
+| Procedure | `[Dad].[usp_Joke_Reseed_Identities]` | `src/database/Dad/Stored Procedures/usp_Joke_Reseed_Identities.sql` |
+| Procedure | `[Dad].[usp_Joke_Search]` | `src/database/Dad/Stored Procedures/usp_Joke_Search.sql` |
+| Procedure | `[Dad].[usp_Joke_Import]` | `src/database/Dad/Stored Procedures/usp_Joke_Import.sql` |
+| Procedure | `[Dad].[usp_Joke_Update_ImageTxt]` | `src/database/Dad/Stored Procedures/usp_Joke_Update_ImageTxt.sql` |
 
 The database project does not currently define ASP.NET Identity tables. The
 `ApplicationDbContext` exists in the web project and uses `IdentityDbContext`, but

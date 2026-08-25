@@ -1,26 +1,26 @@
 ---
-title: Dad-A-Base Architecture Document
-description: Architecture overview for the DadABase demo repository
-author: DadABase maintainers
+title: Get Together Architecture Document
+description: Architecture overview for the Get Together repository
+author: Get Together maintainers
 ms.date: 2026-05-14
 ms.topic: overview
 keywords:
-  - dadabase
+  - get-together
   - architecture
   - azure
   - dotnet
 estimated_reading_time: 10
 ---
 
-## Dad-A-Base Architecture Document
+## Get Together Architecture Document
 
-> **Version:** 1.1 · Generated: 2026-04-06 · Repository: [lluppesms/dadabase.demo](https://github.com/lluppesms/dadabase.demo)
+> **Version:** 1.1 · Generated: 2026-04-06 · Repository: [lluppesms/lets.get.together](https://github.com/lluppesms/lets.get.together)
 
 ---
 
 ## 1. Executive Summary
 
-**Dad-A-Base** is a full-stack demonstration repository that showcases modern .NET 10 development practices, cloud-native architecture on Azure, and end-to-end DevOps automation — all delivered through a dad joke management application.
+**Get Together** is a full-stack application and demonstration repository that showcases modern .NET 10 development practices, cloud-native architecture on Azure, and end-to-end DevOps automation for private circles, events, RSVPs, and calendars.
 
 The repository serves as a reference implementation for:
 - .NET 10 Blazor Server web applications with MudBlazor UI
@@ -37,7 +37,7 @@ The repository serves as a reference implementation for:
 ## 2. Repository Structure
 
 ```
-dadabase.demo/
+lets.get.together/
 ├── src/                         Application source code
 │   ├── web/                     Blazor Web App + Data layer
 │   │   ├── Website/             DadABase.Web (.NET 10 Blazor Server)
@@ -271,7 +271,7 @@ Save() / Delete()  - write operations
 
 | Tool | Description |
 |------|-------------|
-| `GetDadJoke` | Returns a random dad joke |
+| `GetDadJoke` | Returns a random humor item |
 | `GetDadJokesByCategory` | Returns all jokes in a named category |
 | `GetDadJokeCategories` | Returns the list of available categories |
 

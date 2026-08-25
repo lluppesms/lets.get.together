@@ -1,4 +1,4 @@
-# DadABase Deployment - Quick Reference
+# Get Together Deployment - Quick Reference
 
 ## Quick Start Commands
 
@@ -121,7 +121,7 @@ APPLICATIONINSIGHTS_CONNECTION_STRING="..."
 ## Deployment Decision Tree
 
 ```text
-Need to deploy DadABase?
+Need to deploy Get Together?
 │
 ├─ Want simplicity and .NET-native workflow?
 │  └─ Use App Service

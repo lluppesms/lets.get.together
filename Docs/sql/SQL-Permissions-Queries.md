@@ -1,13 +1,13 @@
 ---
 title: SQL Permissions Example Queries
-description: Azure SQL permission inspection and grant examples for DadABase
-author: DadABase maintainers
+description: Azure SQL permission inspection and grant examples for Get Together
+author: Get Together maintainers
 ms.date: 2026-05-14
 ms.topic: reference
 keywords:
     - azure sql
     - permissions
-    - dadabase
+    - get-together
 estimated_reading_time: 4
 ---
 

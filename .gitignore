@@ -383,5 +383,15 @@ src/analyzer/appsettings.development.json
 tests/example.spec.ts
 .copilot-tracking/research/subagents/
 src/web/Website/applicationSettings.development.json
-src/database.web/docker-readme-dev.md
-src/database.web/docker-readme.md
+src/web/docker-readme-dev.md
+src/web/docker-readme.md
+# Squad: ignore runtime state (logs, inbox, sessions)
+# Note: .squad/casting/* is identity and MUST be committed to main, not ignored
+.squad/orchestration-log/
+.squad/log/
+.squad/decisions/inbox/
+.squad/sessions/
+.squad/.scratch/
+.squad/.cache/
+# Squad: SubSquad activation file (local to this machine)
+.squad-workstream

@@ -191,11 +191,11 @@ Same great taste, GitHub flavor:
 
 | Workflow | Badges |
 |----------|--------|
-| Deploy Infrastructure | [![deploy-bicep](https://github.com/lluppesms/dadabase.demo/actions/workflows/1-deploy-bicep.yml/badge.svg)](https://github.com/lluppesms/dadabase.demo/actions/workflows/1-deploy-bicep.yml) |
-| Build & Deploy Web App (App Service) | [![bicep-build-deploy-webapp](https://github.com/lluppesms/dadabase.demo/actions/workflows/2.1-bicep-build-deploy-webapp.yml/badge.svg)](https://github.com/lluppesms/dadabase.demo/actions/workflows/2.1-bicep-build-deploy-webapp.yml) |
-| Build & Deploy Web App (Container App) | [![bicep-build-deploy-containerapp](https://github.com/lluppesms/dadabase.demo/actions/workflows/2.2-bicep-build-deploy-containerapp.yml/badge.svg)](https://github.com/lluppesms/dadabase.demo/actions/workflows/2.2-bicep-build-deploy-containerapp.yml) |
-| Deploy DACPAC | [![build-deploy-dacpac](https://github.com/lluppesms/dadabase.demo/actions/workflows/4-build-deploy-dacpac.yml/badge.svg)](https://github.com/lluppesms/dadabase.demo/actions/workflows/4-build-deploy-dacpac.yml) |
-| Code Scanning | [![scan-code](https://github.com/lluppesms/dadabase.demo/actions/workflows/7-scan-code.yml/badge.svg)](https://github.com/lluppesms/dadabase.demo/actions/workflows/7-scan-code.yml) |
+| Deploy Infrastructure | [![deploy-bicep](https://github.com/lluppesms/lets.get.together/actions/workflows/1-deploy-bicep.yml/badge.svg)](https://github.com/lluppesms/lets.get.together/actions/workflows/1-deploy-bicep.yml) |
+| Build & Deploy Web App (App Service) | [![bicep-build-deploy-webapp](https://github.com/lluppesms/lets.get.together/actions/workflows/2.1-bicep-build-deploy-webapp.yml/badge.svg)](https://github.com/lluppesms/lets.get.together/actions/workflows/2.1-bicep-build-deploy-webapp.yml) |
+| Build & Deploy Web App (Container App) | [![bicep-build-deploy-containerapp](https://github.com/lluppesms/lets.get.together/actions/workflows/2.2-bicep-build-deploy-containerapp.yml/badge.svg)](https://github.com/lluppesms/lets.get.together/actions/workflows/2.2-bicep-build-deploy-containerapp.yml) |
+| Deploy DACPAC | [![build-deploy-dacpac](https://github.com/lluppesms/lets.get.together/actions/workflows/4-build-deploy-dacpac.yml/badge.svg)](https://github.com/lluppesms/lets.get.together/actions/workflows/4-build-deploy-dacpac.yml) |
+| Code Scanning | [![scan-code](https://github.com/lluppesms/lets.get.together/actions/workflows/7-scan-code.yml/badge.svg)](https://github.com/lluppesms/lets.get.together/actions/workflows/7-scan-code.yml) |
 
 ---
 

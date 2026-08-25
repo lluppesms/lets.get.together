@@ -1,14 +1,18 @@
-# Dad-A-Base Project Map
+# Get Together Transition Project Map
 
 > **Status:** Living project document. Update this file whenever the repository's architecture, behavior, configuration, testing, automation, or Copilot customization changes.
 >
 > **Purpose:** Give Copilot a fast, evidence-based map of the repository so routine work can start at the owning project instead of scanning the whole tree.
 >
-> **Last reviewed:** 2026-08-17
+> **Last reviewed:** 2026-08-25
+
+### Squad team
+
+The repository uses a Firefly-cast Squad team for orchestration. The roster and routing authority are `.squad/team.md` and `.squad/routing.md`; agent charters live under `.squad/agents/`. `prd.md` is the current product requirements source and remains pending owner approval.
 
 ## 1. Project Identity
 
-Dad-A-Base is a .NET 10 demonstration and working application for storing, browsing, searching, rating, exporting, and administering dad jokes. It also demonstrates Azure hosting, infrastructure as code, SQL schema delivery, CI/CD, Playwright testing, AI integrations, Azure Functions, command-line tooling, and MCP servers.
+**Get Together** is transitioning from its inherited joke-domain implementation. The codebase remains a .NET 10 demonstration and working application for storing, browsing, searching, rating, exporting, and administering humor content, while preserving existing behavior during phased rebrand work. It also demonstrates Azure hosting, infrastructure as code, SQL schema delivery, CI/CD, Playwright testing, AI integrations, Azure Functions, command-line tooling, and MCP servers.
 
 The public-facing product is the Blazor Server web application. The other projects provide alternate API, data-processing, automation, and agent-integration surfaces around the same joke domain.
 
@@ -27,7 +31,7 @@ Authoritative sources when this document and older prose disagree:
 | Change joke persistence or query behavior | `src/web/Data/Repositories/` and `src/web/Data/` | `IJokeRepository.cs`, `JokeSQLRepository.cs`, `JokeJsonRepository.cs`, `DadABaseDbContext.cs` |
 | Change web REST endpoints | `src/web/Website/API/` | controller base classes, repository interface, Swagger configuration |
 | Change the serverless API | `src/function/Function/` | `src/function/DataLayer/`, `Entities/`, and function tests |
-| Change the database schema | `src/sql.database/` | SQL object files, pre/post deployment scripts, `.github/instructions/sql-database-dacpac-instructions.md` |
+| Change the database schema | `src/database/` | SQL object files, pre/post deployment scripts, `.github/instructions/sql-database-dacpac-instructions.md` |
 | Change Azure resources | `infra/Bicep/main.bicep` and `infra/Bicep/modules/` | `main.bicepparam`, `azure.yaml`, pipeline variable templates |
 | Change GitHub deployment | `.github/workflows/` | reusable `template-*.yml` workflows and `.github/workflows-readme.md` |
 | Change Azure DevOps deployment | `.azdo/pipelines/` | `stages/`, `jobs/`, `steps/`, and `vars/` templates |
@@ -39,7 +43,7 @@ Authoritative sources when this document and older prose disagree:
 
 ### Web application
 
-`src/web/Website/` is an ASP.NET Core / Blazor Server application targeting `net10.0`. `Program.cs` composes configuration and dependency injection, selects the joke data source, registers authentication and UI services, maps controllers, and maps the Blazor hub and fallback host page.
+`src/web/Website/` is an ASP.NET Core / Blazor Server application targeting `net10.0`. `Program.cs` composes configuration and dependency injection, selects the data source, registers authentication and UI services, maps controllers, and maps the Blazor hub and fallback host page.
 
 The normal request path is:
 
@@ -49,6 +53,8 @@ The normal request path is:
 4. The repository implementation reads or writes either JSON or SQL data.
 5. Optional AI helpers call Azure OpenAI / Microsoft Agent or Copilot SDK integrations and can use Blob Storage for generated images.
 6. Optional OpenTelemetry/Azure Monitor configuration emits application telemetry.
+
+Phase 0 starter product surfaces now include placeholder Blazor pages at `/circles`, `/events`, and `/calendar`, with corresponding top navigation links in `src/web/Website/Shared/NavMenu.razor`.
 
 The web app supports anonymous access by default. Entra ID authentication is configured only when `AzureAD:TenantId` is present; individual pages/endpoints can then apply authorization. API key handling is implemented in the web API support code and must be preserved when changing controllers.
 
@@ -94,7 +100,7 @@ src/
   mcp/             Shared, Stdio, and SSE MCP projects; DadJokeMCP.sln
   console/         CLI host; DadJoke.console.sln
   analyzer/        AI/batch analyzer; DadJokeAnalyzer.sln
-  sql.database/    SQL Server Database Project/DACPAC source; sql.database.sln
+  database/        SQL Server Database Project/DACPAC source; sql.database.sln
   Directory.Build.props
 
 infra/
@@ -132,7 +138,7 @@ Build output such as `bin/`, `obj/`, publish folders, and test result folders ma
 | Function API | C#, Azure Functions isolated worker, .NET 10 | `src/function/Function/DadABase.Function.csproj` |
 | Console/analyzer | C#, .NET 10; console uses Spectre.Console; analyzer uses its AI/data packages | `src/console/`, `src/analyzer/` project files |
 | MCP | C#, .NET 10, Model Context Protocol SDK projects | `src/mcp/` project files |
-| Database | T-SQL / SQL Server Database Project / DACPAC | `src/sql.database/` |
+| Database | T-SQL / SQL Server Database Project / DACPAC | `src/database/` |
 | Infrastructure | Azure Bicep | `infra/Bicep/` |
 | Browser tests | TypeScript, Playwright Test | `package.json`, `playwright.config*.ts`, `playwright/` |
 | Automation | YAML, PowerShell, shell/JavaScript support scripts | `.github/workflows/`, `.azdo/pipelines/`, `infra/Bicep/scripts/` |
@@ -184,7 +190,7 @@ dotnet test src/web/dadabase.net10.web.sln
 dotnet test src/function/DadABase.Net10.Function.sln
 ```
 
-`CONTRIBUTING.md` also documents `dotnet test` from `src/web` and full Playwright setup. The exact solution/project command is preferable when narrowing a change.
+`CONTRIBUTING.md` also documents `dotnet test` from the web source folder and full Playwright setup. The exact solution/project command is preferable when narrowing a change.
 
 ### Playwright end-to-end tests
 
@@ -196,7 +202,7 @@ dotnet test src/function/DadABase.Net10.Function.sln
 - `playwright/fixtures/test-fixtures.ts`: typed fixture that injects those page objects.
 - Config variants at the root include `playwright.config.ts`, `playwright.config.local.ts`, `playwright.config.cicd.ts`, `playwright.config.test-service.ts`, and `playwright.config.workspace.ts`.
 
-The local config currently targets the deployed Dadabase URL by default; inspect the selected config before assuming a local server is used. `package.json` currently declares Playwright dependencies but does not define named `test:*` scripts, so use `npx playwright test` with the appropriate config or the repository's pipeline commands. Install browsers with `npx playwright install` when needed.
+The local config currently targets the deployed application URL by default; inspect the selected config before assuming a local server is used. `package.json` currently declares Playwright dependencies but does not define named `test:*` scripts, so use `npx playwright test` with the appropriate config or the repository's pipeline commands. Install browsers with `npx playwright install` when needed.
 
 `dadabase-playwright-testing` under `.github/skills/` contains project-specific testing guidance and should be consulted for anonymous homepage, category, and search smoke work.
 
@@ -234,7 +240,7 @@ The Azure DevOps YAML authoring contracts are `.github/instructions/azure-devops
 
 ## 10. SQL and Data Operations
 
-The SQL database project is `src/sql.database/sql.database.sqlproj`. Schema objects are under `src/sql.database/Dad/`, including tables, views, schemas, and deployment scripts. `Patch/` holds manual or operational scripts. Related explanatory material is in `Docs/sql/`.
+The SQL database project is `src/database/sql.database.sqlproj`. Schema objects are under `src/database/Dad/`, including tables, views, schemas, and deployment scripts. `Patch/` holds manual or operational scripts. Related explanatory material is in `Docs/sql/`.
 
 For schema changes:
 
@@ -293,7 +299,7 @@ For every source, infrastructure, workflow, test, or Copilot-customization chang
 ## 14. Known Caveats and Drift Signals
 
 - `MAP.md` must stay more current than generated architecture exports. `Docs/Application-Architecture.md` contains useful diagrams but has historical claims, including older package versions and an MSTest description that does not match the current xUnit project files.
-- The current web build task path in the workspace context is the valid path: `src/web/Website/DadABase.Web.csproj`. Older notes may mention a nonexistent `src/DadABase.Web/` path; verify task definitions before relying on them.
+- The current web build task path in the workspace context is the valid path: `src/web/Website/DadABase.Web.csproj`. Older notes may mention stale or moved paths; verify task definitions before relying on them.
 - `src/web/Website/applicationSettings.json` is a template and contains placeholder values. Treat all deployment secrets as external configuration.
 - The default Playwright config targets a deployed site and the root `package.json` has no named Playwright test scripts. Inspect config selection and invoke Playwright directly.
 - Data source selection changes behavior substantially. Tests and local runs may use JSON or in-memory data while production uses Azure SQL.

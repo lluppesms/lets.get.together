@@ -1,8 +1,8 @@
-﻿# 🤝 Contributing to Dad-A-Base
+﻿# 🤝 Contributing to Get Together
 
-> *"If your PR doesn't make at least one person groan, is it really worth it?"*
+> *"If your PR makes it easier for friends to get together, it is worth it."*
 
-Thank you for contributing to this monument to dad jokes and DevOps best practices! This guide covers everything you need to get set up and contributing effectively.
+Thank you for contributing to Get Together! This guide covers everything you need to get set up and contribute effectively.
 
 ---
 
@@ -17,8 +17,8 @@ Thank you for contributing to this monument to dad jokes and DevOps best practic
 ### Step 1: Clone and install dependencies
 
 ```bash
-git clone https://github.com/lluppesms/dadabase.demo.git
-cd dadabase.demo
+git clone https://github.com/lluppesms/lets.get.together.git
+cd lets.get.together
 npm install
 ```
 

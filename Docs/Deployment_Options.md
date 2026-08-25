@@ -1,6 +1,6 @@
-# DadABase Web Application - Deployment Guide
+# Get Together Web Application - Deployment Guide
 
-This guide explains the two deployment options for the DadABase web application: **Azure App Service** and **Azure Container Apps**.
+This guide explains the two deployment options for the Get Together web application: **Azure App Service** and **Azure Container Apps**.
 
 ## Table of Contents
 
@@ -15,7 +15,7 @@ This guide explains the two deployment options for the DadABase web application:
 
 ## Overview
 
-The DadABase web application can be deployed using two different Azure hosting options:
+The Get Together web application can be deployed using two different Azure hosting options:
 
 1. **Azure App Service** - Traditional PaaS hosting with code deployment
 2. **Azure Container Apps** - Container-based deployment with advanced scaling
@@ -392,4 +392,4 @@ az containerapp logs show --name $CONTAINER_APP_NAME --resource-group $RESOURCE_
 ---
 
 **Last Updated:** February 2026  
-**Repository:** lluppesms/dadabase.demo
+**Repository:** lluppesms/lets.get.together
