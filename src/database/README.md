@@ -82,6 +82,12 @@ database/
 msbuild GetTogether.Sql.Database.sqlproj /p:Configuration=Release
 ```
 
+or
+
+```bash
+"C:\Program Files\Microsoft Visual Studio\18\Enterprise\MSBuild\Current\Bin\MSBuild.exe" GetTogether.Sql.Database.sqlproj /p:Configuration=Release
+```
+
 ### Using SQL Server Data Tools Build
 
 ```bash
