@@ -1,3 +1,4 @@
+📌 App Service Always-On configuration recorded (2026-08-26T22:10:48Z): Added the completed Wash infra task to the session and orchestration logs, including successful Bicep validation with only pre-existing warnings and no decision required.
 # Project Context
 
 - **Project:** lets.get.together

@@ -17,6 +17,9 @@ param appServicePlanName string
 param appServicePlanResourceGroupName string = resourceGroup().name
 param webAppKind string = 'linux'
 
+@description('Whether the App Service should remain loaded when idle.')
+param alwaysOn bool = false
+
 @description('Custom application settings to merge with the base settings.')
 param customAppSettings object = {}
 
@@ -80,7 +83,7 @@ resource webSiteResource 'Microsoft.Web/sites@2024-11-01' = {
       linuxFxVersion: linuxFxVersion
       minTlsVersion: '1.2'
       ftpsState: 'FtpsOnly'
-      alwaysOn: false
+      alwaysOn: alwaysOn
       remoteDebuggingEnabled: false
       minimumElasticInstanceCount: 1
       appSettings: [

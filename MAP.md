@@ -203,7 +203,7 @@ The function host uses `appsettings.json` if present, environment variables, and
 ### Infrastructure and deployment configuration
 
 - `infra/Bicep/main.bicep` is the main resource composition. It supports `webapp`, `containerapp`, `functionapp`, and `all` deployment types, optional website-only deployments, JSON or SQL app data source, existing-resource reuse, managed identity choices, Key Vault, storage, Application Insights/Log Analytics, Azure SQL, and AI parameters.
-- `infra/Bicep/main.bicepparam` is the shared parameter file used by Azure DevOps workflows; pipeline substitution is expected for environment-specific values.
+- `infra/Bicep/main.bicepparam` is the shared parameter file used by Azure DevOps workflows; pipeline substitution is expected for environment-specific values. Its `#{WEB_APP_ALWAYS_ON}#` token is parsed as a boolean and forwarded through `main.bicep` to the App Service `siteConfig.webAppAlwaysOn` setting; GitHub deployments supply it as the environment-scoped `WEB_APP_ALWAYS_ON` secret.
 - `azure.yaml` declares Bicep as the azd infrastructure provider and the web service at `src/web/Website/` hosted on App Service.
 - `.azdo/pipelines/vars/` contains common, environment, source-location, and service-connection variable templates.
 - GitHub deployment values are documented in `.github/workflows-readme.md` and `.github/CreateGitHubSecrets.md`. Prefer OIDC/federated credentials and environment-scoped secrets.

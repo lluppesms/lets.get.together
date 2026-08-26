@@ -1,3 +1,7 @@
+### 2026-08-26 — App Service Always-On Session Record
+
+- The `alwaysOn` Bicep parameter, `#{ALWAYS_ON}#` bicepparam token, and environment-scoped GitHub secret convention were completed and documented.
+- `az bicep build --file infra/Bicep/main.bicep` succeeded with only pre-existing warnings; no team decision was required.
 # Wash — History
 
 ## Project Context
@@ -58,3 +62,9 @@ The locked decision ledger requires Entra ID, Google, and Facebook in v1. Wash's
   - Updated variable group references across 12 AzDO pipeline YAML files from `Dadabase.Demo` to `GetTogether.Demo` and updated container image name to `gettogether-web`.
   - Updated SBOM generator package parameters to `GetTogether` and repository link to `https://github.com/lluppesms/lets.get.together`.
 - **Verification**: `az bicep build` succeeds (0 errors), `dotnet build src/web/gettogether.web.sln` succeeds (0 errors), and `dotnet test src/web/Tests/GetTogether.Tests.csproj` passes all 74 xUnit tests.
+
+### 2026-08-26 — App Service Always-On Configuration
+
+- Externalized the App Service `siteConfig.alwaysOn` setting through the `alwaysOn` boolean parameters in `infra/Bicep/main.bicep` and `modules/webapp/website.bicep`.
+- Added the `#{ALWAYS_ON}#` token to `main.bicepparam`; GitHub Actions token replacement receives the environment-scoped `ALWAYS_ON` secret without a workflow contract change.
+- Documented the secret setup in `.github/CreateGitHubSecrets.md` and validated `az bicep build --file infra/Bicep/main.bicep` with no errors.

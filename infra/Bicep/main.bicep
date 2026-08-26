@@ -28,6 +28,9 @@ param webSiteSku string = 'B1'
 param webStorageSku string = 'Standard_LRS'
 param webApiKey string = ''
 
+@description('Whether the App Service should remain loaded when idle.')
+param webAppAlwaysOn bool = false
+
 param sqlDatabaseName string = 'gettogether'
 @allowed(['Basic','Standard','Premium','BusinessCritical','GeneralPurpose'])
 param sqlSkuTier string = 'GeneralPurpose'
@@ -248,6 +251,7 @@ module webSiteModule './modules/webapp/website.bicep' = if (deployWebAppEffectiv
     workspaceId: logAnalyticsWorkspaceModule.outputs.id
     appServicePlanName: appServicePlanModule!.outputs.name
     appServicePlanResourceGroupName: appServicePlanModule!.outputs.resourceGroupName
+    alwaysOn: webAppAlwaysOn
     // In a Linux app service, any nested JSON app key like AppSettings:MyKey needs to be 
     // configured in App Service as AppSettings__MyKey for the key name. 
     // In other words, any : should be replaced by __ (double underscore).

@@ -21,6 +21,7 @@ param webApiKey = '#{WEB_API_KEY}#'
 param servicePlanName = '#{EXISTING_SERVICEPLAN_NAME}#'
 param servicePlanResourceGroupName = '#{EXISTING_SERVICEPLAN_RESOURCE_GROUP_NAME}#'
 param webAppKind = 'linux' // 'linux' or 'windows'
+param webAppAlwaysOn = trim(toLower('#{WEB_APP_ALWAYS_ON}#')) == 'true'
 
 param sqlAdminLoginUserId = '#{SQLADMIN_LOGIN_USERID}#'
 param sqlAdminLoginUserSid = '#{SQLADMIN_LOGIN_USERSID}#'
