@@ -66,7 +66,7 @@ gh secret set --env <ENV-NAME> LOGIN_TENANTID -b '<yourTenantId>'
 
 gh variable set --env <ENV-NAME> ADMIN_USER_LIST -b 'user1@domain.com,user2@domain.com'
 gh secret set --env <ENV-NAME> API_KEY -b 'somesecretstring'
-gh secret set --env <ENV-NAME> WEB_APP_ALWAYS_ON -b 'true'
+gh variable set --env <ENV-NAME> WEB_APP_ALWAYS_ON -b 'true'
 
 gh variable set --env <ENV-NAME> OPENAI_IMAGE_ENDPOINT -b https://<your-resource>.openai.azure.com/
 gh secret set --env <ENV-NAME> OPENAI_IMAGE_APIKEY -b <yourKey>
