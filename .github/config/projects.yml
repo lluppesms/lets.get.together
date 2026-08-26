@@ -29,51 +29,11 @@ projects:
     testDirectory: 'src/web/Tests'
     testProjectName: 'GetTogether.Tests'
 
-  # Azure Function App
-  function:
-    shortName: 'func'
-    rootDirectory: 'src/function/Function'
-    projectName: 'GetTogether.Function'
-    testDirectory: 'src/function/Tests'
-    testProjectName: 'GetTogether.Function.Tests'
-
-  # Console Application
-  console:
-    shortName: 'console'
-    rootDirectory: 'src/console'
-    projectName: 'GetTogether.Console'
-    testDirectory: ''
-    testProjectName: ''
-
-  # MCP (Model Context Protocol) Server
-  mcp:
-    shortName: 'mcp'
-    rootDirectory: 'src/mcp/GetTogetherMCP'
-    projectName: 'GetTogetherMCP'
-    testDirectory: ''
-    testProjectName: ''
-
-  # MCP SSE Server
-  mcpsse:
-    shortName: 'mcpsse'
-    rootDirectory: 'src/mcp/GetTogetherMCPSSE'
-    projectName: 'GetTogetherMCPSSE'
-    testDirectory: ''
-    testProjectName: ''
-
-  # GetTogether Analyzer
-  analyzer:
-    shortName: 'analyzer'
-    rootDirectory: 'src/gettogetheranalyzer'
-    projectName: 'GetTogetherAnalyzer'
-    testDirectory: ''
-    testProjectName: ''
-
   # SQL Database Project
   sql:
     shortName: 'sql'
-    rootDirectory: 'src/sql.database'
-    projectName: 'sql.database'
-    solutionName: 'sql.database'
+    rootDirectory: 'src/database'
+    projectName: 'GetTogether.Sql.Database'
+    solutionName: 'GetTogether.Sql.Database'
     testDirectory: ''
     testProjectName: ''
