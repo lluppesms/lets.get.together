@@ -25,3 +25,9 @@ Squad initialized with Firefly casting on 2026-08-25.
 ### 2026-08-25T20:41:56Z — Cross-agent status
 
 The locked decision ledger confirms Entra ID, Google, and Facebook are in v1. Kaylee's inbox contract records that only Entra is currently actionable and that Google/Facebook buttons must remain disabled until backend challenge, callback, and identity-persistence contracts are defined.
+
+### 2026-08-25 - Phase 2 circles UI continuation
+
+- The existing circles page already covered the supported Phase 2 contracts: circle switching/detail, active member roster, settings, leaving, and invite lifecycle history/statuses.
+- Removed the misleading no-op generated-code click handler, added accessible success feedback for settings and invite revocation, and cleared transient detail state when switching circles.
+- No new circle contract gap was found; SQL-only unavailable states remain explicit and accessible.

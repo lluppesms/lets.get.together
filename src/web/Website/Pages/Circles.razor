@@ -28,6 +28,10 @@
 	{
 		<div class="circle-alert circle-alert-error" role="alert">@errorMessage</div>
 	}
+	else if (!string.IsNullOrWhiteSpace(actionMessage))
+	{
+		<div class="circle-alert circle-alert-success" role="status" aria-live="polite">@actionMessage</div>
+	}
 	else if (isLoading)
 	{
 		<div class="circle-status" role="status" aria-live="polite">Loading your circles...</div>
@@ -128,8 +132,8 @@
 							{
 								<div class="generated-code" role="status">
 									<label for="generated-code">New invitation code</label>
-									<input id="generated-code" class="circle-input" value="@generatedCode" readonly aria-describedby="generated-code-help" @onclick="SelectGeneratedCode" />
-									<span id="generated-code-help">Select the code to copy it.</span>
+									<input id="generated-code" class="circle-input" value="@generatedCode" readonly aria-describedby="generated-code-help" />
+									<span id="generated-code-help">Copy this code to share it with someone you want to invite.</span>
 								</div>
 							}
 							@if (inviteCodes.Count == 0)
@@ -171,6 +175,7 @@
 	private bool isBusy;
 	private bool showLeaveConfirmation;
 	private string errorMessage = string.Empty;
+	private string actionMessage = string.Empty;
 	private string generatedCode;
 	private int expirationDays = 7;
 
@@ -231,6 +236,9 @@
 
 	private async Task LoadCircleAsync(int circleId)
 	{
+		generatedCode = null;
+		actionMessage = string.Empty;
+		showLeaveConfirmation = false;
 		selectedCircle = await circleRepository.GetCircleAsync(circleId, currentUser.UserId);
 		if (selectedCircle is null)
 		{
@@ -246,7 +254,7 @@
 
 	private async Task SaveSettingsAsync()
 	{
-		await RunActionAsync(async () => { await circleRepository.UpdateCircleAsync(settingsModel, currentUser.UserId); selectedCircle.Name = settingsModel.Name; selectedCircle.Description = settingsModel.Description; });
+		await RunActionAsync(async () => { await circleRepository.UpdateCircleAsync(settingsModel, currentUser.UserId); selectedCircle.Name = settingsModel.Name; selectedCircle.Description = settingsModel.Description; actionMessage = "Circle settings saved."; });
 	}
 
 	private async Task GenerateInviteAsync()
@@ -256,7 +264,7 @@
 
 	private async Task RevokeInviteAsync(int invitationCodeId)
 	{
-		await RunActionAsync(async () => { await invitationRepository.RevokeCodeAsync(invitationCodeId, currentUser.UserId); var invite = inviteCodes.FirstOrDefault(code => code.InvitationCodeId == invitationCodeId); if (invite is not null) invite.RevokedUtc = DateTime.UtcNow; });
+		await RunActionAsync(async () => { await invitationRepository.RevokeCodeAsync(invitationCodeId, currentUser.UserId); var invite = inviteCodes.FirstOrDefault(code => code.InvitationCodeId == invitationCodeId); if (invite is not null) invite.RevokedUtc = DateTime.UtcNow; actionMessage = "Invitation code revoked."; });
 	}
 
 	private async Task LeaveCircleAsync()
@@ -268,6 +276,7 @@
 	{
 		isBusy = true;
 		errorMessage = string.Empty;
+		actionMessage = string.Empty;
 		try { await action(); }
 		catch (Exception exception) { errorMessage = "That action could not be completed. Please try again."; Console.Error.WriteLine(exception); }
 		finally { isBusy = false; }
@@ -275,7 +284,6 @@
 
 	private void RequestLeave() => showLeaveConfirmation = true;
 	private void CancelLeave() => showLeaveConfirmation = false;
-	private void SelectGeneratedCode() { }
 
 	private static string GetInviteStatus(InvitationCode invite) => invite.RevokedUtc is not null ? "Revoked" : invite.RedeemedByUserId is not null || invite.RedeemedUtc is not null ? "Consumed" : invite.ExpiresUtc is not null && invite.ExpiresUtc <= DateTime.UtcNow ? "Expired" : "Active";
 	private static string FormatDate(DateTime? date) => date?.ToLocalTime().ToString("g") ?? "Never";

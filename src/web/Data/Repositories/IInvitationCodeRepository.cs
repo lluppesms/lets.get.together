@@ -33,6 +33,7 @@ public interface IInvitationCodeRepository
 
     /// <summary>
     /// Redeems the code for the specified user, adds them to the associated circle, and returns the membership.
+    /// Reactivates an existing inactive membership instead of creating a duplicate record.
     /// Throws InvalidOperationException if the code is already used, expired, or revoked.
     /// </summary>
     Task<CircleMembership> RedeemCodeAsync(string code, int newUserId);

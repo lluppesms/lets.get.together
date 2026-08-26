@@ -38,6 +38,7 @@ label { display: block; font-weight: 650; }
 .invite-status-consumed, .invite-status-expired, .invite-status-revoked { color: var(--text-muted-light); }
 .circle-alert, .circle-status { margin-top: 1.5rem; border-radius: .35rem; padding: 1rem; }
 .circle-alert-error { border: 1px solid var(--accent-color-strong); color: var(--accent-color-strong); }
+.circle-alert-success { border: 1px solid var(--accent-color); color: var(--accent-color-strong); }
 .circle-alert-warning { border: 1px solid var(--surface-border-light); }
 .circle-confirmation { margin-top: 1rem; }
 .circle-confirmation h3 { margin-top: 0; }

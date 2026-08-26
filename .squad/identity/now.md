@@ -1,24 +1,15 @@
 ---
-updated_at: 2026-08-25T21:00:00Z
-focus_area: Paused — Phase 2 circles and membership
+updated_at: 2026-08-26T00:00:00Z
+focus_area: Phase 2 (Circles & Membership) Complete
 active_issues: []
 ---
 
 # What We're Focused On
 
-Development is paused at Phase 2: circles and membership.
+Phase 2 (Circles & Membership) is fully implemented, verified, and complete.
 
-Completed in the paused batch:
-- `CircleSQLRepository` and `ICircleRepository` changes are present.
-- `Circles.razor` and `Circles.razor.css` are present.
-- Focused repository tests were added or updated.
-- `MAP.md`, agent histories, and the canonical decisions ledger were updated.
-
-Resume checks:
-- Branch: `task/initial-version`.
-- Worktree has uncommitted Phase 2 changes; do not revert them.
-- Full web build and prior 44-test suite were green before this Phase 2 batch.
-- The latest focused command for `CircleRepository_AddMember_RequiresActiveRequesterAndReactivatesMembership` and `CircleRepository_RosterContainsOnlyActiveMembersInDisplayOrder` exited with code 1 and needs diagnosis first.
-- The last cleanup removed `.squad/decisions/inbox/kaylee-phase2-contract.md`.
-
-No agent work should be considered active. Resume by inspecting the focused test failure, then rerun the two circle tests before expanding Phase 2 implementation. Do not commit or push without explicit user instruction.
+### Status Highlights
+- **Build Status**: 0 build errors.
+- **Test Suite**: All 55 xUnit tests passing (including circle repository, service, and integration tests).
+- **Implementation**: `CircleSQLRepository`, `ICircleRepository`, `Circles.razor`, `Circles.razor.css`, and invitation/membership workflows are fully implemented and verified.
+- **Next Steps**: Ready for Phase 3 (Events & RSVP) or user direction.

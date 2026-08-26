@@ -74,6 +74,23 @@ public class GetTogetherAccess_Tests
     }
 
     [Fact]
+    public async Task RedeemCode_ReactivatesFormerMemberWithoutDuplicateMembership()
+    {
+        await using var context = CreateContext();
+        SeedCircle(context, circleId: 1, creatorUserId: 10);
+        AddUser(context, 20);
+        context.CircleMemberships!.Add(new CircleMembership { CircleId = 1, UserId = 20, LeftUtc = DateTime.UtcNow });
+        context.InvitationCodes!.Add(new InvitationCode { CircleId = 1, CreatedByUserId = 10, Code = "former-member" });
+        await context.SaveChangesAsync();
+        var repository = new InvitationCodeSQLRepository(context);
+
+        var membership = await repository.RedeemCodeAsync("former-member", 20);
+
+        Assert.Null(membership.LeftUtc);
+        Assert.Equal(1, await context.CircleMemberships!.CountAsync(m => m.CircleId == 1 && m.UserId == 20));
+    }
+
+    [Fact]
     public async Task CircleRepository_DeniesAccessFromAnotherCircle()
     {
         await using var context = CreateContext();

@@ -24,3 +24,8 @@ The locked Phase 1 decisions require multi-provider authentication and adding Ev
 - Completed circle membership operations with active-member authorization, inactive-membership reactivation, active-only roster projections, and RSVP cleanup on removal.
 - Invitation code generation remains uncapped, logs the generator/circle/timestamp, and circle listings preserve every status for active members.
 - Full web tests pass (54) and the website build passes.
+
+### 2026-08-25 — Phase 2 continuation
+
+- Invitation redemption now reactivates a former member's existing membership row, preserving the unique circle/user membership constraint while retaining rejection of active duplicates.
+- Focused invitation redemption and circle repository tests pass; existing repository and web build warnings remain unrelated to this change.

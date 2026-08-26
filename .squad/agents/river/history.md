@@ -17,3 +17,7 @@ Squad initialized with Firefly casting on 2026-08-25.
 ### 2026-08-25T20:41:56Z — Cross-agent status
 
 The locked Phase 1 handoff calls for signup browser coverage, but River's inbox reports no invite, signup, or authenticated-circle Playwright surface and no local SQL fixture. Existing focused repository tests cover current invitation, privacy, and external-identity behavior; provider-aware identity and full onboarding remain untestable at the present API surface.
+
+### 2026-08-25T21:00:00Z — Phase 2 focused test follow-up
+
+The reported `--no-build --no-restore` failure was not reproducible: both focused circle membership tests passed, the build-backed focused run passed, and the full web test project passed 54/54. No production or test defect was identified; stale or transient test-run state remains the likely explanation.

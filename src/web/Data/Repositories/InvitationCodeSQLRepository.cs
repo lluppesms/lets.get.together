@@ -98,14 +98,26 @@ public class InvitationCodeSQLRepository(
         invitation.RedeemedByUserId = newUserId;
         invitation.RedeemedUtc = DateTime.UtcNow;
 
-        var membership = new CircleMembership
+        var membership = await _context.CircleMemberships!
+            .FirstOrDefaultAsync(m => m.CircleId == invitation.CircleId && m.UserId == newUserId);
+        if (membership is null)
         {
-            CircleId = invitation.CircleId,
-            UserId = newUserId,
-            Role = "Member",
-            JoinedUtc = DateTime.UtcNow
-        };
-        _context.CircleMemberships!.Add(membership);
+            membership = new CircleMembership
+            {
+                CircleId = invitation.CircleId,
+                UserId = newUserId,
+                Role = "Member",
+                JoinedUtc = DateTime.UtcNow
+            };
+            _context.CircleMemberships!.Add(membership);
+        }
+        else
+        {
+            membership.LeftUtc = null;
+            membership.JoinedUtc = DateTime.UtcNow;
+            membership.Role = "Member";
+        }
+
         await _context.SaveChangesAsync();
         return membership;
     }
