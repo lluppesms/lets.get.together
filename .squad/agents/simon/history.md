@@ -30,9 +30,9 @@ The locked Phase 1 decisions require multi-provider authentication and adding Ev
 - Invitation redemption now reactivates a former member's existing membership row, preserving the unique circle/user membership constraint while retaining rejection of active duplicates.
 - Focused invitation redemption and circle repository tests pass; existing repository and web build warnings remain unrelated to this change.
 
-### 2026-08-26 — Phase 3 backend for Events & Recurrence
+### 2026-08-26 — Phase 4 backend for RSVP Workflow & Reminder Notifications
 
-- Updated `IEventRepository` and `EventSQLRepository` to implement `GetEventsByCircleAsync`, `GetByIdAsync`, `CreateAsync`, `UpdateAsync`, and `DeleteAsync` with active circle membership guards (`LeftUtc == null`), preserving backward compatibility aliases.
-- Implemented `EventOccurrence`, `IRecurrenceService`, and `RecurrenceService` in `DadABase.Data.Services` supporting Weekly (specify day of week), Biweekly (every 2 weeks), and Monthly (day of month) recurrence expansion within a date window.
-- Registered `IRecurrenceService` in `Program.cs` for DI.
-- Added comprehensive xUnit tests in `EventRepository_Tests.cs` (CRUD, circle privacy isolation, former member guards) and `RecurrenceService_Tests.cs` (Weekly, Biweekly, Monthly, date windows, cancelled events, non-recurring events). All 82 tests pass.
+- Updated `IRsvpRepository` and `RsvpSQLRepository` to implement `GetRsvpAsync`, `GetRsvpsByEventAsync`, `GetRsvpsByOccurrenceAsync`, `UpsertRsvpAsync` (with optional `occurrenceDate` for occurrence-specific responses and idempotent Accept/Decline/Maybe updates), and `GetUnansweredMembersAsync` (with optional `occurrenceDate`). Enforced active circle membership (`LeftUtc == null`) across all RSVP operations.
+- Updated `INotificationService` and `SendGridNotificationService` to implement `SendEventCreationEmailAsync` and `SendReminderEmailAsync` (in addition to `SendEventCreatedAsync` and `SendReminderAsync`). Enforced active circle membership on reminder triggers (OQ-1) and target audiences, and persisted all sent reminder events into the `ReminderLog` table via `DadABaseDbContext`.
+- Updated `CircleSQLRepository.RemoveMemberAsync` (OQ-2) to purge a departing member's RSVP records for that circle upon soft-deleting membership.
+- Enhanced xUnit tests in `RsvpRepository_Tests.cs` covering RSVP state transitions, attendance count aggregations, occurrence-level RSVPs, reminder audience targeting, `ReminderLog` DB logging, and member-leave RSVP cleanup. All 90 xUnit tests pass with 0 build errors.

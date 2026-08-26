@@ -38,3 +38,11 @@ The locked decision ledger confirms Entra ID, Google, and Facebook are in v1. Ka
 - Updated `Pages/Events.razor` and created `Pages/Events.razor.css` for viewing upcoming events by selected circle or across all user circles with a circle filter dropdown, toggleable event creation form, quick RSVP action buttons directly on event cards, and count badges.
 - Built `Pages/EventDetail.razor` and `Pages/EventDetail.razor.css` for viewing full event specifications, location, formatted times, recurrence schedule info, interactive user RSVP with notes, categorized member RSVP roster (Accepted, Maybe, Declined, Undecided), and event cancellation.
 - All Razor pages follow the repository resolution pattern via `IServiceProvider`, render accessible warning alerts in JSON/non-SQL mode, and use single quotes for Blazor `@onclick` string literals. Verified build and all 82 xUnit tests passing.
+
+### 2026-08-26 - Phase 4 UI for RSVP Workflow & Reminders
+
+- Enhanced `Pages/Events.razor` and `Pages/Events.razor.css` with instant optimistic RSVP status updates, per-card busy tracking (`busyEventIds`), visual feedback badges (`cardFeedback`), and inline optional note handling with dedicated "Save Note" action.
+- Enhanced `Pages/EventDetail.razor` and `Pages/EventDetail.razor.css` with one-tap interactive RSVP selection (Accept/Maybe/Decline), optimistic roster updates, status feedback banner, and integrated `<RsvpRoster>` component.
+- Embedded `<RsvpRoster>` component (`Components/RsvpRoster.razor`) displaying grouped attendee lists (Accepted, Maybe, Declined, Awaiting Response) with member avatars, initials, display names, email addresses, optional notes, search filtering, and count badges.
+- Integrated "Send Reminder" workflow in `Pages/EventDetail.razor` with an accessible modal dialog displaying target unanswered member count (`undecidedMembers.Count`), reminder target details, SendGrid integration via `INotificationService.SendReminderEmailAsync`, and member permission checks (per OQ-1).
+- Kept UI fully responsive and accessible with single-quote `@onclick` handlers, `aria-pressed`, `aria-modal`, and theme variable styling (`var(--card-bg-light)`, `var(--card-bg-dark)`). Verified 0 build errors in `DadABase.Web` and all 90 xUnit tests passing.

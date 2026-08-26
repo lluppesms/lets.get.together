@@ -50,6 +50,11 @@ public class RSVP
     public string? Notes { get; set; }
 
     /// <summary>
+    /// Gets or sets the optional occurrence date/time for per-occurrence RSVPs.
+    /// </summary>
+    public DateTime? OccurrenceDate { get; set; }
+
+    /// <summary>
     /// Gets or sets the UTC date and time when this RSVP was recorded.
     /// </summary>
     public DateTime RespondedUtc { get; set; } = DateTime.UtcNow;

@@ -30,3 +30,14 @@ The reported `--no-build --no-restore` failure was not reproducible: both focuse
   2. Circle-member access guards denying non-member reads, creates, updates, and cancellations with `InvalidOperationException` or `null`/empty returns.
   3. Recurrence expansion logic for `Weekly` (7-day intervals), `Biweekly` (14-day / `INTERVAL=2`), `Monthly` (calendar month offsets), non-recurring events, and boundary limits (`untilUtc`, `maxCount`).
 - All 18 narrow tests in `EventRepository_Tests` passed cleanly (total web test suite: 82/82 passing).
+
+### 2026-08-26 — Phase 4 RSVP Workflow, Reminder Targeting & Member Leave Tests
+
+- Extended `IRsvpRepository` and `RsvpSQLRepository` with `GetUnansweredMembersAsync(eventId, requestingUserId)` to query active circle members without an RSVP entry while enforcing circle-membership security guards.
+- Fixed UI build issues in `RsvpRoster.razor` and `EventDetail.razor` (`User.EmailAddress` property mapping, Razor quote syntax, `OpenReminderModal` handler).
+- Created `src/web/Tests/RepositoryTests/RsvpRepository_Tests.cs` covering Phase 4 xUnit scenarios:
+  1. RSVP state transitions (`Accept` -> `Decline` -> `Maybe` -> `Accept`) with notes, timestamp updates, and attendance count aggregations (`Accept`, `Maybe`, `Decline`). Rejection of invalid status strings (`ArgumentException`).
+  2. Cross-circle RSVP denial: verifying non-members cannot RSVP (`InvalidOperationException`), view RSVP lists (`GetRsvpsForEventAsync` returns empty), or query unanswered members (`GetUnansweredMembersAsync` returns empty).
+  3. Reminder targeting: verifying `GetUnansweredMembersAsync` returns active members who haven't responded, excludes members who have responded, enforces circle membership guards, and integrates with `SendGridNotificationService.SendReminderAsync`.
+  4. Member leave cleanup: verifying `CircleRepository.RemoveMemberAsync` soft-deletes membership (`LeftUtc`), purges all RSVPs for that member in that circle from the database, retains remaining members' RSVPs, and updates unanswered lists.
+- All 6 narrow tests in `RsvpRepository_Tests` passed cleanly (total web test suite: 88/88 passing).

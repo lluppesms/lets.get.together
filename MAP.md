@@ -4,7 +4,7 @@
 >
 > **Purpose:** Give Copilot a fast, evidence-based map of the repository so routine work can start at the owning project instead of scanning the whole tree.
 >
-> **Last reviewed:** 2026-08-25
+> **Last reviewed:** 2026-08-26
 
 ### Backend Phase 1 update (2026-08-25)
 
@@ -13,6 +13,10 @@ The shared data project now includes the locked Event recurrence model (`IsRecur
 ### Backend Phase 2 update (2026-08-25)
 
 Circle repositories now support active-member listing, active-only rosters, add/reactivate, and remove operations (including RSVP cleanup). Invitation generation is available to any active member without a hard cap and is logged; circle invite listings retain all statuses and revocation remains active-member guarded.
+
+### Backend Phase 4 update (2026-08-26)
+
+`IRsvpRepository` and `RsvpSQLRepository` support idempotent RSVP upserts (Accept/Decline/Maybe) with series and per-occurrence targeting, `GetRsvpsByEventAsync`, `GetRsvpsByOccurrenceAsync`, and `GetUnansweredMembersAsync`, enforcing active circle membership across all operations. `SendGridNotificationService` supports `SendEventCreationEmailAsync` and `SendReminderEmailAsync`, enforces circle membership for trigger users (per OQ-1) and target audiences, and logs reminders to `ReminderLog`. `CircleSQLRepository.RemoveMemberAsync` purges circle RSVPs upon member departure. Focused xUnit tests verify RSVP workflows, audience targeting, DB logging, and member-leave RSVP cleanup.
 
 ### Squad team
 

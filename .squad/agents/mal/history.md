@@ -66,4 +66,10 @@ Locked the Phase 2 circles and membership boundary to the existing repository co
 
 Coordinated Phase 3: Event Creation & Recurrence Rules. Key locked decisions: recurrence fields (`IsRecurring`, `RsvpMode`, `RecurrenceRule`) already exist on the `Event` entity and SQL schema authority (`Dad.Event`). Recurrence rule vocabulary includes Weekly, Biweekly, Monthly; all events are circle-scoped (`CircleId`); any active circle member (`LeftUtc == null`) can view, create, edit, or cancel events in their circle. Produced `.squad/decisions/inbox/mal-phase3-execution-handoff.md` detailing scope, files to touch, ownership boundaries (Simon for backend/helpers, Kaylee for Blazor UI/events page, River for xUnit & Playwright tests, Wash for CI/CD deploy verification), acceptance checks, and risk mitigations. No feature code implemented.
 
+---
+
+### 2026-08-26 — Phase 4 Execution Handoff
+
+Coordinated Phase 4: RSVP Workflow & Reminder Notifications. Key locked decisions embodied: OQ-1 (any active circle member `LeftUtc == null` can trigger manual reminder emails for an event in that circle) and OQ-2 (leaving a circle soft-deletes membership and hard-deletes all RSVPs for that member in that circle, removing them from rosters and reminder lists). Produced `.squad/decisions/inbox/mal-phase4-execution-handoff.md` detailing scope, files to touch, ownership boundaries (Simon for backend/repositories/services, Kaylee for Blazor UI/reminder modal, River for xUnit & Playwright tests, Wash for SendGrid app settings & Bicep), contracts, acceptance checks, and risk mitigations. No feature code implemented.
+
 

@@ -1,0 +1,245 @@
+@namespace DadABase.Web.Components
+@using DadABase.Data.Models
+
+<section class="rsvp-roster-component" aria-labelledby="roster-heading">
+	<header class="roster-header">
+		<div>
+			<h2 id="roster-heading" class="roster-title">Attendee Roster</h2>
+			<p class="roster-subtitle">
+				@TotalMemberCount member@(TotalMemberCount == 1 ? string.Empty : "s") in circle
+				(@RespondedCount responded, @UndecidedMembers.Count awaiting)
+			</p>
+		</div>
+		<div class="roster-search">
+			<input type="search"
+				   class="roster-search-input"
+				   placeholder="Search members..."
+				   @bind="searchTerm"
+				   @bind:event="oninput"
+				   aria-label="Search roster members" />
+		</div>
+	</header>
+
+	<div class="roster-pills" role="tablist" aria-label="Filter roster by response status">
+		<button class="pill-btn pill-all @(selectedFilter == "All" ? "active" : string.Empty)"
+				type="button"
+				@onclick='() => SetFilter("All")'
+				aria-selected="@(selectedFilter == "All" ? "true" : "false")">
+			All (@FilteredTotalCount)
+		</button>
+		<button class="pill-btn pill-accept @(selectedFilter == "Accept" ? "active" : string.Empty)"
+				type="button"
+				@onclick='() => SetFilter("Accept")'
+				aria-selected="@(selectedFilter == "Accept" ? "true" : "false")">
+			✓ Accepted (@AcceptedRsvps.Count)
+		</button>
+		<button class="pill-btn pill-maybe @(selectedFilter == "Maybe" ? "active" : string.Empty)"
+				type="button"
+				@onclick='() => SetFilter("Maybe")'
+				aria-selected="@(selectedFilter == "Maybe" ? "true" : "false")">
+			? Maybe (@MaybeRsvps.Count)
+		</button>
+		<button class="pill-btn pill-decline @(selectedFilter == "Decline" ? "active" : string.Empty)"
+				type="button"
+				@onclick='() => SetFilter("Decline")'
+				aria-selected="@(selectedFilter == "Decline" ? "true" : "false")">
+			✕ Declined (@DeclinedRsvps.Count)
+		</button>
+		<button class="pill-btn pill-undecided @(selectedFilter == "Undecided" ? "active" : string.Empty)"
+				type="button"
+				@onclick='() => SetFilter("Undecided")'
+				aria-selected="@(selectedFilter == "Undecided" ? "true" : "false")">
+			⏳ Awaiting (@UndecidedMembers.Count)
+		</button>
+	</div>
+
+	<div class="roster-groups">
+		@if (ShouldShowGroup("Accept") && DisplayAccepted.Count > 0)
+		{
+			<div class="roster-group group-accepted">
+				<h3 class="group-header text-accept">
+					<span class="group-icon">✓</span> Accepted (@DisplayAccepted.Count)
+				</h3>
+				<ul class="member-list">
+					@foreach (var rsvp in DisplayAccepted)
+					{
+						<li class="member-card">
+							<div class="member-info">
+								<span class="avatar-badge avatar-accept">@(GetInitials(rsvp.User?.DisplayName))</span>
+								<div class="member-details">
+									<span class="member-name">@(rsvp.User?.DisplayName ?? "Circle Member")</span>
+									<span class="member-email">@(rsvp.User?.EmailAddress ?? string.Empty)</span>
+								</div>
+							</div>
+							@if (!string.IsNullOrWhiteSpace(rsvp.Notes))
+							{
+								<div class="member-note">
+									<span class="note-quote">“@rsvp.Notes”</span>
+								</div>
+							}
+						</li>
+					}
+				</ul>
+			</div>
+		}
+
+		@if (ShouldShowGroup("Maybe") && DisplayMaybe.Count > 0)
+		{
+			<div class="roster-group group-maybe">
+				<h3 class="group-header text-maybe">
+					<span class="group-icon">?</span> Maybe (@DisplayMaybe.Count)
+				</h3>
+				<ul class="member-list">
+					@foreach (var rsvp in DisplayMaybe)
+					{
+						<li class="member-card">
+							<div class="member-info">
+								<span class="avatar-badge avatar-maybe">@(GetInitials(rsvp.User?.DisplayName))</span>
+								<div class="member-details">
+									<span class="member-name">@(rsvp.User?.DisplayName ?? "Circle Member")</span>
+									<span class="member-email">@(rsvp.User?.EmailAddress ?? string.Empty)</span>
+								</div>
+							</div>
+							@if (!string.IsNullOrWhiteSpace(rsvp.Notes))
+							{
+								<div class="member-note">
+									<span class="note-quote">“@rsvp.Notes”</span>
+								</div>
+							}
+						</li>
+					}
+				</ul>
+			</div>
+		}
+
+		@if (ShouldShowGroup("Decline") && DisplayDeclined.Count > 0)
+		{
+			<div class="roster-group group-declined">
+				<h3 class="group-header text-decline">
+					<span class="group-icon">✕</span> Declined (@DisplayDeclined.Count)
+				</h3>
+				<ul class="member-list">
+					@foreach (var rsvp in DisplayDeclined)
+					{
+						<li class="member-card">
+							<div class="member-info">
+								<span class="avatar-badge avatar-decline">@(GetInitials(rsvp.User?.DisplayName))</span>
+								<div class="member-details">
+									<span class="member-name">@(rsvp.User?.DisplayName ?? "Circle Member")</span>
+									<span class="member-email">@(rsvp.User?.EmailAddress ?? string.Empty)</span>
+								</div>
+							</div>
+							@if (!string.IsNullOrWhiteSpace(rsvp.Notes))
+							{
+								<div class="member-note">
+									<span class="note-quote">“@rsvp.Notes”</span>
+								</div>
+							}
+						</li>
+					}
+				</ul>
+			</div>
+		}
+
+		@if (ShouldShowGroup("Undecided") && DisplayUndecided.Count > 0)
+		{
+			<div class="roster-group group-undecided">
+				<h3 class="group-header text-undecided">
+					<span class="group-icon">⏳</span> Awaiting Response (@DisplayUndecided.Count)
+				</h3>
+				<ul class="member-list">
+					@foreach (var member in DisplayUndecided)
+					{
+						<li class="member-card">
+							<div class="member-info">
+								<span class="avatar-badge avatar-undecided">@(GetInitials(member.User?.DisplayName))</span>
+								<div class="member-details">
+									<span class="member-name">@(member.User?.DisplayName ?? "Circle Member")</span>
+									<span class="member-email">@(member.User?.EmailAddress ?? string.Empty)</span>
+								</div>
+							</div>
+							<span class="status-tag tag-pending">No RSVP Yet</span>
+						</li>
+					}
+				</ul>
+			</div>
+		}
+
+		@if (NoResultsFound)
+		{
+			<div class="roster-no-results">
+				<p>No circle members match "@searchTerm".</p>
+			</div>
+		}
+	</div>
+</section>
+
+@code {
+	[Parameter] public IList<RSVP> Rsvps { get; set; } = [];
+	[Parameter] public IList<CircleMembership> CircleMembers { get; set; } = [];
+
+	private string selectedFilter = "All";
+	private string searchTerm = string.Empty;
+
+	private List<RSVP> AcceptedRsvps => (Rsvps ?? []).Where(r => r.Status == "Accept").ToList();
+	private List<RSVP> MaybeRsvps => (Rsvps ?? []).Where(r => r.Status == "Maybe").ToList();
+	private List<RSVP> DeclinedRsvps => (Rsvps ?? []).Where(r => r.Status == "Decline").ToList();
+
+	private List<CircleMembership> UndecidedMembers
+	{
+		get
+		{
+			var members = CircleMembers ?? [];
+			var respondedUserIds = (Rsvps ?? []).Select(r => r.UserId).ToHashSet();
+			return members.Where(m => !respondedUserIds.Contains(m.UserId)).ToList();
+		}
+	}
+
+	private int TotalMemberCount => CircleMembers?.Count ?? 0;
+	private int RespondedCount => Rsvps?.Count ?? 0;
+
+	private List<RSVP> FilterBySearch(IEnumerable<RSVP> items)
+	{
+		if (string.IsNullOrWhiteSpace(searchTerm)) return items.ToList();
+		var term = searchTerm.Trim();
+		return items.Where(r => (r.User?.DisplayName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+								(r.User?.EmailAddress?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+								(!string.IsNullOrEmpty(r.Notes) && r.Notes.Contains(term, StringComparison.OrdinalIgnoreCase))).ToList();
+	}
+
+	private List<CircleMembership> FilterMembersBySearch(IEnumerable<CircleMembership> members)
+	{
+		if (string.IsNullOrWhiteSpace(searchTerm)) return members.ToList();
+		var term = searchTerm.Trim();
+		return members.Where(m => (m.User?.DisplayName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+								   (m.User?.EmailAddress?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+	}
+
+	private List<RSVP> DisplayAccepted => FilterBySearch(AcceptedRsvps);
+	private List<RSVP> DisplayMaybe => FilterBySearch(MaybeRsvps);
+	private List<RSVP> DisplayDeclined => FilterBySearch(DeclinedRsvps);
+	private List<CircleMembership> DisplayUndecided => FilterMembersBySearch(UndecidedMembers);
+
+	private int FilteredTotalCount => DisplayAccepted.Count + DisplayMaybe.Count + DisplayDeclined.Count + DisplayUndecided.Count;
+
+	private bool NoResultsFound => !string.IsNullOrWhiteSpace(searchTerm) && FilteredTotalCount == 0;
+
+	private void SetFilter(string filter)
+	{
+		selectedFilter = filter;
+	}
+
+	private bool ShouldShowGroup(string groupStatus)
+	{
+		if (selectedFilter == "All") return true;
+		return string.Equals(selectedFilter, groupStatus, StringComparison.OrdinalIgnoreCase);
+	}
+
+	private static string GetInitials(string displayName)
+	{
+		if (string.IsNullOrWhiteSpace(displayName)) return "?";
+		var parts = displayName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+		if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpperInvariant();
+		return $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant();
+	}
+}

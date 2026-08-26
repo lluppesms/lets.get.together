@@ -6,6 +6,7 @@
 // Notification Service Interface
 // </summary>
 //-----------------------------------------------------------------------
+#nullable enable
 using DadABase.Data.Models;
 
 namespace DadABase.Web.Services.Interfaces;
@@ -22,8 +23,18 @@ public interface INotificationService
     Task SendEventCreatedAsync(Event newEvent, IEnumerable<User> recipients);
 
     /// <summary>
+    /// Sends a creation notification email to all members of the event's circle.
+    /// </summary>
+    Task SendEventCreationEmailAsync(Event newEvent, IEnumerable<User> recipients);
+
+    /// <summary>
     /// Sends a reminder email to the specified recipients for the given event.
-    /// Called manually by any circle member (or only the creator — TBD; see open questions).
+    /// Called manually by any circle member (per OQ-1).
     /// </summary>
     Task SendReminderAsync(Event evt, IEnumerable<User> recipients);
+
+    /// <summary>
+    /// Sends a reminder email to the specified recipients for the given event, validating active circle membership for the trigger user and target recipients.
+    /// </summary>
+    Task SendReminderEmailAsync(Event evt, IEnumerable<User> recipients, int? triggeringUserId = null);
 }

@@ -150,9 +150,15 @@ public class CircleSQLRepository(DadABaseDbContext context) : ICircleRepository
 
         membership.LeftUtc = DateTime.UtcNow;
         var rsvpSet = _context.Rsvps!;
-        var rsvps = rsvpSet
-            .Where(r => r.CircleId == circleId && r.UserId == userId);
-        rsvpSet.RemoveRange(rsvps);
+        var rsvps = await rsvpSet
+            .Where(r => r.UserId == userId && (r.CircleId == circleId || (r.Event != null && r.Event.CircleId == circleId)))
+            .ToListAsync();
+
+        if (rsvps.Count != 0)
+        {
+            rsvpSet.RemoveRange(rsvps);
+        }
+
         await _context.SaveChangesAsync();
     }
 }

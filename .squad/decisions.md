@@ -112,6 +112,12 @@ Expected configuration keys: `SendGrid:ApiKey`, `SendGrid:FromEmail`, `SendGrid:
 
 ---
 
+### 2026-08-26: Phase 4 Contract — RSVP Workflow & Reminder Notifications (Mal)
+**By:** Lyle MS Luppes (via Mal)
+**What:** Phase 4 RSVP Workflow & Reminder Notifications are fully implemented and verified. `IRsvpRepository` / `RsvpSQLRepository` handles RSVP upserts (`Accept`, `Decline`, `Maybe`) with notes and active circle member checks. Leaving a circle (`CircleSQLRepository.RemoveMemberAsync`) soft-deletes membership and deletes all RSVP records for that member in the circle (OQ-2). `INotificationService` / `SendGridNotificationService` supports audience targeting (Unanswered vs All Active Members) and logs reminder history into `ReminderLog`. Any active circle member may trigger reminder notifications (OQ-1). All 90 xUnit tests pass with 0 build errors.
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus

@@ -154,30 +154,72 @@
 								<span class="rsvp-count rsvp-accept" title="Accepted">✓ @acceptCount</span>
 								<span class="rsvp-count rsvp-maybe" title="Maybe">? @maybeCount</span>
 								<span class="rsvp-count rsvp-decline" title="Declined">✕ @declineCount</span>
+								@if (cardFeedback.TryGetValue(ev.EventId, out var feedback) && !string.IsNullOrWhiteSpace(feedback))
+								{
+									<span class="quick-rsvp-feedback" role="status" aria-live="polite">@feedback</span>
+								}
 							</div>
 
-							<div class="rsvp-actions" aria-label="Quick RSVP">
-								<button class="rsvp-btn rsvp-btn-accept @(myRsvp?.Status == "Accept" ? "active" : string.Empty)"
-										type="button"
-										@onclick="() => QuickRsvpAcceptAsync(ev.EventId)"
-										disabled="@(isBusy || ev.CancelledUtc.HasValue)"
-										aria-label="RSVP Accept">
-									Accept
-								</button>
-								<button class="rsvp-btn rsvp-btn-maybe @(myRsvp?.Status == "Maybe" ? "active" : string.Empty)"
-										type="button"
-										@onclick="() => QuickRsvpMaybeAsync(ev.EventId)"
-										disabled="@(isBusy || ev.CancelledUtc.HasValue)"
-										aria-label="RSVP Maybe">
-									Maybe
-								</button>
-								<button class="rsvp-btn rsvp-btn-decline @(myRsvp?.Status == "Decline" ? "active" : string.Empty)"
-										type="button"
-										@onclick="() => QuickRsvpDeclineAsync(ev.EventId)"
-										disabled="@(isBusy || ev.CancelledUtc.HasValue)"
-										aria-label="RSVP Decline">
-									Decline
-								</button>
+							<div class="rsvp-actions-container">
+								<div class="rsvp-actions" aria-label="Quick RSVP">
+									<button class="rsvp-btn rsvp-btn-accept @(myRsvp?.Status == "Accept" ? "active" : string.Empty)"
+											type="button"
+											@onclick="() => QuickRsvpAcceptAsync(ev.EventId)"
+											disabled="@(busyEventIds.Contains(ev.EventId) || ev.CancelledUtc.HasValue)"
+											aria-pressed="@(myRsvp?.Status == "Accept" ? "true" : "false")"
+											aria-label="@($"Accept RSVP for {ev.Title}")">
+										✓ Accept
+									</button>
+									<button class="rsvp-btn rsvp-btn-maybe @(myRsvp?.Status == "Maybe" ? "active" : string.Empty)"
+											type="button"
+											@onclick="() => QuickRsvpMaybeAsync(ev.EventId)"
+											disabled="@(busyEventIds.Contains(ev.EventId) || ev.CancelledUtc.HasValue)"
+											aria-pressed="@(myRsvp?.Status == "Maybe" ? "true" : "false")"
+											aria-label="@($"Maybe RSVP for {ev.Title}")">
+										? Maybe
+									</button>
+									<button class="rsvp-btn rsvp-btn-decline @(myRsvp?.Status == "Decline" ? "active" : string.Empty)"
+											type="button"
+											@onclick="() => QuickRsvpDeclineAsync(ev.EventId)"
+											disabled="@(busyEventIds.Contains(ev.EventId) || ev.CancelledUtc.HasValue)"
+											aria-pressed="@(myRsvp?.Status == "Decline" ? "true" : "false")"
+											aria-label="@($"Decline RSVP for {ev.Title}")">
+										✕ Decline
+									</button>
+								</div>
+
+								@if (!ev.CancelledUtc.HasValue)
+								{
+									<div class="quick-note-toggle">
+										<button class="note-toggle-btn"
+												type="button"
+												@onclick="() => ToggleQuickNote(ev.EventId)"
+												aria-expanded="@openNoteEventIds.Contains(ev.EventId)">
+											@(openNoteEventIds.Contains(ev.EventId) ? "Hide Note" : (!string.IsNullOrWhiteSpace(myRsvp?.Notes) ? $"✍️ Note: \"{TruncateText(myRsvp.Notes, 20)}\"" : "+ Optional Note"))
+										</button>
+
+										@if (openNoteEventIds.Contains(ev.EventId))
+										{
+											<div class="quick-note-box">
+												<input type="text"
+													   class="quick-note-input"
+													   placeholder="Add an optional RSVP note..."
+													   value="@GetEventNoteInput(ev.EventId, myRsvp?.Notes)"
+													   @onchange="(e) => SetEventNoteInput(ev.EventId, e.Value?.ToString())"
+													   maxlength="200" />
+												<div class="quick-note-footer">
+													<span class="note-hint">Note saves when you tap Accept, Maybe, Decline or Save Note.</span>
+													<button class="note-save-btn"
+															type="button"
+															@onclick='() => SaveQuickNoteAsync(ev.EventId, myRsvp?.Status ?? "Accept")'
+															disabled="@(busyEventIds.Contains(ev.EventId))">
+														Save Note
+													</button>
+												</div>
+											</div>
+										}
+									</div>
+								}
 							</div>
 
 							<div class="event-detail-link">
@@ -203,7 +245,6 @@
 	private readonly List<Event> events = [];
 	private int selectedCircleFilter;
 	private bool isLoading = true;
-	private bool isBusy;
 	private bool showCreateForm;
 	private string errorMessage = string.Empty;
 	private string actionMessage = string.Empty;
@@ -301,33 +342,104 @@
 		await RefreshEventsAsync();
 	}
 
+	private readonly HashSet<int> openNoteEventIds = [];
+	private readonly Dictionary<int, string> eventNoteInputs = [];
+	private readonly HashSet<int> busyEventIds = [];
+	private readonly Dictionary<int, string> cardFeedback = [];
+
+	private void ToggleQuickNote(int eventId)
+	{
+		if (openNoteEventIds.Contains(eventId))
+		{
+			openNoteEventIds.Remove(eventId);
+		}
+		else
+		{
+			openNoteEventIds.Add(eventId);
+		}
+	}
+
+	private string GetEventNoteInput(int eventId, string existingNotes)
+	{
+		if (eventNoteInputs.TryGetValue(eventId, out var input))
+		{
+			return input;
+		}
+		return existingNotes ?? string.Empty;
+	}
+
+	private void SetEventNoteInput(int eventId, string value)
+	{
+		eventNoteInputs[eventId] = value ?? string.Empty;
+	}
+
 	private async Task QuickRsvpAsync(int eventId, string status)
 	{
-		if (rsvpRepository is null || currentUser is null || isBusy) return;
+		if (rsvpRepository is null || currentUser is null || busyEventIds.Contains(eventId)) return;
 
-		isBusy = true;
+		busyEventIds.Add(eventId);
+		cardFeedback[eventId] = "Saving...";
 		actionMessage = string.Empty;
 		errorMessage = string.Empty;
 
+		eventNoteInputs.TryGetValue(eventId, out var noteText);
+
+		// Optimistic UI update for instant feedback
+		var ev = events.FirstOrDefault(e => e.EventId == eventId);
+		var existingRsvp = ev?.Rsvps.FirstOrDefault(r => r.UserId == currentUser.UserId);
+		var oldStatus = existingRsvp?.Status;
+		var oldNotes = existingRsvp?.Notes;
+
+		if (ev is not null)
+		{
+			if (existingRsvp is not null)
+			{
+				existingRsvp.Status = status;
+				if (noteText is not null) existingRsvp.Notes = noteText;
+			}
+			else
+			{
+				ev.Rsvps.Add(new RSVP
+				{
+					EventId = eventId,
+					UserId = currentUser.UserId,
+					Status = status,
+					Notes = noteText,
+					User = currentUser
+				});
+			}
+		}
+
+		StateHasChanged();
+
 		try
 		{
-			await rsvpRepository.UpsertRsvpAsync(eventId, currentUser.UserId, status);
-			actionMessage = $"RSVP set to '{status}'!";
+			await rsvpRepository.UpsertRsvpAsync(eventId, currentUser.UserId, status, noteText);
+			cardFeedback[eventId] = $"✓ {status}";
+			actionMessage = $"RSVP updated to '{status}'!";
 			await RefreshEventsAsync();
 		}
 		catch (Exception ex)
 		{
+			// Revert on failure
+			if (existingRsvp is not null)
+			{
+				existingRsvp.Status = oldStatus;
+				existingRsvp.Notes = oldNotes;
+			}
+			cardFeedback.Remove(eventId);
 			errorMessage = ex.Message;
 		}
 		finally
 		{
-			isBusy = false;
+			busyEventIds.Remove(eventId);
 		}
 	}
 
 	private Task QuickRsvpAcceptAsync(int eventId) => QuickRsvpAsync(eventId, "Accept");
 	private Task QuickRsvpMaybeAsync(int eventId) => QuickRsvpAsync(eventId, "Maybe");
 	private Task QuickRsvpDeclineAsync(int eventId) => QuickRsvpAsync(eventId, "Decline");
+	private Task SaveQuickNoteAsync(int eventId, string currentStatus) => QuickRsvpAsync(eventId, currentStatus);
 
 	private RSVP GetUserRsvp(Event ev)
 	{
