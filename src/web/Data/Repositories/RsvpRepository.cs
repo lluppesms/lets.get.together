@@ -13,7 +13,7 @@ namespace GetTogether.Data.Repositories;
 /// <summary>
 /// SQL Server implementation of <see cref="IRsvpRepository"/> using EF Core.
 /// </summary>
-public class RsvpSQLRepository(GetTogetherDbContext context) : IRsvpRepository
+public class RsvpRepository(GetTogetherDbContext context) : IRsvpRepository
 {
     private static readonly HashSet<string> AllowedStatuses = ["Accept", "Decline", "Maybe"];
 

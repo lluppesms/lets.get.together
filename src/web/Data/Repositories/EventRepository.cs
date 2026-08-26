@@ -13,7 +13,7 @@ namespace GetTogether.Data.Repositories;
 /// <summary>
 /// SQL Server implementation of <see cref="IEventRepository"/> using EF Core.
 /// </summary>
-public class EventSQLRepository(GetTogetherDbContext context) : IEventRepository
+public class EventRepository(GetTogetherDbContext context) : IEventRepository
 {
     private readonly GetTogetherDbContext _context = context;
 

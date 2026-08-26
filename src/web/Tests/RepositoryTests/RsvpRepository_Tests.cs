@@ -43,7 +43,7 @@ public class RsvpRepository_Tests
         context.Events!.Add(ev);
         await context.SaveChangesAsync();
 
-        var repository = new RsvpSQLRepository(context);
+        var repository = new RsvpRepository(context);
 
         // State transition: Accept -> Decline -> Maybe -> Accept for User 20
         var rsvp1 = await repository.UpsertRsvpAsync(1, 20, "Accept", "Bringing balls");
@@ -91,7 +91,7 @@ public class RsvpRepository_Tests
     {
         await using var context = CreateContext();
         SeedCircle(context, circleId: 1, creatorUserId: 10);
-        var repository = new RsvpSQLRepository(context);
+        var repository = new RsvpRepository(context);
 
         var ev = new Event { EventId = 1, CircleId = 1, Title = "Coffee", StartsUtc = DateTime.UtcNow.AddDays(1), CreatedByUserId = 10 };
         context.Events!.Add(ev);
@@ -117,7 +117,7 @@ public class RsvpRepository_Tests
         context.Events!.Add(ev);
         await context.SaveChangesAsync();
 
-        var repository = new RsvpSQLRepository(context);
+        var repository = new RsvpRepository(context);
 
         // Non-member (User 20 in Circle 2) cannot RSVP to Event in Circle 1
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.UpsertRsvpAsync(1, 20, "Accept"));
@@ -155,7 +155,7 @@ public class RsvpRepository_Tests
         context.Events!.Add(ev);
         await context.SaveChangesAsync();
 
-        var repository = new RsvpSQLRepository(context);
+        var repository = new RsvpRepository(context);
 
         // User 20 and User 30 RSVP
         await repository.UpsertRsvpAsync(1, 20, "Accept");
@@ -189,7 +189,7 @@ public class RsvpRepository_Tests
         context.Events!.Add(ev);
         await context.SaveChangesAsync();
 
-        var repository = new RsvpSQLRepository(context);
+        var repository = new RsvpRepository(context);
 
         // Non-member User 99 requesting unanswered list for Circle 1 Event
         var unanswered = await repository.GetUnansweredMembersAsync(1, 99);
@@ -209,7 +209,7 @@ public class RsvpRepository_Tests
         context.Events!.Add(ev);
         await context.SaveChangesAsync();
 
-        var repository = new RsvpSQLRepository(context);
+        var repository = new RsvpRepository(context);
 
         var occurrenceDate = DateTime.UtcNow.Date.AddDays(1);
         await repository.UpsertRsvpAsync(1, 20, "Accept", "See you there", occurrenceDate);
@@ -289,8 +289,8 @@ public class RsvpRepository_Tests
         context.Events!.AddRange(ev1, ev2);
         await context.SaveChangesAsync();
 
-        var rsvpRepo = new RsvpSQLRepository(context);
-        var circleRepo = new CircleSQLRepository(context);
+        var rsvpRepo = new RsvpRepository(context);
+        var circleRepo = new CircleRepository(context);
 
         // User 20 RSVPs to Event 1 and Event 2; User 30 RSVPs to Event 1
         await rsvpRepo.UpsertRsvpAsync(1, 20, "Accept");

@@ -71,7 +71,7 @@ public class CalendarAggregation_Tests
         context.Events!.AddRange(event1, event2, event3);
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         var aggregatedEvents = await repository.GetUpcomingEventsForUserAsync(10);
 
@@ -126,7 +126,7 @@ public class CalendarAggregation_Tests
         context.Events!.AddRange(activeEvent, leftEvent, unjoinedEvent);
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         // Alice's calendar query
         var aliceEvents = await repository.GetUpcomingEventsForUserAsync(10);
@@ -197,7 +197,7 @@ public class CalendarAggregation_Tests
         context.Events!.AddRange(oneOffEvent, weeklyEvent, biweeklyEvent);
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
         var recurrenceService = new RecurrenceService();
 
         // Get raw aggregated events for the circle member
@@ -272,7 +272,7 @@ public class CalendarAggregation_Tests
             new RSVP { EventId = 403, CircleId = 1, UserId = 10, Status = "Maybe", Notes = "Depends on weather" });
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         var calendarEvents = await repository.GetUpcomingEventsForUserAsync(10);
 

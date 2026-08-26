@@ -92,12 +92,12 @@ public class CalendarAggregationService_Tests
         await context.SaveChangesAsync();
 
         // Alice RSVPs Accept to Pickleball Match (Event 101)
-        var rsvpRepo = new RsvpSQLRepository(context);
+        var rsvpRepo = new RsvpRepository(context);
         await rsvpRepo.UpsertRsvpAsync(101, 10, "Accept", "Bringing extra paddles");
 
         // Service composition
-        var circleRepo = new CircleSQLRepository(context);
-        var eventRepo = new EventSQLRepository(context);
+        var circleRepo = new CircleRepository(context);
+        var eventRepo = new EventRepository(context);
         var recurrenceService = new RecurrenceService();
         var aggregationService = new CalendarAggregationService(circleRepo, eventRepo, rsvpRepo, recurrenceService);
 
@@ -167,9 +167,9 @@ public class CalendarAggregationService_Tests
         await context.SaveChangesAsync();
 
         var aggregationService = new CalendarAggregationService(
-            new CircleSQLRepository(context),
-            new EventSQLRepository(context),
-            new RsvpSQLRepository(context),
+            new CircleRepository(context),
+            new EventRepository(context),
+            new RsvpRepository(context),
             new RecurrenceService());
 
         var startWindow = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -208,13 +208,13 @@ public class CalendarAggregationService_Tests
         await context.SaveChangesAsync();
 
         // Alice RSVPs Accept specifically for occurrence on Sept 15, 2026
-        var rsvpRepo = new RsvpSQLRepository(context);
+        var rsvpRepo = new RsvpRepository(context);
         var Sept15Date = new DateTime(2026, 9, 15, 0, 0, 0, DateTimeKind.Utc);
         await rsvpRepo.UpsertRsvpAsync(201, 10, "Accept", "Attending this week", Sept15Date);
 
         var aggregationService = new CalendarAggregationService(
-            new CircleSQLRepository(context),
-            new EventSQLRepository(context),
+            new CircleRepository(context),
+            new EventRepository(context),
             rsvpRepo,
             new RecurrenceService());
 
@@ -279,9 +279,9 @@ public class CalendarAggregationService_Tests
         await context.SaveChangesAsync();
 
         var aggregationService = new CalendarAggregationService(
-            new CircleSQLRepository(context),
-            new EventSQLRepository(context),
-            new RsvpSQLRepository(context),
+            new CircleRepository(context),
+            new EventRepository(context),
+            new RsvpRepository(context),
             new RecurrenceService());
 
         var startWindow = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -301,9 +301,9 @@ public class CalendarAggregationService_Tests
         await using var context = CreateContext();
 
         var aggregationService = new CalendarAggregationService(
-            new CircleSQLRepository(context),
-            new EventSQLRepository(context),
-            new RsvpSQLRepository(context),
+            new CircleRepository(context),
+            new EventRepository(context),
+            new RsvpRepository(context),
             new RecurrenceService());
 
         var startWindow = DateTime.UtcNow;

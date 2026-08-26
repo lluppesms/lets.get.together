@@ -22,7 +22,7 @@ public class EventRepository_Tests
     {
         await using var context = CreateContext();
         SeedCircle(context, circleId: 1, creatorUserId: 10);
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         var newEvent = new Event
         {
@@ -67,7 +67,7 @@ public class EventRepository_Tests
         context.Rsvps!.Add(new RSVP { EventId = ev.EventId, CircleId = 1, UserId = 20, Status = "Accept" });
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         var retrieved = await repository.GetEventAsync(ev.EventId, 10);
 
@@ -82,7 +82,7 @@ public class EventRepository_Tests
     {
         await using var context = CreateContext();
         SeedCircle(context, circleId: 1, creatorUserId: 10);
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         var now = DateTime.UtcNow;
         var laterEvent = new Event { CircleId = 1, Title = "Later", StartsUtc = now.AddDays(5), CreatedByUserId = 10 };
@@ -118,7 +118,7 @@ public class EventRepository_Tests
             new Event { CircleId = 1, Title = "Past Event", StartsUtc = now.AddDays(-2), CreatedByUserId = 10 });
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         var upcoming = await repository.GetUpcomingEventsForUserAsync(20);
 
@@ -143,7 +143,7 @@ public class EventRepository_Tests
         context.Events!.Add(ev);
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         ev.Title = "Updated Title";
         ev.Details = "Updated Details";
@@ -177,7 +177,7 @@ public class EventRepository_Tests
         context.Events!.Add(ev);
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         await repository.CancelEventAsync(ev.EventId, 10);
 
@@ -204,7 +204,7 @@ public class EventRepository_Tests
         context.Events!.Add(ev);
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         var retrieved = await repository.GetEventAsync(ev.EventId, 99);
 
@@ -221,7 +221,7 @@ public class EventRepository_Tests
         context.Events!.Add(new Event { CircleId = 1, Title = "Private Event", StartsUtc = DateTime.UtcNow.AddDays(1), CreatedByUserId = 10 });
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         var events = await repository.GetEventsForCircleAsync(1, 99);
 
@@ -235,7 +235,7 @@ public class EventRepository_Tests
         SeedCircle(context, circleId: 1, creatorUserId: 10);
         AddUser(context, 99);
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
         var newEvent = new Event { CircleId = 1, Title = "Unauthorized Event", StartsUtc = DateTime.UtcNow.AddDays(1) };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => repository.CreateEventAsync(newEvent, 99));
@@ -252,7 +252,7 @@ public class EventRepository_Tests
         context.Events!.Add(ev);
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
         ev.Title = "Hacked Title";
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => repository.UpdateEventAsync(ev, 99));
@@ -269,7 +269,7 @@ public class EventRepository_Tests
         context.Events!.Add(ev);
         await context.SaveChangesAsync();
 
-        var repository = new EventSQLRepository(context);
+        var repository = new EventRepository(context);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => repository.CancelEventAsync(ev.EventId, 99));
     }

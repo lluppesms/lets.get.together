@@ -13,7 +13,7 @@ namespace GetTogether.Data.Repositories;
 /// <summary>
 /// SQL Server implementation of <see cref="ICircleRepository"/> using EF Core.
 /// </summary>
-public class CircleSQLRepository(GetTogetherDbContext context) : ICircleRepository
+public class CircleRepository(GetTogetherDbContext context) : ICircleRepository
 {
     private readonly GetTogetherDbContext _context = context;
 

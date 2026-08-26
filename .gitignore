@@ -395,3 +395,4 @@ src/web/docker-readme.md
 .squad/.cache/
 # Squad: SubSquad activation file (local to this machine)
 .squad-workstream
+src/database/Patch/InsertDefaultData-Local.sql

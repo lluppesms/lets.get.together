@@ -13,7 +13,7 @@ namespace GetTogether.Data.Repositories;
 /// <summary>
 /// SQL Server implementation of <see cref="IUserRepository"/> using EF Core.
 /// </summary>
-public class UserSQLRepository(GetTogetherDbContext context) : IUserRepository
+public class UserRepository(GetTogetherDbContext context) : IUserRepository
 {
     private readonly GetTogetherDbContext _context = context;
 

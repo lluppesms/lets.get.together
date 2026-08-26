@@ -96,7 +96,7 @@ public class GetTogetherAccess_Tests
         await using var context = CreateContext();
         SeedCircle(context, circleId: 1, creatorUserId: 10);
         SeedCircle(context, circleId: 2, creatorUserId: 20);
-        var repository = new CircleSQLRepository(context);
+        var repository = new CircleRepository(context);
 
         Assert.Null(await repository.GetCircleAsync(1, 20));
         Assert.Empty(await repository.GetMembersAsync(1, 20));
@@ -110,7 +110,7 @@ public class GetTogetherAccess_Tests
         context.Users!.Add(new User { UserId = 20, ExternalId = "user-20", DisplayName = "User 20" });
         context.CircleMemberships!.Add(new CircleMembership { CircleId = 1, UserId = 20, LeftUtc = DateTime.UtcNow });
         await context.SaveChangesAsync();
-        var repository = new CircleSQLRepository(context);
+        var repository = new CircleRepository(context);
 
         var membership = await repository.AddMemberAsync(1, 20, 10);
 
@@ -129,7 +129,7 @@ public class GetTogetherAccess_Tests
         context.Events!.Add(new Event { EventId = 1, CircleId = 1, CreatedByUserId = 10, Title = "Event", StartsUtc = DateTime.UtcNow });
         context.Rsvps!.Add(new RSVP { EventId = 1, CircleId = 1, UserId = 20 });
         await context.SaveChangesAsync();
-        var repository = new CircleSQLRepository(context);
+        var repository = new CircleRepository(context);
 
         await repository.RemoveMemberAsync(1, 20, 10);
 
@@ -171,7 +171,7 @@ public class GetTogetherAccess_Tests
         context.CircleMemberships.Add(new CircleMembership { CircleId = 1, UserId = 20 });
         await context.SaveChangesAsync();
 
-        var circles = await new CircleSQLRepository(context).GetCirclesForUserAsync(20);
+        var circles = await new CircleRepository(context).GetCirclesForUserAsync(20);
 
         Assert.Equal(["Circle 1", "Second Circle"], circles.Select(circle => circle.Name));
     }
@@ -188,7 +188,7 @@ public class GetTogetherAccess_Tests
             new CircleMembership { CircleId = 1, UserId = 30, LeftUtc = DateTime.UtcNow });
         await context.SaveChangesAsync();
 
-        var members = await new CircleSQLRepository(context).GetMembersAsync(1, 10);
+        var members = await new CircleRepository(context).GetMembersAsync(1, 10);
 
         Assert.Equal([20, 10], members.Select(member => member.UserId));
         Assert.DoesNotContain(members, member => member.UserId == 30);
@@ -205,9 +205,9 @@ public class GetTogetherAccess_Tests
         context.InvitationCodes!.Add(new InvitationCode { InvitationCodeId = 1, CircleId = 1, CreatedByUserId = 10, Code = "private-invite" });
         await context.SaveChangesAsync();
 
-        var eventRepository = new EventSQLRepository(context);
+        var eventRepository = new EventRepository(context);
         var invitationRepository = new InvitationCodeSQLRepository(context);
-        var rsvpRepository = new RsvpSQLRepository(context);
+        var rsvpRepository = new RsvpRepository(context);
 
         Assert.Empty(await eventRepository.GetEventsForCircleAsync(1, 20));
         Assert.Null(await eventRepository.GetEventAsync(1, 20));
@@ -280,7 +280,7 @@ public class GetTogetherAccess_Tests
         AddUser(context, 20);
         context.CircleMemberships!.Add(new CircleMembership { CircleId = 1, UserId = 20 });
         await context.SaveChangesAsync();
-        var repository = new CircleSQLRepository(context);
+        var repository = new CircleRepository(context);
 
         await repository.RemoveMemberAsync(1, 20, 10);
 
@@ -294,7 +294,7 @@ public class GetTogetherAccess_Tests
     public async Task UserRepository_ResolvesExistingIdentityForRepeatOnboarding()
     {
         await using var context = CreateContext();
-        var repository = new UserSQLRepository(context);
+        var repository = new UserRepository(context);
         var existingUser = await repository.CreateUserAsync(new User
         {
             ExternalId = "existing-provider-subject",

@@ -79,9 +79,10 @@ builder.Services.AddSingleton<AppSettings>(settings);
 // ----- Configure Database Context and Repositories -----------------------------------------------------------------
 var configuredDataSource = appSettings["DataSource"];
 var connectionString = appSettings["DefaultConnection"];
-var useSqlDataSource = string.Equals(configuredDataSource, "SQL", StringComparison.OrdinalIgnoreCase)
-    || string.Equals(configuredDataSource, "SQLDB", StringComparison.OrdinalIgnoreCase)
-    || string.Equals(configuredDataSource, "DATABASE", StringComparison.OrdinalIgnoreCase);
+var useSqlDataSource = true;
+//var useSqlDataSource = string.Equals(configuredDataSource, "SQL", StringComparison.OrdinalIgnoreCase)
+//    || string.Equals(configuredDataSource, "SQLDB", StringComparison.OrdinalIgnoreCase)
+//    || string.Equals(configuredDataSource, "DATABASE", StringComparison.OrdinalIgnoreCase);
 
 if (useSqlDataSource && !string.IsNullOrWhiteSpace(connectionString))
 {
@@ -95,11 +96,11 @@ if (useSqlDataSource && !string.IsNullOrWhiteSpace(connectionString))
 // ----- Register Get Together domain repositories (SQL only; no JSON fallback for domain data) -------
 if (useSqlDataSource && !string.IsNullOrWhiteSpace(connectionString))
 {
-    builder.Services.AddScoped<ICircleRepository, CircleSQLRepository>();
-    builder.Services.AddScoped<IEventRepository, EventSQLRepository>();
+    builder.Services.AddScoped<ICircleRepository, CircleRepository>();
+    builder.Services.AddScoped<IEventRepository, EventRepository>();
     builder.Services.AddScoped<IInvitationCodeRepository, InvitationCodeSQLRepository>();
-    builder.Services.AddScoped<IRsvpRepository, RsvpSQLRepository>();
-    builder.Services.AddScoped<IUserRepository, UserSQLRepository>();
+    builder.Services.AddScoped<IRsvpRepository, RsvpRepository>();
+    builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IRecurrenceService, RecurrenceService>();
     builder.Services.AddScoped<ICalendarAggregationService, CalendarAggregationService>();
 }
