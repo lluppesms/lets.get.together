@@ -6,10 +6,6 @@
 >
 > **Last reviewed:** 2026-08-26
 
-### Rebrand and Purge update (2026-08-26)
-
-All legacy joke domain models (`Joke`, `JokeCategory`, `JokeRating`, `JokeJokeCategory`), repositories (`IJokeRepository`, `JokeSQLRepository`, `JokeJsonRepository`), API controllers (`JokeController`, `CategoryController`, `JokeImageController`), Blazor joke pages, sample JSON datasets, and SQL database joke tables/views/stored procedures have been completely purged. The solution, project files, assembly names, and namespaces have been rebranded from `DadABase.*` to `GetTogether.*` (`GetTogether.Data`, `GetTogether.Web`, `GetTogether.Tests`, `gettogether.net10.web.sln`, `GetTogetherDbContext`). All 74 unit tests and builds pass with 0 errors.
-
 ### Backend Phase 1 update (2026-08-25)
 
 The shared data project now includes the locked Event recurrence model (`IsRecurring`, `RsvpMode`, and `RecurrenceRule`) and the SQL database project includes the Get Together tables under the `Dad` schema. Invitation-code listing preserves the full circle audit trail, while redemption continues to require an active circle member, rejects duplicate active membership, and reactivates a former member's existing membership record.
@@ -129,18 +125,18 @@ src/
     Website/       Blazor Server web host, pages, components, APIs, services, static/data files
     Data/          Shared joke domain, EF Core context, repository interface and implementations
     Tests/         Web/data xUnit tests and coverage.runsettings
-    dadabase.net10.web.sln
+    gettogether.web.sln
   function/
     Function/      Azure Functions isolated worker host and HTTP triggers
     DataLayer/     Function data access
     Entities/      Function entities/DTOs
     Tests/         Function xUnit tests and test JSON
     TestHarness/   HTTP request assets where present
-    DadABase.Net10.Function.sln
+    gettogether.net10.Function.sln
   mcp/             Shared, Stdio, and SSE MCP projects; DadJokeMCP.sln
   console/         CLI host; DadJoke.console.sln
   analyzer/        AI/batch analyzer; DadJokeAnalyzer.sln
-  database/        SQL Server Database Project/DACPAC source; sql.database.sln
+  database/        SQL Server Database Project/DACPAC source; GetTogether.Sql.Database.sln
   Directory.Build.props
 
 infra/
@@ -152,7 +148,7 @@ playwright/        TypeScript Playwright smoke, basic, UI, and API suites; fixtu
 .github/
   copilot-instructions.md  Repository-wide Copilot rules
   instructions/             Focused authoring rules
-  skills/                   Repository skills, including Dadabase Playwright guidance
+  skills/                   Repository skills, including Playwright guidance
   agents/                   Custom agent modes
   prompts/                  Task prompts
   workflows/                GitHub Actions entry workflows and reusable templates
@@ -172,10 +168,10 @@ Build output such as `bin/`, `obj/`, publish folders, and test result folders ma
 
 | Area | Language / framework | Evidence and notes |
 | --- | --- | --- |
-| Web | C#, ASP.NET Core, Blazor Server, .NET 10 | `src/web/Website/DadABase.Web.csproj`, `Program.cs` |
+| Web | C#, ASP.NET Core, Blazor Server, .NET 10 | `src/web/Website/gettogether.web.csproj`, `Program.cs` |
 | UI | Razor/HTML/CSS, MudBlazor, Blazored LocalStorage, SweetAlert2 integration | Web project package references and `.razor`/`.razor.css` files |
-| Shared data | C#, EF Core 10, SQL Server provider, Newtonsoft.Json | `src/web/Data/DadABase.Data.csproj` |
-| Function API | C#, Azure Functions isolated worker, .NET 10 | `src/function/Function/DadABase.Function.csproj` |
+| Shared data | C#, EF Core 10, SQL Server provider, Newtonsoft.Json | `src/web/Data/gettogether.web.csproj` |
+| Function API | C#, Azure Functions isolated worker, .NET 10 | `src/function/Function/gettogether.Function.csproj` |
 | Console/analyzer | C#, .NET 10; console uses Spectre.Console; analyzer uses its AI/data packages | `src/console/`, `src/analyzer/` project files |
 | MCP | C#, .NET 10, Model Context Protocol SDK projects | `src/mcp/` project files |
 | Database | T-SQL / SQL Server Database Project / DACPAC | `src/database/` |
@@ -216,8 +212,8 @@ The function host uses `appsettings.json` if present, environment variables, and
 
 ### C# unit and component-facing tests
 
-- Web/data tests: `src/web/Tests/` in `DadABase.Tests.csproj`.
-- Function tests: `src/function/Tests/` in `DadABase.Function.Tests.csproj`.
+- Web/data tests: `src/web/Tests/` in `gettogether.Tests.csproj`.
+- Function tests: `src/function/Tests/` in `gettogether.Function.Tests.csproj`.
 - Framework: xUnit v3, xunit runner, Microsoft.NET.Test.Sdk, Moq, EF Core InMemory/TestHost where needed.
 - Shared setup/data: `BaseTest.cs`, `BaseWebTest.cs`, and `SampleData/` under web tests; function test data includes `Jokes.json`.
 - Coverage: both test projects point to a local `coverage.runsettings`; the web project includes coverage exclusions.
@@ -226,10 +222,10 @@ The function host uses `appsettings.json` if present, environment variables, and
 Useful commands:
 
 ```text
-dotnet test src/web/Tests/DadABase.Tests.csproj
-dotnet test src/function/Tests/DadABase.Function.Tests.csproj
-dotnet test src/web/dadabase.net10.web.sln
-dotnet test src/function/DadABase.Net10.Function.sln
+dotnet test src/web/Tests/gettogether.Tests.csproj
+dotnet test src/function/Tests/gettogether.Function.Tests.csproj
+dotnet test src/web/gettogether.web.sln
+dotnet test src/function/gettogether.Net10.Function.sln
 ```
 
 `CONTRIBUTING.md` also documents `dotnet test` from the web source folder and full Playwright setup. The exact solution/project command is preferable when narrowing a change.
@@ -246,7 +242,7 @@ dotnet test src/function/DadABase.Net10.Function.sln
 
 The local config currently targets the deployed application URL by default; inspect the selected config before assuming a local server is used. `package.json` currently declares Playwright dependencies but does not define named `test:*` scripts, so use `npx playwright test` with the appropriate config or the repository's pipeline commands. Install browsers with `npx playwright install` when needed.
 
-`dadabase-playwright-testing` under `.github/skills/` contains project-specific testing guidance and should be consulted for anonymous homepage, category, and search smoke work.
+`gettogether-playwright-testing` under `.github/skills/` contains project-specific testing guidance and should be consulted for anonymous homepage, category, and search smoke work.
 
 Phase 2 repository access tests in `src/web/Tests/RepositoryTests/GetTogetherAccess_Tests.cs` cover multi-circle listing, active-member rosters, circle privacy guards, invitation lifecycle/statuses, and member leave behavior. No authenticated circle Playwright fixture exists yet.
 
@@ -278,13 +274,13 @@ Azure DevOps mirrors much of the GitHub deployment capability but uses composed 
 - `jobs/` contains reusable build, deploy, scan, Playwright, DACPAC, SQL, function, container, and SBOM jobs.
 - `steps/` contains the lower-level deployment, scanning, SQL, GitHub dispatch, and DACPAC steps.
 - `vars/` contains shared and environment-specific settings (`dev`, `qa`, `prod`, common, service connections, and source location).
-- `.azdo/pipelines/readme.md` documents the shared Bicep parameter process, deployment types, environments, variable group `Dadabase.Demo`, and setup requirements.
+- `.azdo/pipelines/readme.md` documents the shared Bicep parameter process, deployment types, environments, variable group `gettogether.Demo`, and setup requirements.
 
 The Azure DevOps YAML authoring contracts are `.github/instructions/azure-devops-pipeline-instructions.md` and `.github/instructions/bicep-instructions.md`.
 
 ## 10. SQL and Data Operations
 
-The SQL database project is `src/database/sql.database.sqlproj`. Schema objects are under `src/database/Dad/`, including tables, views, schemas, and deployment scripts. `Patch/` holds manual or operational scripts. Related explanatory material is in `Docs/sql/`.
+The SQL database project is `src/database/GetTogether.Sql.Database.sqlproj`. Schema objects are under `src/database/Dad/`, including tables, views, schemas, and deployment scripts. `Patch/` holds manual or operational scripts. Related explanatory material is in `Docs/sql/`.
 
 For schema changes:
 
@@ -309,7 +305,7 @@ Use `.github/instructions/sql-database-dacpac-instructions.md` before editing SQ
 
 ### Skills
 
-`.github/skills/` contains reusable skills. `dadabase-playwright-testing` is the project-specific skill. Other local skills cover .NET/C#, EF Core, SQL, Bicep/Aspire/Azure DevOps, GitHub, testing, document generation, frontend/design, and skill creation. Some shared skills may also be supplied by the `my.copilot.skills` workspace referenced by `README.md` and `dadabase.demo.gh.code-workspace`; distinguish local repository skills from external workspace skills.
+`.github/skills/` contains reusable skills. `gettogether-playwright-testing` is the project-specific skill. Other local skills cover .NET/C#, EF Core, SQL, Bicep/Aspire/Azure DevOps, GitHub, testing, document generation, frontend/design, and skill creation. Some shared skills may also be supplied by the `my.copilot.skills` workspace referenced by `README.md` and `gettogether.demo.gh.code-workspace`; distinguish local repository skills from external workspace skills.
 
 ### Prompts and commands
 
@@ -322,9 +318,9 @@ Prerequisites are .NET 10 SDK, Node.js 18+, Git, and optionally gitleaks for sec
 The workspace tasks target the web project:
 
 ```text
-dotnet build src/web/Website/DadABase.Web.csproj
-dotnet publish src/web/Website/DadABase.Web.csproj
-dotnet watch run --project src/web/Website/DadABase.Web.csproj
+dotnet build src/web/Website/gettogether.Web.csproj
+dotnet publish src/web/Website/gettogether.Web.csproj
+dotnet watch run --project src/web/Website/gettogether.Web.csproj
 ```
 
 Run the web host from `src/web/Website/` with `dotnet run`. For a local JSON-mode demo, no SQL server is required; use User Secrets or environment variables for AI/auth/database settings.
@@ -345,7 +341,7 @@ For every source, infrastructure, workflow, test, or Copilot-customization chang
 ## 14. Known Caveats and Drift Signals
 
 - `MAP.md` must stay more current than generated architecture exports. `Docs/Application-Architecture.md` contains useful diagrams but has historical claims, including older package versions and an MSTest description that does not match the current xUnit project files.
-- The current web build task path in the workspace context is the valid path: `src/web/Website/DadABase.Web.csproj`. Older notes may mention stale or moved paths; verify task definitions before relying on them.
+- The current web build task path in the workspace context is the valid path: `src/web/Website/gettogether.Web.csproj`. Older notes may mention stale or moved paths; verify task definitions before relying on them.
 - `src/web/Website/applicationSettings.json` is a template and contains placeholder values. Treat all deployment secrets as external configuration.
 - The default Playwright config targets a deployed site and the root `package.json` has no named Playwright test scripts. Inspect config selection and invoke Playwright directly.
 - Data source selection changes behavior substantially. Tests and local runs may use JSON or in-memory data while production uses Azure SQL.

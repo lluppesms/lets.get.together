@@ -12,7 +12,7 @@ namespace GetTogether.Data.Models;
 /// Represents a sent reminder entry for event notifications.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[Table("ReminderLog", Schema = "Dad")]
+[Table("ReminderLog", Schema = "Meetings")]
 public class ReminderLog
 {
     /// <summary>

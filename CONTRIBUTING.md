@@ -56,11 +56,7 @@ Configuration is in [`.gitleaks.toml`](./.gitleaks.toml). It uses the default gi
 Automatically formats any staged `.cs` files to match the project code style using `dotnet format`. Formatted files are re-staged automatically so your commit always contains clean code.
 
 This runs against all solution files:
-- `src/web/dadabase.net10.web.sln`
-- `src/function/dadabase.net10.function.sln`
-- `src/mcp/DadJokeMCP.sln`
-- `src/console/DadJoke.console.sln`
-- `src/analyzer/DadJokeAnalyzer.sln`
+- `src/web/gettogether.web.sln`
 
 > You can also run `dotnet format <solution>` manually at any time.
 

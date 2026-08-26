@@ -7,9 +7,9 @@
 ```bash
 # Deploy infrastructure and code
 az deployment group create \
-  --resource-group rg-dadabase-dev \
+  --resource-group rg-LetsGetTogether-dev \
   --template-file infra/Bicep/main.bicep \
-  --parameters deploymentType=webapp appName=dadabase environmentCode=dev
+  --parameters deploymentType=webapp appName=LetsGetTogether environmentCode=dev
 ```
 
 ### Container Apps Deployment (Modern)
@@ -17,18 +17,18 @@ az deployment group create \
 ```bash
 # Deploy infrastructure
 az deployment group create \
-  --resource-group rg-dadabase-dev \
+  --resource-group rg-LetsGetTogether-dev \
   --template-file infra/Bicep/main.bicep \
-  --parameters deploymentType=containerapp appName=dadabase environmentCode=dev
+  --parameters deploymentType=containerapp appName=LetsGetTogether environmentCode=dev
 
 # Build and push image
-ACR_NAME=$(az acr list --resource-group rg-dadabase-dev --query "[0].name" -o tsv)
-az acr build --registry $ACR_NAME --image dadabase-web:latest --file src/web/Dockerfile src/web
+ACR_NAME=$(az acr list --resource-group rg-LetsGetTogether-dev --query "[0].name" -o tsv)
+az acr build --registry $ACR_NAME --image LetsGetTogether-web:latest --file src/web/Dockerfile src/web
 
 # Update container app
-CONTAINER_APP=$(az containerapp list -g rg-dadabase-dev --query "[0].name" -o tsv)
-az containerapp update --name $CONTAINER_APP --resource-group rg-dadabase-dev \
-  --image $ACR_NAME.azurecr.io/dadabase-web:latest
+CONTAINER_APP=$(az containerapp list -g rg-LetsGetTogether-dev --query "[0].name" -o tsv)
+az containerapp update --name $CONTAINER_APP --resource-group rg-LetsGetTogether-dev \
+  --image $ACR_NAME.azurecr.io/LetsGetTogether-web:latest
 ```
 
 ## CI/CD Workflows

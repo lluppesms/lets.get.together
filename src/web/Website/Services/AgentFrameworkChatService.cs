@@ -63,7 +63,7 @@ public class AgentFrameworkChatService : IAiChatService
         var chatClient = azureClient.GetChatClient(openaiDeploymentName);
 
         return chatClient.AsAIAgent(
-            name: "DadABaseAIHelper",
+            name: "LetsGetTogetherAIHelper",
             instructions: systemPrompt
         );
     }

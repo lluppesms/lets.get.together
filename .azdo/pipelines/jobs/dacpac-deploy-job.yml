@@ -7,8 +7,8 @@
 #   ALTER ROLE db_owner ADD MEMBER yourSP
 # And your ID that runs the app will need these permissions:
 #   CREATE USER [gettogether-app-id] FROM EXTERNAL PROVIDER;
-#   GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::[Dad] TO [gettogether-app-id];
-#   GRANT EXECUTE ON SCHEMA::[Dad] TO [gettogether-app-id];
+#   GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::[Meetings] TO [gettogether-app-id];
+#   GRANT EXECUTE ON SCHEMA::[Meetings] TO [gettogether-app-id];
 # See also https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-configure?view=azuresql&tabs=azure-cli#provision-microsoft-entra-admin-sql-database
 # ----------------------------------------------------------------------------------------------------
 # If you don't you might see this error:

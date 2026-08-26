@@ -12,24 +12,24 @@
     <ProjectGuid>{8b3e4f01-6a8c-4d2e-9f3a-1c5d7e8f9a0b}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
-    <PreDeploy Include="Dad\Pre.Deployment.sql" />
-    <PostDeploy Include="Dad\Post.Deployment.sql" />
+    <PreDeploy Include="Meetings\Pre.Deployment.sql" />
+    <PostDeploy Include="Meetings\Post.Deployment.sql" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Schemas\" />
-    <Folder Include="Dad\" />
-    <Folder Include="Dad\Stored Procedures" />
-    <Folder Include="Dad\Tables" />
-    <Folder Include="Dad\Views" />
+    <Folder Include="Meetings\" />
+    <Folder Include="Meetings\Stored Procedures" />
+    <Folder Include="Meetings\Tables" />
+    <Folder Include="Meetings\Views" />
   </ItemGroup>
   <ItemGroup>
-    <Build Include="Schemas\Dad.sql" />
-    <Build Include="Dad\Tables\User.sql" />
-    <Build Include="Dad\Tables\Circle.sql" />
-    <Build Include="Dad\Tables\CircleMembership.sql" />
-    <Build Include="Dad\Tables\InvitationCode.sql" />
-    <Build Include="Dad\Tables\Event.sql" />
-    <Build Include="Dad\Tables\RSVP.sql" />
-    <Build Include="Dad\Tables\ReminderLog.sql" />
+    <Build Include="Schemas\Meetings.sql" />
+    <Build Include="Meetings\Tables\User.sql" />
+    <Build Include="Meetings\Tables\Circle.sql" />
+    <Build Include="Meetings\Tables\CircleMembership.sql" />
+    <Build Include="Meetings\Tables\InvitationCode.sql" />
+    <Build Include="Meetings\Tables\Event.sql" />
+    <Build Include="Meetings\Tables\RSVP.sql" />
+    <Build Include="Meetings\Tables\ReminderLog.sql" />
   </ItemGroup>
 </Project>

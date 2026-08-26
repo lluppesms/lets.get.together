@@ -154,7 +154,7 @@ Expected configuration keys: `SendGrid:ApiKey`, `SendGrid:FromEmail`, `SendGrid:
 - **Backend & Data Purge**: Deleted `IJokeRepository.cs`, `JokeSQLRepository.cs`, `JokeJsonRepository.cs`, `Joke.cs`, `JokeCategory.cs`, `JokeDto.cs`, `JokeController.cs`, and sample joke JSON seed files. Renamed `DadABaseDbContext` to `GetTogetherDbContext` and updated all `DadABase.*` namespaces to `GetTogether.*`.
 - **Database & DACPAC**: Removed joke tables (`Dad.Joke`, `Dad.JokeCategory`, `Dad.Rating`), `CreateJokeView.sql`, and joke procedures. Updated `Post.Deployment.sql` to include only Get Together schema objects (`Circle`, `CircleMembership`, `Event`, `Rsvp`, `User`, `InvitationCode`, `ReminderLog`).
 - **UI & Frontend**: Updated Blazor components, layout files, and `_Imports.razor` to `GetTogether.*` namespaces and removed legacy joke UI elements.
-- **Projects & Solution**: Renamed `DadABase.Data.csproj` -> `GetTogether.Data.csproj`, `DadABase.Web.csproj` -> `GetTogether.Web.csproj`, `DadABase.Tests.csproj` -> `GetTogether.Tests.csproj`, and `dadabase.net10.web.sln` -> `gettogether.net10.web.sln`.
+- **Projects & Solution**: Renamed `DadABase.Data.csproj` -> `GetTogether.Data.csproj`, `DadABase.Web.csproj` -> `GetTogether.Web.csproj`, `DadABase.Tests.csproj` -> `GetTogether.Tests.csproj`, and `dadabase.net10.web.sln` -> `gettogether.web.sln`.
 - **Infrastructure & DevOps**: Updated Bicep modules, `Dockerfile`, `azure.yaml`, `appsettings.json`, GitHub Actions, and Azure DevOps pipelines to `GetTogether` / `gettogether`.
 - **Tests & Verification**: Purged legacy joke unit test classes and outdated Playwright specs. Verified 100% build clean and 74/74 xUnit tests passing in `GetTogether.Tests`.
 

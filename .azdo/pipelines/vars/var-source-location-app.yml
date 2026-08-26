@@ -5,7 +5,7 @@ variables:
   - name: appFolderName
     value: 'src/web'
   - name: appSolutionName
-    value: 'gettogether.net10.web'
+    value: 'gettogether.web'
 
   - name: appProjectFolderName
     value: 'Website'

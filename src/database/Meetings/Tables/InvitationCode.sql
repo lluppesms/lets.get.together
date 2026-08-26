@@ -1,4 +1,4 @@
-CREATE TABLE [Dad].[InvitationCode](
+CREATE TABLE [Meetings].[InvitationCode](
     [InvitationCodeId] [int] IDENTITY(1,1) NOT NULL,
     [CircleId] [int] NOT NULL,
     [Code] [nvarchar](64) NOT NULL,
@@ -9,16 +9,16 @@ CREATE TABLE [Dad].[InvitationCode](
     [RedeemedUtc] [datetime2](7) NULL,
     [RevokedUtc] [datetime2](7) NULL,
     CONSTRAINT [PK_InvitationCode] PRIMARY KEY CLUSTERED ([InvitationCodeId] ASC),
-    CONSTRAINT [FK_InvitationCode_Circle] FOREIGN KEY ([CircleId]) REFERENCES [Dad].[Circle] ([CircleId]) ON DELETE CASCADE,
-    CONSTRAINT [FK_InvitationCode_User_CreatedBy] FOREIGN KEY ([CreatedByUserId]) REFERENCES [Dad].[User] ([UserId]),
-    CONSTRAINT [FK_InvitationCode_User_RedeemedBy] FOREIGN KEY ([RedeemedByUserId]) REFERENCES [Dad].[User] ([UserId]) ON DELETE SET NULL
+    CONSTRAINT [FK_InvitationCode_Circle] FOREIGN KEY ([CircleId]) REFERENCES [Meetings].[Circle] ([CircleId]) ON DELETE CASCADE,
+    CONSTRAINT [FK_InvitationCode_User_CreatedBy] FOREIGN KEY ([CreatedByUserId]) REFERENCES [Meetings].[User] ([UserId]),
+    CONSTRAINT [FK_InvitationCode_User_RedeemedBy] FOREIGN KEY ([RedeemedByUserId]) REFERENCES [Meetings].[User] ([UserId]) ON DELETE SET NULL
 )
 GO
 
-ALTER TABLE [Dad].[InvitationCode] ADD CONSTRAINT [DF_InvitationCode_CreatedUtc] DEFAULT (getutcdate()) FOR [CreatedUtc]
+ALTER TABLE [Meetings].[InvitationCode] ADD CONSTRAINT [DF_InvitationCode_CreatedUtc] DEFAULT (getutcdate()) FOR [CreatedUtc]
 GO
 
-CREATE UNIQUE INDEX [IX_InvitationCode_Code] ON [Dad].[InvitationCode] ([Code])
+CREATE UNIQUE INDEX [IX_InvitationCode_Code] ON [Meetings].[InvitationCode] ([Code])
 GO
-CREATE INDEX [IX_InvitationCode_CircleId_CreatedUtc] ON [Dad].[InvitationCode] ([CircleId], [CreatedUtc])
+CREATE INDEX [IX_InvitationCode_CircleId_CreatedUtc] ON [Meetings].[InvitationCode] ([CircleId], [CreatedUtc])
 GO

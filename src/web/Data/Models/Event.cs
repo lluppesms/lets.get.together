@@ -12,7 +12,7 @@ namespace GetTogether.Data.Models;
 /// Represents an event scheduled within a circle.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[Table("Event", Schema = "Dad")]
+[Table("Event", Schema = "Meetings")]
 public class Event
 {
     /// <summary>

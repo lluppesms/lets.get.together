@@ -1,2 +1,2 @@
-CREATE SCHEMA [Dad];
+CREATE SCHEMA [Meetings];
 GO

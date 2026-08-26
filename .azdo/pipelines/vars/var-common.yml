@@ -22,7 +22,7 @@ variables:
   - name: webAppFolderName
     value: 'src/web/'
   - name: webAppSolutionName
-    value: 'gettogether.net10.web.sln'
+    value: 'gettogether.web.sln'
 
   - name: webAppProjectFolderName
     value: 'Website'
@@ -67,7 +67,7 @@ variables:
   - name: sqlAppFolderName
     value: 'src\sql.database\'
   - name: sqlAppSolutionName
-    value: 'sql.database.sln'
+    value: 'GetTogether.Sql.Database.sln'
   - name: sqlAppProjectName
     value: 'sql.database'
 

@@ -1,0 +1,11 @@
+﻿@GetTogether.Web_HostAddress = https://localhost:44349
+@APIKey=DadJokes!
+
+
+GET {{GetTogether.Web_HostAddress}}/api/joke
+APIKey: {{APIKey}}
+###
+
+GET {{GetTogether.Web_HostAddress}}/api/category/List
+APIKey: {{APIKey}}
+

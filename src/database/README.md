@@ -13,57 +13,60 @@ estimated_reading_time: 7
 
 ## Get Together SQL Database Project
 
-This is a SQL Server Database Project for the Get Together application. It currently contains inherited joke-domain schema objects while the data model is being transitioned to circles, events, and RSVPs.
+This is a SQL Server Database Project for the Get Together application. It defines the `Meetings` schema used to store circles, events, and RSVPs. The schema/folder name is `Meetings`.
 
 ## Project Structure
 
 ```text
 database/
-├── Dad/
+├── Meetings/
 │   ├── Tables/
-│   │   ├── Joke.sql              # Main jokes table
-│   │   ├── JokeCategory.sql      # Joke categories
-│   │   ├── JokeJokeCategory.sql  # Joke/category relationships
-│   │   └── JokeRating.sql        # User ratings for jokes
-│   ├── Views/
-│   │   └── vw_Jokes.sql          # Simplified view of active jokes
+│   │   ├── User.sql              # App users (linked to external auth identity)
+│   │   ├── Circle.sql            # Circles (private groups)
+│   │   ├── CircleMembership.sql  # User membership within a circle
+│   │   ├── InvitationCode.sql    # Invite codes used to join a circle
+│   │   ├── Event.sql             # Circle events (single or recurring)
+│   │   ├── RSVP.sql              # User RSVPs to events
+│   │   └── ReminderLog.sql       # Log of reminder notifications sent
 │   ├── Pre.Deployment.sql        # Drops legacy dbo objects for offline migration
 │   └── Post.Deployment.sql       # Post-deployment script
 ├── Schemas/
-│   └── Dad.sql                   # Dad schema definition
+│   └── Meetings.sql              # Meetings schema definition
 ├── Patch/                         # Patch scripts for updates
-└── sql.database.sqlproj          # SQL Server Database Project file
+└── GetTogether.Sql.Database.sqlproj          # SQL Server Database Project file
 ```
 
 ## Database Schema
 
 ### Tables
 
-**Joke**
-- Primary table storing joke text, rating, and metadata
-- Fields: JokeId, JokeTxt, Attribution, ImageTxt, SortOrderNbr, Rating, VoteCount, ActiveInd, CreateDateTime, CreateUserName, ChangeDateTime, ChangeUserName
-- CHECK constraint: ActiveInd IN ('Y', 'N')
+**User**
+- App user linked to an external authentication identity
+- Fields: UserId, ExternalId, DisplayName, EmailAddress, IsActive, CreatedUtc
 
-**JokeCategory**
-- Stores joke category definitions
-- Fields: JokeCategoryId, JokeCategoryTxt, SortOrderNbr, ActiveInd, CreateDateTime, CreateUserName, ChangeDateTime, ChangeUserName
-- CHECK constraint: ActiveInd IN ('Y', 'N')
+**Circle**
+- A private group that owns events and members
+- Fields: CircleId, Name, Description, CreatedByUserId, CreatedUtc, IsArchived
 
-**JokeJokeCategory**
-- Stores many-to-many relationships between jokes and categories
-- Fields: JokeId, JokeCategoryId, CreateDateTime, CreateUserName
-- Foreign keys: Dad.Joke and Dad.JokeCategory
+**CircleMembership**
+- Links a User to a Circle with a role (e.g. Member, Owner)
+- Fields: CircleMembershipId, CircleId, UserId, Role, JoinedUtc, LeftUtc
 
-**JokeRating**
-- Stores individual user ratings for jokes
-- Fields: JokeRatingId, JokeId, UserRating, CreateDateTime, CreateUserName
-- CHECK constraint: UserRating BETWEEN 1 AND 5
+**InvitationCode**
+- A code used to invite a new member into a Circle
+- Fields: InvitationCodeId, CircleId, Code, CreatedByUserId, CreatedUtc, ExpiresUtc, RedeemedByUserId, RedeemedUtc, RevokedUtc
 
-### Views
+**Event**
+- A single or recurring event belonging to a Circle
+- Fields: EventId, CircleId, Title, Details, StartsUtc, EndsUtc, IsRecurring, RsvpMode, RecurrenceRule, CreatedByUserId, CreatedUtc, CancelledUtc
 
-**vw_Jokes**
-- Simplified view showing active jokes with key information
-- Filters to ActiveInd = 'Y'
+**RSVP**
+- A user's RSVP response to an Event
+- Fields: RsvpId, EventId, CircleId, UserId, Status, Notes, OccurrenceDate, RespondedUtc
+
+**ReminderLog**
+- Log of reminder notifications sent for an Event
+- Fields: ReminderLogId, EventId, UserId, Channel, SentUtc, DeliveryState, ProviderMessageId
 
 ## Building the Project
 
@@ -76,7 +79,7 @@ database/
 ### Using MSBuild
 
 ```bash
-msbuild sql.database.sqlproj /p:Configuration=Release
+msbuild GetTogether.Sql.Database.sqlproj /p:Configuration=Release
 ```
 
 ### Using SQL Server Data Tools Build
@@ -86,7 +89,7 @@ msbuild sql.database.sqlproj /p:Configuration=Release
 cd src/database
 
 # Build the project
-SqlPackage.exe /Action:Build /SourceFile:sql.database.sqlproj
+SqlPackage.exe /Action:Build /SourceFile:GetTogether.Sql.Database.sqlproj
 ```
 
 ## Deploying the Database
@@ -95,14 +98,14 @@ SqlPackage.exe /Action:Build /SourceFile:sql.database.sqlproj
 
 ```bash
 SqlPackage.exe /Action:Publish \
-  /SourceFile:bin/Release/sql.database.dacpac \
-  /TargetConnectionString:"Server=tcp:yourserver.database.windows.net,1433;Initial Catalog=DadABase;Authentication=Active Directory Default;Encrypt=True;TrustServerCertificate=False;Connection Timeout=120;" \
+  /SourceFile:bin/Release/GetTogether.Sql.Database.dacpac \
+  /TargetConnectionString:"Server=tcp:yourserver.database.windows.net,1433;Initial Catalog=LetsGetTogether;Authentication=Active Directory Default;Encrypt=True;TrustServerCertificate=False;Connection Timeout=120;" \
   /p:ScriptDatabaseOptions=False
 ```
 
 For a fresh environment, publish the DACPAC to an empty database. The pre-deploy
-script is idempotent and does nothing when the legacy `dbo` DadABase objects are
-not present. Load starter data only if the environment should begin with jokes.
+script is idempotent and does nothing when the legacy `dbo` LetsGetTogether objects are
+not present. Load starter data only if the environment should begin with sample circles/events.
 
 ### Option 2: Using Visual Studio SSDT
 
@@ -122,12 +125,10 @@ See the `.azdo/pipelines/` folder for deployment pipeline examples.
 
 ## Populating with Data
 
-After deploying the database schema, populate it with jokes:
+After deploying the database schema, populate it with sample data:
 
-1. Navigate to the `/Docs/sql` folder
-2. Run `InsertDefaultData.sql` to populate the database with sample jokes
-
-The script includes approximately 3,000+ humor items across various categories.
+1. Navigate to the `Patch/` folder
+2. Run `InsertDefaultData.sql` to populate the database with sample users, circles, memberships, invitation codes, events, and RSVPs
 
 ## Bicep Infrastructure
 
@@ -140,9 +141,9 @@ Deploy infrastructure before deploying schema:
 
 ```bash
 az deployment group create \
-  --resource-group rg-dadabase-dev \
+  --resource-group rg-LetsGetTogether-dev \
   --template-file infra/Bicep/main.bicep \
-  --parameters sqlDatabaseName=DadABase
+  --parameters sqlDatabaseName=LetsGetTogether
 ```
 
 ## Reusability
@@ -167,18 +168,22 @@ data source=tcp:<databaseServerName>.database.windows.net,1433;Database=YourBase
 **LocalDB (Development)**
 
 ``` sql
-Server=(localdb)\\mssqllocaldb;Database=DadABase;Trusted_Connection=True;MultipleActiveResultSets=true
+Server=(localdb)\\mssqllocaldb;Database=LetsGetTogether;Trusted_Connection=True;MultipleActiveResultSets=true
 ```
 
 ## Entity Framework Integration
 
 This database schema is designed to work with Entity Framework Core. The corresponding C# models are located in:
-- `src/web/Website/Models/DatabaseTables/`
+- `src/web/Data/Models/`
 
 The models include:
-- `Joke.cs`
-- `JokeCategory.cs`
-- `JokeRating.cs`
+- `User.cs`
+- `Circle.cs`
+- `CircleMembership.cs`
+- `InvitationCode.cs`
+- `Event.cs`
+- `RSVP.cs`
+- `ReminderLog.cs`
 
 ## Patch Scripts
 
@@ -189,11 +194,10 @@ The `Patch/` folder is for database update scripts that need to be run manually 
 
 ## Version History
 
-- **v1.0** - Initial database schema with Joke, JokeCategory, and JokeRating tables
-- Support for active/inactive jokes via ActiveInd flag
+- **v2.0** - Renamed schema/folder to `Meetings`; schema now models Users, Circles, CircleMemberships, InvitationCodes, Events, RSVPs, and ReminderLog
+- **v1.0** - Initial database schema inherited from the LetsGetTogether joke app (Joke, JokeCategory, JokeRating tables)
 - Foreign key relationships with cascade rules
 - Default constraints for audit fields
-- CHECK constraints for data integrity
 
 ## Support
 

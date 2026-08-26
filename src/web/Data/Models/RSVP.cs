@@ -12,7 +12,7 @@ namespace GetTogether.Data.Models;
 /// Represents an RSVP from a user for an event.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[Table("RSVP", Schema = "Dad")]
+[Table("RSVP", Schema = "Meetings")]
 public class RSVP
 {
     /// <summary>

@@ -1,4 +1,4 @@
-CREATE TABLE [Dad].[User](
+CREATE TABLE [Meetings].[User](
     [UserId] [int] IDENTITY(1,1) NOT NULL,
     [ExternalId] [nvarchar](200) NOT NULL,
     [DisplayName] [nvarchar](200) NOT NULL,
@@ -9,12 +9,12 @@ CREATE TABLE [Dad].[User](
 )
 GO
 
-ALTER TABLE [Dad].[User] ADD CONSTRAINT [DF_User_IsActive] DEFAULT ((1)) FOR [IsActive]
+ALTER TABLE [Meetings].[User] ADD CONSTRAINT [DF_User_IsActive] DEFAULT ((1)) FOR [IsActive]
 GO
-ALTER TABLE [Dad].[User] ADD CONSTRAINT [DF_User_CreatedUtc] DEFAULT (getutcdate()) FOR [CreatedUtc]
+ALTER TABLE [Meetings].[User] ADD CONSTRAINT [DF_User_CreatedUtc] DEFAULT (getutcdate()) FOR [CreatedUtc]
 GO
 
-CREATE UNIQUE INDEX [IX_User_ExternalId] ON [Dad].[User] ([ExternalId])
+CREATE UNIQUE INDEX [IX_User_ExternalId] ON [Meetings].[User] ([ExternalId])
 GO
-CREATE UNIQUE INDEX [IX_User_EmailAddress] ON [Dad].[User] ([EmailAddress])
+CREATE UNIQUE INDEX [IX_User_EmailAddress] ON [Meetings].[User] ([EmailAddress])
 GO

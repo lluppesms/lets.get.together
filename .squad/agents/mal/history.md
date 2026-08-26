@@ -102,7 +102,7 @@ Coordinated the execution handoff for the Final Release Gate: Legacy Joke Domain
 
 Key decisions and team assignments recorded in `.squad/decisions/inbox/mal-legacy-purge-rebrand-handoff.md`:
 - **Scope**: Total purge of legacy joke models (`Joke.cs`, `JokeCategory.cs`), repositories (`IJokeRepository`, `JokeSQLRepository`, `JokeJsonRepository`), controllers (`JokeController`), SQL views/tables (`CreateJokeView.sql`), seed files, and legacy joke test suites/specs.
-- **Project & Namespace Renames**: `DadABase.Data` -> `GetTogether.Data`, `DadABase.Web` -> `GetTogether.Web`, `DadABase.Tests` -> `GetTogether.Tests`, `DadABaseDbContext` -> `GetTogetherDbContext`, and `dadabase.net10.web.sln` -> `gettogether.net10.web.sln`.
+- **Project & Namespace Renames**: `DadABase.Data` -> `GetTogether.Data`, `DadABase.Web` -> `GetTogether.Web`, `DadABase.Tests` -> `GetTogether.Tests`, `DadABaseDbContext` -> `GetTogetherDbContext`, and `dadabase.net10.web.sln` -> `gettogether.web.sln`.
 - **Assignments**:
   - **Simon**: Backend joke model/repository/controller removal, SQL database project cleanup, `DadABaseDbContext` -> `GetTogetherDbContext` rename, `.csproj`/`.sln` renames, and backend namespace updates.
   - **Kaylee**: Blazor components, pages, `_Imports.razor`, layouts, and UI `using` namespace updates.

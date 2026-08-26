@@ -41,31 +41,31 @@ projects:
   console:
     shortName: 'console'
     rootDirectory: 'src/console'
-    projectName: 'dadabase.net10.console'
+    projectName: 'GetTogether.Console'
     testDirectory: ''
     testProjectName: ''
 
   # MCP (Model Context Protocol) Server
   mcp:
     shortName: 'mcp'
-    rootDirectory: 'src/mcp/DadJokeMCP'
-    projectName: 'DadJokeMCP'
+    rootDirectory: 'src/mcp/GetTogetherMCP'
+    projectName: 'GetTogetherMCP'
     testDirectory: ''
     testProjectName: ''
 
   # MCP SSE Server
   mcpsse:
     shortName: 'mcpsse'
-    rootDirectory: 'src/mcp/DadJokeMCPSSE'
-    projectName: 'DadJokeMCPSSE'
+    rootDirectory: 'src/mcp/GetTogetherMCPSSE'
+    projectName: 'GetTogetherMCPSSE'
     testDirectory: ''
     testProjectName: ''
 
-  # Joke Analyzer
+  # GetTogether Analyzer
   analyzer:
     shortName: 'analyzer'
-    rootDirectory: 'src/analyzer'
-    projectName: 'JokeAnalyzer'
+    rootDirectory: 'src/gettogetheranalyzer'
+    projectName: 'GetTogetherAnalyzer'
     testDirectory: ''
     testProjectName: ''
 

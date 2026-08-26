@@ -53,8 +53,8 @@ The locked decision ledger requires Entra ID, Google, and Facebook in v1. Wash's
 - **CI/CD Pipelines (`.github/workflows/` and `.azdo/pipelines/`)**:
   - Updated `.github/config/projects.yml` to map `web` project name to `GetTogether.Web` and test project to `GetTogether.Tests`.
   - Updated `.github/workflows/5-run-sql-script.yml` database copy default to `GetTogetherV02` and resource group to `rg-gettogether-dev`.
-  - Updated `.azdo/pipelines/vars/var-common.yml` to `rg-gettogether-azdo`, `Get Together`, `gettogether.net10.web.sln`, `GetTogether.Web`, and `GetTogether.Tests`.
-  - Updated `.azdo/pipelines/vars/var-source-location-app.yml` to `src/web`, `gettogether.net10.web`, `Website`, `GetTogether.Web`, `Tests`, and `GetTogether.Tests`.
+  - Updated `.azdo/pipelines/vars/var-common.yml` to `rg-gettogether-azdo`, `Get Together`, `gettogether.web.sln`, `GetTogether.Web`, and `GetTogether.Tests`.
+  - Updated `.azdo/pipelines/vars/var-source-location-app.yml` to `src/web`, `gettogether.web`, `Website`, `GetTogether.Web`, `Tests`, and `GetTogether.Tests`.
   - Updated variable group references across 12 AzDO pipeline YAML files from `Dadabase.Demo` to `GetTogether.Demo` and updated container image name to `gettogether-web`.
   - Updated SBOM generator package parameters to `GetTogether` and repository link to `https://github.com/lluppesms/lets.get.together`.
-- **Verification**: `az bicep build` succeeds (0 errors), `dotnet build src/web/gettogether.net10.web.sln` succeeds (0 errors), and `dotnet test src/web/Tests/GetTogether.Tests.csproj` passes all 74 xUnit tests.
+- **Verification**: `az bicep build` succeeds (0 errors), `dotnet build src/web/gettogether.web.sln` succeeds (0 errors), and `dotnet test src/web/Tests/GetTogether.Tests.csproj` passes all 74 xUnit tests.

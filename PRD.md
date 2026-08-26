@@ -11,7 +11,7 @@ Think EventBrite, minus the ticketing, the public discovery feed, the payment pr
 
 ## 2. Background
 
-This repository started life as a fork/copy of the `dadabase.demo` project (a .NET 10 Blazor + Azure Functions + Azure SQL + Bicep + Playwright reference app). That codebase is being repurposed — not just referenced — as the working foundation for Get Together. **Rebranding/renaming the copied code (namespaces, folder names, project names, sample data) is the first implementation task after this PRD is approved**, not part of this document's scope.
+This repository was based on the excellent example in the the `dadabase.demo` project (a .NET 10 Blazor + Azure Functions + Azure SQL + Bicep + Playwright reference app). That codebase is being repurposed — not just referenced — as the working foundation for Get Together. **Rebranding/renaming the copied code (namespaces, folder names, project names, sample data) is the first implementation task after this PRD is approved**, not part of this document's scope.
 
 ## 3. Goals
 

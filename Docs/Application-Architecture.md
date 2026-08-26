@@ -40,11 +40,11 @@ The repository serves as a reference implementation for:
 lets.get.together/
 ├── src/                         Application source code
 │   ├── web/                     Blazor Web App + Data layer
-│   │   ├── Website/             DadABase.Web (.NET 10 Blazor Server)
-│   │   ├── Data/                DadABase.Data (shared data library)
+│   │   ├── Website/             LetsGetTogether.Web (.NET 10 Blazor Server)
+│   │   ├── Data/                LetsGetTogether.Data (shared data library)
 │   │   └── Tests/               Unit tests (MSTest)
 │   ├── function/                Azure Function (serverless API)
-│   │   ├── Function/            DadABase.Function (.NET 10 Isolated Worker)
+│   │   ├── Function/            LetsGetTogether.Function (.NET 10 Isolated Worker)
 │   │   ├── DataLayer/           Function-specific data layer
 │   │   ├── Entities/            Function-specific entity models
 │   │   └── Tests/               Function unit tests
@@ -84,7 +84,7 @@ lets.get.together/
 └────────────────────────────┬────────────────────────────────────────────┘
                              │ HTTPS
 ┌────────────────────────────▼────────────────────────────────────────────┐
-│                  DadABase.Web  (Blazor Server / .NET 10)                │
+│                  LetsGetTogether.Web  (Blazor Server / .NET 10)                │
 │                                                                         │
 │  ┌────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
 │  │  Blazor    │  │  REST API    │  │  AI Helper   │  │  Export      │  │
@@ -92,7 +92,7 @@ lets.get.together/
 │  └──────┬─────┘  └──────┬───────┘  └──────┬───────┘  └──────────────┘  │
 │         │               │                  │                             │
 │  ┌──────▼───────────────▼──────────────────▼───────────────────────┐   │
-│  │              DadABase.Data  (Shared Data Library)               │   │
+│  │              LetsGetTogether.Data  (Shared Data Library)               │   │
 │  │   IJokeRepository ─┬─ JokeSQLRepository (EF Core + Azure SQL)  │   │
 │  │                    └─ JokeJsonRepository (flat file fallback)   │   │
 │  └──────────────────────────────────────────────────────────────────┘  │
@@ -106,7 +106,7 @@ lets.get.together/
 └─────────────────┘  └──────────────────┘  └────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                  DadABase.Function  (Azure Functions v4)                │
+│                  LetsGetTogether.Function  (Azure Functions v4)                │
 │                  .NET 10 Isolated Worker / Flex Consumption Plan        │
 │   - HTTP Trigger (joke API)                                             │
 │   - Health Check Trigger                                                │
@@ -131,13 +131,13 @@ The application supports two data sources, switchable via the `DataSource` confi
 
 This is implemented via the repository pattern (`IJokeRepository`) with two concrete implementations:
 - `JokeJsonRepository` — reads from `Data/Jokes.json`
-- `JokeSQLRepository` — uses EF Core with `DadABaseDbContext`
+- `JokeSQLRepository` — uses EF Core with `LetsGetTogetherDbContext`
 
 ---
 
 ## 4. Source Code Projects
 
-### 4.1 DadABase.Web
+### 4.1 LetsGetTogether.Web
 
 | Property | Value |
 |----------|-------|
@@ -145,7 +145,7 @@ This is implemented via the repository pattern (`IJokeRepository`) with two conc
 | Framework | .NET 10 (`net10.0`) |
 | Project type | `Microsoft.NET.Sdk.Web` (Blazor Server) |
 | UI library | MudBlazor 9.2.0 |
-| Solution | `dadabase.net10.web.sln` |
+| Solution | `LetsGetTogether.net10.web.sln` |
 
 **Key NuGet packages:**
 
@@ -209,13 +209,13 @@ This is implemented via the repository pattern (`IJokeRepository`) with two conc
 - `JokeDisplayComponent` — reusable joke card
 - `MessageBubbleComponent` — dialog/chat bubble
 
-### 4.2 DadABase.Data
+### 4.2 LetsGetTogether.Data
 
 | Property | Value |
 |----------|-------|
 | Path | `src/web/Data/` |
 | Framework | .NET 10 |
-| Referenced by | DadABase.Web |
+| Referenced by | LetsGetTogether.Web |
 
 **Domain models:**
 
@@ -239,7 +239,7 @@ FindBySearchText() - text + category search
 Save() / Delete()  - write operations
 ```
 
-### 4.3 DadABase.Function
+### 4.3 LetsGetTogether.Function
 
 | Property | Value |
 |----------|-------|
@@ -247,7 +247,7 @@ Save() / Delete()  - write operations
 | Framework | .NET 10 (`net10.0`) |
 | Runtime | Azure Functions v4, Isolated Worker |
 | Plan | Flex Consumption |
-| Solution | `dadabase.net10.function.sln` |
+| Solution | `LetsGetTogether.net10.function.sln` |
 
 **HTTP triggers:**
 
@@ -257,8 +257,8 @@ Save() / Delete()  - write operations
 | `TriggerHealthCheck` | `TriggerHealthCheck.cs` | Health check endpoint |
 
 **Supporting projects:**
-- `DadABase.DataLayer` — EF Core data access
-- `DadABase.Entities` — Entity definitions
+- `LetsGetTogether.DataLayer` — EF Core data access
+- `LetsGetTogether.Entities` — Entity definitions
 
 ### 4.4 MCP Servers
 
@@ -571,7 +571,7 @@ Key application settings (`AppSettings` / `applicationSettings.json`):
 
 | Pattern | Where Used | Description |
 |---------|-----------|-------------|
-| Repository Pattern | `DadABase.Data` | `IJokeRepository` abstracts data source (JSON vs SQL) |
+| Repository Pattern | `LetsGetTogether.Data` | `IJokeRepository` abstracts data source (JSON vs SQL) |
 | Code-Behind | All Blazor pages | `.razor` + `.razor.cs` separation of concerns |
 | Scoped CSS | All components | `.razor.css` per component |
 | Dependency Injection | `Program.cs` | All services registered via DI |

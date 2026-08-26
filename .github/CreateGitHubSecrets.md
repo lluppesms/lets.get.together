@@ -1,12 +1,12 @@
 # Set up GitHub Secrets
 
-The GitHub workflows in this project require several secrets set at the repository level.
+Use a GitHub environment for each deployment target, such as `dev` or `prod`. Put environment-specific values there; repository-level values are appropriate only when they are shared. The workflow parameter replacement step reads both `vars.*` and `secrets.*`.
 
 ---
 
 ## Azure Credentials
 
-Before you begin, you will need to set up the Azure Credentials secrets in the GitHub Secrets at the Repository level (or the environment level).  These secrets and credentials will allow the GitHub Actions to deploy into Azure.
+The OIDC deployment workflows require these environment-scoped secrets:
 
 See the reference links below for more info on how to create the service principal and set up the Federated Credentials.
 
@@ -28,27 +28,27 @@ Once the credentials are set up, customize and run this command to create these 
 ``` bash
 gh auth login
 
-gh secret set --env dev AZURE_TENANT_ID -b <GUID>
-gh secret set --env dev CICD_CLIENT_ID -b <GUID>
-gh secret set --env dev AZURE_SUBSCRIPTION_ID -b <yourAzureSubscriptionId>
+gh secret set --env <ENV-NAME> AZURE_CLIENT_ID -b <GUID-application-client-id>
+gh secret set --env <ENV-NAME> AZURE_TENANT_ID -b <GUID-Entra-tenant>
+gh secret set --env <ENV-NAME> AZURE_SUBSCRIPTION_ID -b <subscription-id>
 ```
 
 ---
 
 ## Bicep Configuration Values
 
-These variables and secrets are used by the Bicep templates to configure the resource names that are deployed.  Make sure the APP_NAME variable is unique to your deploy. It will be used as the basis for the website name and for all the other Azure resources, which must be globally unique.
+These values are substituted into `infra/Bicep/main.bicepparam` when the Bicep workflows run. `APP_NAME` must be unique because it contributes to Azure resource names.
 
 To create these additional secrets and variables, customize and run this command:
 
-Secret Values:
+### Core repository or environment variables:
 
 ``` bash
 gh auth login
 
-gh variable set APP_NAME -b 'full-dadabase'
+gh variable set APP_NAME -b 'full-gettogether'
 gh variable set RESOURCE_GROUP_LOCATION -b 'centralus'
-gh variable set RESOURCE_GROUP_PREFIX -b 'rg-dadabase' 
+gh variable set RESOURCE_GROUP_PREFIX -b 'rg-gettogether' 
 gh variable set INSTANCE_NUMBER -b 1
 gh variable set API_KEY -b 'somesecretstring'
 
@@ -64,8 +64,8 @@ gh variable set OPENAI_CHAT_TEMPERATURE -b '0.7'
 gh variable set OPENAI_CHAT_TOPP -b '0.95'
 gh variable set OPENAI_IMAGE_DEPLOYMENTNAME -b 'gpt-image-1.5'
 
-gh variable set SQL_SERVER_NAME_PREFIX -b 'your-dadabase-server'
-gh variable set SQL_DATABASE_NAME -b 'DadABase'
+gh variable set SQL_SERVER_NAME_PREFIX -b 'your-gettogether-server'
+gh variable set SQL_DATABASE_NAME -b 'gettogether'
 gh variable set SQLADMIN_LOGIN_USERID -b 'youruser@yourdomain.com'
 gh variable set SQLADMIN_LOGIN_USERSID -b 'yoursid'
 gh variable set SQLADMIN_LOGIN_TENANTID -b 'yourtennant'

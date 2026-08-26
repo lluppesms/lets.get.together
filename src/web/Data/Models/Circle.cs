@@ -12,7 +12,7 @@ namespace GetTogether.Data.Models;
 /// Represents a social circle in the Get Together domain.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[Table("Circle", Schema = "Dad")]
+[Table("Circle", Schema = "Meetings")]
 public class Circle
 {
     /// <summary>

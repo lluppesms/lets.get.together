@@ -11,6 +11,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 
 # Install required dependencies for Azure Identity MSAL runtime
 RUN apt-get update && apt-get install -y \
+    curl \
     libdbus-1-3 \
     libx11-6 \
     libglib2.0-0 \
@@ -67,5 +68,8 @@ COPY --from=publish /app/publish .
 ENV ASPNETCORE_URLS=http://+:8080
 ENV DOTNET_RUNNING_IN_CONTAINER=true
 ENV ASPNETCORE_HTTP_PORTS=8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl --fail --silent http://localhost:8080/ || exit 1
 
 ENTRYPOINT ["dotnet", "GetTogether.Web.dll"]
