@@ -3,6 +3,10 @@
 ## Project Context
 
 - **Project:** Get Together
+
+## Learnings
+
+📌 Team update (2026-08-26T00:00:00Z): The SQL schema is now `Meetings` (renamed from `Dad`) — decided by Simon. Table scripts moved to `src/database/Meetings/`, EF Core model `Schema` attributes updated to match. Affects deployment scripts and any UI/data assumptions referencing the old `Dad` schema name.
 - **Owner:** Lyle MS Luppes
 - **Stack:** Azure Bicep, Azure App Service, Azure SQL, GitHub Actions/Azure DevOps
 - **Requirements:** `prd.md`
