@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Name>sql.database</Name>
     <TargetFramework>net472</TargetFramework>
-    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql170DatabaseSchemaProvider</DSP>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.SqlAzureV12DatabaseSchemaProvider</DSP>
     <ModelCollation>1033,CI</ModelCollation>
     <EnableDefaultSqlItems>False</EnableDefaultSqlItems>
     <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
