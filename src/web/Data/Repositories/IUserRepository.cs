@@ -6,9 +6,9 @@
 // User Repository Interface
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Repositories;
+namespace GetTogether.Data.Repositories;
 
 /// <summary>
 /// Represents the repository interface for resolving and managing application users.

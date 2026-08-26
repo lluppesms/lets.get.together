@@ -6,9 +6,9 @@
 // Event Repository and Recurrence Expansion Tests
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Helpers;
+using GetTogether.Data.Helpers;
 
-namespace DadABase.Tests;
+namespace GetTogether.Tests;
 
 [ExcludeFromCodeCoverage]
 public class EventRepository_Tests
@@ -416,15 +416,15 @@ public class EventRepository_Tests
     }
 
     // Helper methods
-    private static DadABaseDbContext CreateContext()
+    private static GetTogetherDbContext CreateContext()
     {
-        var options = new DbContextOptionsBuilder<DadABaseDbContext>()
+        var options = new DbContextOptionsBuilder<GetTogetherDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        return new DadABaseDbContext(options);
+        return new GetTogetherDbContext(options);
     }
 
-    private static void SeedCircle(DadABaseDbContext context, int circleId, int creatorUserId)
+    private static void SeedCircle(GetTogetherDbContext context, int circleId, int creatorUserId)
     {
         AddUser(context, creatorUserId);
         context.Circles!.Add(new Circle
@@ -441,7 +441,7 @@ public class EventRepository_Tests
         context.SaveChanges();
     }
 
-    private static void AddUser(DadABaseDbContext context, int userId, string displayName = null)
+    private static void AddUser(GetTogetherDbContext context, int userId, string displayName = null)
     {
         context.Users!.Add(new User
         {

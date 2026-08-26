@@ -1,8 +1,8 @@
-namespace DadABase.Tests;
+namespace GetTogether.Tests;
 
-using DadABase.Data;
-using DadABase.Data.Models;
-using DadABase.Data.Repositories;
+using GetTogether.Data;
+using GetTogether.Data.Models;
+using GetTogether.Data.Repositories;
 
 [ExcludeFromCodeCoverage]
 public class GetTogetherAccess_Tests
@@ -309,15 +309,15 @@ public class GetTogetherAccess_Tests
         Assert.Equal(existingUser.EmailAddress, resolvedUser.EmailAddress);
     }
 
-    private static DadABaseDbContext CreateContext()
+    private static GetTogetherDbContext CreateContext()
     {
-        var options = new DbContextOptionsBuilder<DadABaseDbContext>()
+        var options = new DbContextOptionsBuilder<GetTogetherDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        return new DadABaseDbContext(options);
+        return new GetTogetherDbContext(options);
     }
 
-    private static void SeedCircle(DadABaseDbContext context, int circleId, int creatorUserId)
+    private static void SeedCircle(GetTogetherDbContext context, int circleId, int creatorUserId)
     {
         AddUser(context, creatorUserId);
         context.Circles!.Add(new Circle
@@ -334,7 +334,7 @@ public class GetTogetherAccess_Tests
         context.SaveChanges();
     }
 
-    private static void AddUser(DadABaseDbContext context, int userId, string displayName = null)
+    private static void AddUser(GetTogetherDbContext context, int userId, string displayName = null)
     {
         context.Users!.Add(new User
         {

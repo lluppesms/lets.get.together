@@ -1,4 +1,4 @@
-﻿namespace DadABase.Web.Models.Application;
+namespace GetTogether.Web.Models.Application;
 
 using Newtonsoft.Json;
 

@@ -6,7 +6,7 @@
 // CircleMembership Table
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data.Models;
+namespace GetTogether.Data.Models;
 
 /// <summary>
 /// Represents membership of a user in a circle.

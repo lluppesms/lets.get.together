@@ -1,4 +1,4 @@
-namespace DadABase.Web.Helpers;
+namespace GetTogether.Web.Helpers;
 
 /// <summary>
 /// Registers AI service abstractions and provider implementations.

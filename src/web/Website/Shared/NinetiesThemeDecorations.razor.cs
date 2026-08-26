@@ -6,7 +6,7 @@
 // Nineties decorations code-behind
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Web.Shared;
+namespace GetTogether.Web.Shared;
 
 /// <summary>
 /// Controls 90s-themed decorative elements and hit counter state.

@@ -6,9 +6,9 @@
 // Recurrence Expander Helper
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Helpers;
+namespace GetTogether.Data.Helpers;
 
 /// <summary>
 /// Helper utility for expanding recurring events into occurrence start dates.

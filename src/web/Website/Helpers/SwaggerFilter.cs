@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------------
 using Microsoft.OpenApi;
 
-namespace DadABase.Web;
+namespace GetTogether.Web;
 
 /// <summary>
 /// Swagger Filters

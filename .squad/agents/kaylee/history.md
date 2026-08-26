@@ -46,3 +46,26 @@ The locked decision ledger confirms Entra ID, Google, and Facebook are in v1. Ka
 - Embedded `<RsvpRoster>` component (`Components/RsvpRoster.razor`) displaying grouped attendee lists (Accepted, Maybe, Declined, Awaiting Response) with member avatars, initials, display names, email addresses, optional notes, search filtering, and count badges.
 - Integrated "Send Reminder" workflow in `Pages/EventDetail.razor` with an accessible modal dialog displaying target unanswered member count (`undecidedMembers.Count`), reminder target details, SendGrid integration via `INotificationService.SendReminderEmailAsync`, and member permission checks (per OQ-1).
 - Kept UI fully responsive and accessible with single-quote `@onclick` handlers, `aria-pressed`, `aria-modal`, and theme variable styling (`var(--card-bg-light)`, `var(--card-bg-dark)`). Verified 0 build errors in `DadABase.Web` and all 90 xUnit tests passing.
+
+### 2026-08-26 - Phase 5 UI for Calendar Aggregation & Views
+
+- Replaced Phase 0 placeholder at `Pages/Calendar.razor` and created `Pages/Calendar.razor.css` with view switcher (Month View vs. Agenda View), Month navigation controls (Prev/Next month buttons, Today jump button, Current Month/Year header), and Circle filter dropdown ("All My Circles" or specific circle).
+- Implemented `Components/MonthCalendar.razor` and `Components/MonthCalendar.razor.css` rendering a 7-column calendar grid for the selected month, day cells with current/padding month states and today marker, event chips color-coded by circle ID using 6 distinct light/dark theme variants (`circle-theme-0` through `circle-theme-5`), and day cell click drill-down modal/drawer displaying day event details, formatted times, location, RSVP status, and link to `/events/detail/{EventId}`.
+- Implemented `Components/AgendaView.razor` and `Components/AgendaView.razor.css` displaying chronological event lists grouped by date header, with circle color badges, start/end time, location, RSVP status badge, attendance count summaries, and detail links.
+- Verified responsive layout for mobile and desktop, light/dark mode theme variable compliance, 0 build errors in `DadABase.Web`, and clean execution of all xUnit test suites.
+
+### 2026-08-26 - Phase 6 UI Audit & Cleanup
+
+- Audited all Blazor pages (`Pages/`), components (`Components/`), shared layouts (`Shared/`), and static files (`wwwroot/`, CSS) in `src/web/Website/`.
+- Purged stale legacy joke Blazor pages (`Pages/JokeDetail.razor`, `Pages/JokeEditor.razor`, `Pages/Random.razor`, `Pages/Export.razor`, and code-behinds/CSS files) and legacy components (`Components/JokeDisplayComponent.razor`, code-behind, and CSS).
+- Verified `Shared/NavMenu.razor` and `Shared/MainLayout.razor` contain 100% Get Together branding with navigation links to Home (`/`), Search (`/search`), Circles (`/circles`), Events (`/events`), Calendar (`/calendar`), About (`/about`), and Admin (`/admin`), and zero legacy joke links or categories.
+- Updated `Pages/Search.razor` and `Pages/Search.razor.cs` to filter Get Together events and circles matching domain model properties (`e.Title`, `e.Details`, `circle.Name`, `evt.StartsUtc`).
+- Updated `applicationSettings.json` AppDescription to `"An ASP.NET Core web app for simple, private event planning for real friends"` and cleaned up legacy test comments in `Pages/Admin.razor.cs`.
+- Verified 0 build errors in `DadABase.Web.csproj` and 100% pass rate across all 99 xUnit tests in `DadABase.Tests.csproj`.
+
+### 2026-08-26 - Phase 6/7 UI Rebrand Completion
+
+- Verified and updated `@using GetTogether.Data`, `@using GetTogether.Data.Models`, `@using GetTogether.Data.Repositories`, and `@using GetTogether.Web` in `src/web/Website/_Imports.razor`.
+- Explicitly verified and added `@namespace GetTogether.Web.Pages`, `@namespace GetTogether.Web.Components`, `@namespace GetTogether.Web.Shared`, and `@namespace GetTogether.Web` across all Blazor pages (`About.razor`, `Admin.razor`), components (`MessageBubbleComponent.razor`), layouts (`LoginDisplay.razor`, `MainLayout.razor`, `NavMenu.razor`), and root (`App.razor`).
+- Audited all UI components, layouts, pages, and CSS styles to verify zero references remain to legacy "Dad Jokes", "Dadabase", "Jokes", or joke domain items. Refactored legacy CSS classes in `Search.razor.css` (`.joke-*` -> `.event-*`) and `wwwroot/css/site.css` (`.JokeCard`/`.JokeText`/`.JokeCategory`/`.joke-image` -> `.EventCard`/`.EventText`/`.EventCategory`/`.event-image`).
+- Verified 0 build errors for `GetTogether.Web.csproj` and `gettogether.net10.web.sln` and 100% pass rate (74/74 tests) in `GetTogether.Tests.csproj`.

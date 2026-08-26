@@ -1,8 +1,9 @@
-@using DadABase.Web.Models.Application
+@namespace GetTogether.Web.Shared
+@using GetTogether.Web.Models.Application
 @inherits LayoutComponentBase
 @inject IBuildInfoService BuildInfoService
 @inject IJSRuntime JS
-@inject DadABase.Web.Repositories.ThemeService ThemeService
+@inject GetTogether.Web.Repositories.ThemeService ThemeService
 
 <PageTitle>@(isNinetiesTheme ? "The Grand Get Together" : Data.Constants.ApplicationTitle)</PageTitle>
 

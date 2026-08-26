@@ -1,4 +1,4 @@
-namespace DadABase.Data.Models;
+namespace GetTogether.Data.Models;
 
 /// <summary>
 /// Determines how RSVPs apply to a recurring event.

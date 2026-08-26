@@ -6,7 +6,7 @@
 // Test Mocked Stored Proc Data
 // </summary>
 //-----------------------------------------------------------------------
-//namespace DadABase.SampleData;
+//namespace GetTogether.SampleData;
 ///// <summary>
 ///// Test Project Data
 ///// </summary>

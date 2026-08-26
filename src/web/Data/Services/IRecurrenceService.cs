@@ -6,9 +6,9 @@
 // Recurrence Service Interface
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Services;
+namespace GetTogether.Data.Services;
 
 /// <summary>
 /// Service interface for expanding recurring events into individual occurrence instances.

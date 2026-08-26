@@ -1,15 +1,17 @@
 ---
-updated_at: 2026-08-26T22:00:00Z
-focus_area: Phase 4 (RSVP Workflow & Reminder Notifications) Complete
+updated_at: 2026-08-26T23:59:00Z
+focus_area: Legacy Joke Domain Purge & Solution-Wide Rebrand Complete
 active_issues: []
 ---
 
 # What We're Focused On
 
-Phase 4 (RSVP Workflow & Reminder Notifications) is fully implemented, verified, and complete.
+The Legacy Joke Domain Purge and Solution-Wide Rebrand (`DadABase` -> `GetTogether`) is fully executed, verified, and complete with all 74 xUnit tests passing and zero build errors across the rebranded solution (`gettogether.net10.web.sln`).
 
 ### Status Highlights
-- **Build Status**: 0 build errors across `DadABase.Data`, `DadABase.Web`, and `DadABase.Tests`.
-- **Test Suite**: All 90 xUnit tests passing (including RSVP upserts, series and occurrence-level responses, attendance counts, reminder audience targeting, ReminderLog persistence, and member-leave RSVP deletion).
-- **Implementation**: `IRsvpRepository`, `RsvpSQLRepository`, `INotificationService`, `SendGridNotificationService`, and `CircleSQLRepository` RSVP cleanup are fully implemented, verified, and registered in DI.
-- **Next Steps**: Ready for Phase 5 or user direction.
+- **Build Status**: 0 build errors across `GetTogether.Data`, `GetTogether.Web`, and `GetTogether.Tests`.
+- **Test Suite**: All 74 xUnit tests passing cleanly in `GetTogether.Tests`.
+- **Legacy Joke Purge**: Complete removal of legacy joke domain code, models (`Joke.cs`, `JokeCategory.cs`), repositories (`IJokeRepository`, `JokeSQLRepository`), controllers (`JokeController.cs`), SQL views (`CreateJokeView.sql`), and legacy test assets.
+- **Solution-Wide Rebrand**: Renamed projects to `GetTogether.Data.csproj`, `GetTogether.Web.csproj`, `GetTogether.Tests.csproj`, solution to `gettogether.net10.web.sln`, context to `GetTogetherDbContext`, and updated all `DadABase.*` namespaces to `GetTogether.*`.
+- **Infrastructure & Pipelines**: Bicep templates, `Dockerfile`, `azure.yaml`, and build scripts updated to reference `GetTogether` / `gettogether`.
+- **Next Steps**: Solution is fully rebranded, verified, and ready for release.

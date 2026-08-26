@@ -6,7 +6,7 @@
 // About Page Code-Behind
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Web.Pages;
+namespace GetTogether.Web.Pages;
 
 /// <summary>
 /// About Page Code-Behind

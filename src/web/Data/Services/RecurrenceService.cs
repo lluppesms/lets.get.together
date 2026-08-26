@@ -7,9 +7,9 @@
 // </summary>
 //-----------------------------------------------------------------------
 using System.Text.RegularExpressions;
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Services;
+namespace GetTogether.Data.Services;
 
 /// <summary>
 /// Service for expanding recurring events (Weekly, Biweekly, Monthly) into occurrence instances.

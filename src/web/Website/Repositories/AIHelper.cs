@@ -1,6 +1,6 @@
-using DadABase.Web.Helpers;
+using GetTogether.Web.Helpers;
 
-namespace DadABase.Web.Repositories;
+namespace GetTogether.Web.Repositories;
 
 /// <summary>
 /// AI helper that keeps joke-specific prompt composition and response parsing while delegating model calls to AI services.
@@ -29,7 +29,7 @@ public class AIHelper : IAIHelper
     private static string ReadPromptFile(string fileName)
     {
         var promptPath = Path.Combine(AppContext.BaseDirectory, "Data", fileName);
-        return File.ReadAllText(promptPath);
+        return File.Exists(promptPath) ? File.ReadAllText(promptPath) : string.Empty;
     }
 
     /// <summary>

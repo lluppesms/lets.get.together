@@ -1,6 +1,223 @@
 @page "/calendar"
+@attribute [Authorize]
+@namespace GetTogether.Web.Pages
+@using System.Security.Claims
+@using GetTogether.Data.Models
+@using GetTogether.Data.Repositories
+@using GetTogether.Web.Components
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IServiceProvider Services
+@inject NavigationManager Navigation
 
 <PageTitle>Calendar | Get Together</PageTitle>
 
-<h1>Calendar</h1>
-<p>This area is part of the Get Together Phase 0 conversion.</p>
+<main class="calendar-page" aria-labelledby="calendar-heading">
+	<header class="calendar-header">
+		<div>
+			<p class="calendar-kicker">Aggregated Gatherings</p>
+			<h1 id="calendar-heading">Calendar</h1>
+			<p class="calendar-intro">View upcoming events across all your circles in one place.</p>
+		</div>
+		<div class="calendar-view-toggle-group" role="group" aria-label="View selection">
+			<button type="button"
+					class="toggle-btn @(currentView == CalendarViewMode.Month ? "active" : string.Empty)"
+					@onclick="() => SetViewMode(CalendarViewMode.Month)"
+					aria-pressed="@(currentView == CalendarViewMode.Month ? "true" : "false")">
+				📅 Month View
+			</button>
+			<button type="button"
+					class="toggle-btn @(currentView == CalendarViewMode.Agenda ? "active" : string.Empty)"
+					@onclick="() => SetViewMode(CalendarViewMode.Agenda)"
+					aria-pressed="@(currentView == CalendarViewMode.Agenda ? "true" : "false")">
+				📋 Agenda View
+			</button>
+		</div>
+	</header>
+
+	@if (!string.IsNullOrWhiteSpace(errorMessage))
+	{
+		<div class="calendar-alert calendar-alert-error" role="alert">@errorMessage</div>
+	}
+
+	@if (isLoading)
+	{
+		<div class="calendar-status" role="status" aria-live="polite">Loading calendar...</div>
+	}
+	else if (eventRepository is null || circleRepository is null || userRepository is null)
+	{
+		<div class="calendar-alert calendar-alert-warning" role="alert">
+			Calendar data is not available in this environment. Connect the app to its SQL data source and try again.
+		</div>
+	}
+	else
+	{
+		<div class="calendar-controls-bar">
+			<div class="controls-left">
+				<div class="month-nav-group">
+					<button type="button" class="nav-btn" @onclick="PrevMonth" aria-label="Previous Month">◄ Prev</button>
+					<button type="button" class="today-btn" @onclick="JumpToToday">Today</button>
+					<button type="button" class="nav-btn" @onclick="NextMonth" aria-label="Next Month">Next ►</button>
+				</div>
+				<h2 class="current-month-display">@currentDisplayMonth.ToString("MMMM yyyy")</h2>
+			</div>
+
+			<div class="controls-right">
+				<div class="circle-filter-group">
+					<label for="circle-filter-select" class="filter-label">Filter Circle:</label>
+					<select id="circle-filter-select"
+							class="circle-filter-select"
+							value="@selectedCircleFilter"
+							@onchange="OnCircleFilterChanged">
+						<option value="0">All My Circles (@userCircles.Count)</option>
+						@foreach (var circle in userCircles)
+						{
+							<option value="@circle.CircleId">@circle.Name</option>
+						}
+					</select>
+				</div>
+			</div>
+		</div>
+
+		@if (currentView == CalendarViewMode.Month)
+		{
+			<MonthCalendar DisplayMonth="@currentDisplayMonth"
+						   Events="@allEvents"
+						   UserCircles="@userCircles"
+						   CurrentUserId="@(currentUser?.UserId ?? 0)"
+						   OnSelectEvent="NavigateToEventDetail" />
+		}
+		else
+		{
+			<AgendaView DisplayMonth="@currentDisplayMonth"
+						Events="@allEvents"
+						UserCircles="@userCircles"
+						CurrentUserId="@(currentUser?.UserId ?? 0)" />
+		}
+	}
+</main>
+
+@code {
+	private enum CalendarViewMode
+	{
+		Month,
+		Agenda
+	}
+
+	private IEventRepository eventRepository;
+	private ICircleRepository circleRepository;
+	private IUserRepository userRepository;
+	private User currentUser;
+	private readonly List<Circle> userCircles = [];
+	private readonly List<Event> allEvents = [];
+	private DateTime currentDisplayMonth = DateTime.Today;
+	private CalendarViewMode currentView = CalendarViewMode.Month;
+	private int selectedCircleFilter = 0;
+	private bool isLoading = true;
+	private string errorMessage = string.Empty;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		isLoading = true;
+		errorMessage = string.Empty;
+
+		eventRepository = Services.GetService<IEventRepository>();
+		circleRepository = Services.GetService<ICircleRepository>();
+		userRepository = Services.GetService<IUserRepository>();
+
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		if (authState.User?.Identity?.IsAuthenticated != true)
+		{
+			Navigation.NavigateTo("/login");
+			return;
+		}
+
+		var externalId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+		if (string.IsNullOrWhiteSpace(externalId) || userRepository is null)
+		{
+			errorMessage = "We could not resolve your application account. Please sign in again.";
+			isLoading = false;
+			return;
+		}
+
+		currentUser = await userRepository.FindByExternalIdAsync(externalId);
+		if (currentUser is null)
+		{
+			errorMessage = "Application user record not found.";
+			isLoading = false;
+			return;
+		}
+
+		if (circleRepository is not null)
+		{
+			var circlesList = await circleRepository.GetCirclesForUserAsync(currentUser.UserId);
+			userCircles.Clear();
+			userCircles.AddRange(circlesList);
+		}
+
+		await LoadEventsAsync();
+		isLoading = false;
+	}
+
+	private async Task LoadEventsAsync()
+	{
+		if (eventRepository is null || currentUser is null) return;
+
+		allEvents.Clear();
+
+		if (selectedCircleFilter > 0)
+		{
+			var circleEvents = await eventRepository.GetEventsByCircleAsync(selectedCircleFilter, currentUser.UserId);
+			foreach (var ev in circleEvents)
+			{
+				ev.Circle ??= userCircles.FirstOrDefault(c => c.CircleId == ev.CircleId);
+				allEvents.Add(ev);
+			}
+		}
+		else
+		{
+			foreach (var circle in userCircles)
+			{
+				var circleEvents = await eventRepository.GetEventsByCircleAsync(circle.CircleId, currentUser.UserId);
+				foreach (var ev in circleEvents)
+				{
+					ev.Circle ??= circle;
+					allEvents.Add(ev);
+				}
+			}
+		}
+	}
+
+	private async Task OnCircleFilterChanged(ChangeEventArgs e)
+	{
+		if (int.TryParse(e.Value?.ToString(), out var circleId))
+		{
+			selectedCircleFilter = circleId;
+			await LoadEventsAsync();
+		}
+	}
+
+	private void SetViewMode(CalendarViewMode mode)
+	{
+		currentView = mode;
+	}
+
+	private void PrevMonth()
+	{
+		currentDisplayMonth = currentDisplayMonth.AddMonths(-1);
+	}
+
+	private void NextMonth()
+	{
+		currentDisplayMonth = currentDisplayMonth.AddMonths(1);
+	}
+
+	private void JumpToToday()
+	{
+		currentDisplayMonth = DateTime.Today;
+	}
+
+	private void NavigateToEventDetail(int eventId)
+	{
+		Navigation.NavigateTo($"/events/detail/{eventId}");
+	}
+}

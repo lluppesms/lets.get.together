@@ -6,7 +6,7 @@
 // Base Controller
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.API;
+namespace GetTogether.API;
 
 /// <summary>
 /// Base Controller
@@ -26,11 +26,6 @@ public class BaseAPIController : ControllerBase
     protected IHttpContextAccessor context;
 
     /// <summary>
-    /// Access the HTTPContext for this request
-    /// </summary>
-    protected ProjectEntities database;
-
-    /// <summary>
     /// AutoMapper Object
     /// </summary>
 #pragma warning disable CA2211 // Non-constant fields should not be visible
@@ -39,7 +34,7 @@ public class BaseAPIController : ControllerBase
 
     /// <summary>
     /// Base Controller Instantiation
-    /// </summary>1
+    /// </summary>
     public BaseAPIController()
     {
     }
@@ -55,11 +50,6 @@ public class BaseAPIController : ControllerBase
         {
             var mapperConfig = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<Joke, JokeBasic>()
-                    .ForMember(dest => dest.Joke, opt => opt.MapFrom(src => src.JokeTxt))
-                    .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Categories));
-                cfg.CreateMap<JokeCategory, CategoryBasic>()
-                    .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.JokeCategoryTxt));
             }, new LoggerFactory());
             mapperConfig.AssertConfigurationIsValid();
             iMapper = mapperConfig.CreateMapper();

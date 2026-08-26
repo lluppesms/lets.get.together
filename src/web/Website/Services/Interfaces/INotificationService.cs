@@ -7,9 +7,9 @@
 // </summary>
 //-----------------------------------------------------------------------
 #nullable enable
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Web.Services.Interfaces;
+namespace GetTogether.Web.Services.Interfaces;
 
 /// <summary>
 /// Sends event-related email notifications to circle members via SendGrid.

@@ -1,5 +1,5 @@
-﻿@page "/"
-@namespace DadABase.Web.Pages
+@page "/"
+@namespace GetTogether.Web.Pages
 @using MudBlazor
 
 <PageTitle>@(isNinetiesTheme ? "The Grand Get Together" : Data.Constants.ApplicationTitle)</PageTitle>
@@ -7,107 +7,71 @@
 <div class="page-container">
     <MudContainer MaxWidth="MaxWidth.Large">
         <div class="home-heading">
-            <h1>@(isNinetiesTheme ? "Tell me something funny, Grandpa!" : "Get Together: Share a Laugh")</h1>
+            <h1>@(isNinetiesTheme ? "The Grand Get Together" : "Get Together")</h1>
+            <p class="lead text-muted">Simple, private event planning for real friends.</p>
         </div>
-        @if (jokeLoading)
+
+        <div class="hero-card mb-5 p-4 rounded-3 shadow-sm">
+            <h2 class="h4 mb-3">Welcome to Get Together</h2>
+            <p class="mb-0">
+                Organize informal gatherings — pickleball, movie nights, standing coffee dates, or volunteer shifts — without the bloat of public event platforms. Create a circle of friends, post a thing to do, and everyone taps Accept, Decline, or Maybe. That's it!
+            </p>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Primary" Size="Size.Large" Class="me-2" />
+                            <h3 class="h5 mb-0">Circles</h3>
+                        </div>
+                        <p class="card-text text-muted flex-grow-1">
+                            Create private groups for your friend circles, view member rosters, and generate single-use invitation codes.
+                        </p>
+                        <a href="circles" class="btn btn-primary mt-3">Manage Circles</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Event" Color="Color.Primary" Size="Size.Large" Class="me-2" />
+                            <h3 class="h5 mb-0">Events</h3>
+                        </div>
+                        <p class="card-text text-muted flex-grow-1">
+                            Post one-off or recurring events, choose per-occurrence or series RSVP mode, and track member responses.
+                        </p>
+                        <a href="events" class="btn btn-primary mt-3">View Events</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Primary" Size="Size.Large" Class="me-2" />
+                            <h3 class="h5 mb-0">Calendar</h3>
+                        </div>
+                        <p class="card-text text-muted flex-grow-1">
+                            View upcoming events across all your circles in an interactive month grid or chronological agenda list.
+                        </p>
+                        <a href="calendar" class="btn btn-primary mt-3">Open Calendar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (isNinetiesTheme)
         {
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-        }
-        else
-        {
-            <div class="joke-container">
-                <ul id="jokeList" style="list-style-type: none; padding: 0;">
-                  <li><JokeDisplayComponent myJoke="@myJoke" /></li>
-                </ul>
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="https://en.wikipedia.org/wiki/Dancing_baby" target="_blank" style="text-decoration: none;">
+                    <img src="/DancingBaby.gif" alt="Dancing Baby" style="max-width: 200px; cursor: pointer;" />
+                </a>
             </div>
         }
-            <div class="button-group">
-                <button type="button" class="btn btn-primary" @onclick="ExecuteRandom" disabled="@imageLoading">Tell me another one!</button>
-                <AuthorizeView>
-                    <Authorized>
-                        @if (!isNinetiesTheme)
-                        {
-                            <button type="button" class="btn btn-primary" @onclick="GenerateAIImage" disabled="@(imageLoading || imageGenerated)" title="Let the Get Together AI imagine this scenario for you!">@(string.IsNullOrEmpty(myJoke?.ImageTxt) ? "AI Image Generator" : "AI Imagine-a-tor")</button>
-                        }
-                    </Authorized>
-                </AuthorizeView>
-            </div>
-            @if (jokeCount > 0)
-            {
-                <p class="joke-tagline">
-                    @(isNinetiesTheme
-                        ? $"Totally radical! We've got {jokeCount} gnarly jokes in da house! 🕺"
-                        : $"Warning: {jokeCount} groan-worthy dad jokes on tap — side effects may include eye-rolling and uncontrollable chuckling! 😄")
-                </p>
-            }
-            @if (isNinetiesTheme)
-            {
-                <div style="text-align: center; margin-top: 20px;">
-                    <a href="https://en.wikipedia.org/wiki/Dancing_baby" target="_blank" style="text-decoration: none;">
-                        <img src="/DancingBaby.gif" alt="Dancing Baby" style="max-width: 200px; cursor: pointer;" />
-                    </a>
-                </div>
-            }
-            @if (imageLoading || !string.IsNullOrWhiteSpace(jokeImageUrl) || !string.IsNullOrWhiteSpace(jokeImageDescription) || !string.IsNullOrWhiteSpace(jokeImageMessage))
-            {
-                <div class="joke-image-section">
-                    <p class="image-message">@jokeImageMessage</p>
-                    @if (imageLoading)
-                    {
-                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                        @if (!string.IsNullOrEmpty(jokeImageDescription))
-                        {
-                            <p class="image-note">@jokeImageDescription</p>
-                        }
-                    }
-                    else
-                    {
-                        @if (!string.IsNullOrEmpty(jokeImageUrl)) {
-                          <img src="@jokeImageUrl" class="joke-image" width="400" style="cursor: pointer;" @onclick="ShowImageDescriptionPopup" title="@jokeImageDescription" />
-                        }
-                        else if (!string.IsNullOrEmpty(jokeImageDescription))
-                        {
-                            <p class="image-note">@jokeImageDescription</p>
-                        }
-                    }
-                </div>
-            }
-        <MudDialog @bind-Visible="@imageDescriptionDialogVisible">
-            <TitleContent>
-                <MudText Typo="Typo.h6">Image Description</MudText>
-            </TitleContent>
-            <DialogContent>
-                <p>@jokeImageDescription</p>
-            </DialogContent>
-            <DialogActions>
-                <MudButton Color="Color.Secondary" OnClick="@CloseImageDescriptionPopup">Close</MudButton>
-            </DialogActions>
-        </MudDialog>
-
-
-
-            @if (jokeHistory.Any())
-            {
-                <div class="history-section">
-                    <h5 class="history-toggle"
-                        tabindex="0"
-                        @onclick="ToggleHistory"
-                        @onkeydown="@(e => { if (e.Key == "Enter" || e.Key == " ") ToggleHistory(); })">
-                        Joke History
-                        <span style="margin-left: 8px; font-size: 1.2em;">
-                            @(isHistoryCollapsed ? "👁️" : "🙈")
-                        </span>
-                    </h5>
-                    @if (!isHistoryCollapsed)
-                    {
-                        <ul style="list-style-type: none; padding: 0;">
-                            @foreach (var joke in jokeHistory)
-                            {
-                                <li><JokeDisplayComponent myJoke="@joke" /></li>
-                            }
-                        </ul>
-                    }
-                </div>
-            }
     </MudContainer>
 </div>

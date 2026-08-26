@@ -7,14 +7,14 @@
 // </summary>
 //-----------------------------------------------------------------------
 #nullable enable
-using DadABase.Data;
-using DadABase.Data.Models;
-using DadABase.Web.Services.Interfaces;
+using GetTogether.Data;
+using GetTogether.Data.Models;
+using GetTogether.Web.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace DadABase.Web.Services;
+namespace GetTogether.Web.Services;
 
 /// <summary>
 /// Sends event notification emails via SendGrid.
@@ -24,11 +24,11 @@ namespace DadABase.Web.Services;
 public class SendGridNotificationService(
     IConfiguration configuration,
     ILogger<SendGridNotificationService> logger,
-    DadABaseDbContext? dbContext = null) : INotificationService
+    GetTogetherDbContext? dbContext = null) : INotificationService
 {
     private readonly IConfiguration _configuration = configuration;
     private readonly ILogger<SendGridNotificationService> _logger = logger;
-    private readonly DadABaseDbContext? _dbContext = dbContext;
+    private readonly GetTogetherDbContext? _dbContext = dbContext;
 
     /// <inheritdoc/>
     public async Task SendEventCreatedAsync(Event newEvent, IEnumerable<User> recipients)

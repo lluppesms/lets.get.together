@@ -1,4 +1,4 @@
-namespace DadABase.Web.Repositories;
+namespace GetTogether.Web.Repositories;
 
 /// <summary>
 /// Service that broadcasts theme change notifications to subscribed components.

@@ -25,17 +25,17 @@ projects:
   web:
     shortName: 'web'
     rootDirectory: 'src/web/Website'
-    projectName: 'DadABase.Web'
+    projectName: 'GetTogether.Web'
     testDirectory: 'src/web/Tests'
-    testProjectName: 'DadABase.Tests'
+    testProjectName: 'GetTogether.Tests'
 
   # Azure Function App
   function:
     shortName: 'func'
     rootDirectory: 'src/function/Function'
-    projectName: 'DadABase.Function'
+    projectName: 'GetTogether.Function'
     testDirectory: 'src/function/Tests'
-    testProjectName: 'DadABase.Function.Tests'
+    testProjectName: 'GetTogether.Function.Tests'
 
   # Console Application
   console:

@@ -1,10 +1,12 @@
-﻿namespace DadABase.Tests;
+namespace GetTogether.Tests;
+
+using GetTogether.SampleData;
 
 [ExcludeFromCodeCoverage]
 public abstract class BaseTest
 {
     protected TestingData testData = null;
-    protected ProjectEntities db;
+    protected GetTogetherDbContext db;
     protected AppSettings appSettings;
     protected ITestOutputHelper output;
 

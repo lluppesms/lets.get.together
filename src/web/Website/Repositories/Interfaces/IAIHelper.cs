@@ -6,7 +6,7 @@
 // AI Helper Interface
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Web.Repositories;
+namespace GetTogether.Web.Repositories;
 
 /// <summary>
 /// AI Helper Interface

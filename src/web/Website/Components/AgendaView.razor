@@ -1,0 +1,173 @@
+@namespace GetTogether.Web.Components
+@using GetTogether.Data.Models
+
+<div class="agenda-view-container">
+	@if (GetGroupedEvents().Count == 0)
+	{
+		<div class="agenda-empty-state">
+			<div class="empty-icon" aria-hidden="true">📅</div>
+			<h3>No events scheduled for @DisplayMonth.ToString("MMMM yyyy")</h3>
+			<p>There are no events in this timeframe for the selected circle filter.</p>
+			<div class="empty-actions">
+				<a href="/events" class="btn-create-event">+ Create New Event</a>
+			</div>
+		</div>
+	}
+	else
+	{
+		<div class="agenda-groups-list" role="region" aria-label="Agenda Events List">
+			@foreach (var group in GetGroupedEvents())
+			{
+				<section class="agenda-group" aria-labelledby="@($"group-header-{group.Key:yyyyMMdd}")">
+					<h2 id="@($"group-header-{group.Key:yyyyMMdd}")" class="agenda-group-header">
+						<span class="group-date-text">@group.Key.ToString("dddd, MMMM d, yyyy")</span>
+						@if (group.Key.Date == DateTime.Today)
+						{
+							<span class="today-pill">Today</span>
+						}
+					</h2>
+
+					<div class="agenda-cards-list">
+						@foreach (var ev in group)
+						{
+							var (location, description) = ParseLocationAndDetails(ev.Details);
+							var myRsvp = GetUserRsvp(ev);
+							var themeClass = GetCircleThemeClass(ev.CircleId);
+							var acceptCount = ev.Rsvps?.Count(r => r.Status == "Accept") ?? 0;
+							var maybeCount = ev.Rsvps?.Count(r => r.Status == "Maybe") ?? 0;
+							var declineCount = ev.Rsvps?.Count(r => r.Status == "Decline") ?? 0;
+
+							<article class="agenda-card @themeClass @(ev.CancelledUtc.HasValue ? "agenda-card-cancelled" : string.Empty)">
+								<div class="agenda-card-left">
+									<div class="agenda-time-box">
+										<span class="time-main">@ev.StartsUtc.ToLocalTime().ToString("h:mm tt")</span>
+										@if (ev.EndsUtc.HasValue)
+										{
+											<span class="time-end">to @ev.EndsUtc.Value.ToLocalTime().ToString("h:mm tt")</span>
+										}
+									</div>
+								</div>
+
+								<div class="agenda-card-main">
+									<div class="agenda-meta-top">
+										<span class="circle-badge @themeClass">@GetCircleName(ev.CircleId)</span>
+										@if (ev.IsRecurring)
+										{
+											<span class="recurring-pill">🔁 @ev.RecurrenceRule</span>
+										}
+										@if (ev.CancelledUtc.HasValue)
+										{
+											<span class="cancelled-pill">Cancelled</span>
+										}
+									</div>
+
+									<h3 class="agenda-event-title">
+										<a href="@($"/events/detail/{ev.EventId}")">@ev.Title</a>
+									</h3>
+
+									@if (!string.IsNullOrWhiteSpace(location))
+									{
+										<div class="agenda-info-line">
+											<span class="info-icon" aria-hidden="true">📍</span>
+											<span>@location</span>
+										</div>
+									}
+
+									@if (!string.IsNullOrWhiteSpace(description))
+									{
+										<p class="agenda-snippet">@TruncateText(description, 140)</p>
+									}
+								</div>
+
+								<div class="agenda-card-right">
+									<div class="rsvp-status-container">
+										<span class="rsvp-badge @GetRsvpBadgeClass(myRsvp?.Status)">
+											@(myRsvp?.Status == "Accept" ? "✓ Accepted" : myRsvp?.Status == "Maybe" ? "? Maybe" : myRsvp?.Status == "Decline" ? "✕ Declined" : "❓ Undecided")
+										</span>
+									</div>
+
+									<div class="rsvp-counts-pills" title="Accept / Maybe / Decline counts">
+										<span class="count-pill count-accept">✓ @acceptCount</span>
+										<span class="count-pill count-maybe">? @maybeCount</span>
+										<span class="count-pill count-decline">✕ @declineCount</span>
+									</div>
+
+									<a href="@($"/events/detail/{ev.EventId}")" class="agenda-detail-btn">
+										Details & RSVP →
+									</a>
+								</div>
+							</article>
+						}
+					</div>
+				</section>
+			}
+		</div>
+	}
+</div>
+
+@code {
+	[Parameter] public DateTime DisplayMonth { get; set; } = DateTime.Today;
+	[Parameter] public List<Event> Events { get; set; } = [];
+	[Parameter] public List<Circle> UserCircles { get; set; } = [];
+	[Parameter] public int CurrentUserId { get; set; }
+
+	private List<IGrouping<DateTime, Event>> GetGroupedEvents()
+	{
+		return Events
+			.Where(e => e.StartsUtc.ToLocalTime().Year == DisplayMonth.Year && e.StartsUtc.ToLocalTime().Month == DisplayMonth.Month)
+			.GroupBy(e => e.StartsUtc.ToLocalTime().Date)
+			.OrderBy(g => g.Key)
+			.ToList();
+	}
+
+	private RSVP GetUserRsvp(Event ev)
+	{
+		return ev.Rsvps?.FirstOrDefault(r => r.UserId == CurrentUserId);
+	}
+
+	private string GetCircleName(int circleId)
+	{
+		var circle = UserCircles.FirstOrDefault(c => c.CircleId == circleId);
+		return circle?.Name ?? "Circle";
+	}
+
+	private static string GetCircleThemeClass(int circleId)
+	{
+		int index = Math.Abs(circleId) % 6;
+		return $"circle-theme-{index}";
+	}
+
+	private static string GetRsvpBadgeClass(string status) => status switch
+	{
+		"Accept" => "rsvp-badge-accept",
+		"Maybe" => "rsvp-badge-maybe",
+		"Decline" => "rsvp-badge-decline",
+		_ => "rsvp-badge-undecided"
+	};
+
+	private static (string Location, string Description) ParseLocationAndDetails(string rawDetails)
+	{
+		if (string.IsNullOrWhiteSpace(rawDetails)) return (string.Empty, string.Empty);
+		var lines = rawDetails.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+		string loc = string.Empty;
+		var rest = new List<string>();
+		foreach (var line in lines)
+		{
+			if (line.StartsWith("Location: ", StringComparison.OrdinalIgnoreCase))
+			{
+				loc = line.Substring("Location: ".Length).Trim();
+			}
+			else
+			{
+				rest.Add(line);
+			}
+		}
+		return (loc, string.Join(" ", rest));
+	}
+
+	private static string TruncateText(string text, int maxLength)
+	{
+		if (string.IsNullOrWhiteSpace(text) || text.Length <= maxLength) return text ?? string.Empty;
+		return text.Substring(0, maxLength) + "…";
+	}
+}

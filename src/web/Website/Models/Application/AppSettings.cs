@@ -6,7 +6,7 @@
 // Application Settings
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data;
+namespace GetTogether.Data;
 
 /// <summary>
 /// Application Settings

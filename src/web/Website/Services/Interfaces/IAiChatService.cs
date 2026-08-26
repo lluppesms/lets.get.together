@@ -1,4 +1,4 @@
-namespace DadABase.Web.Services;
+namespace GetTogether.Web.Services;
 
 /// <summary>
 /// Provides a single-turn AI chat completion.

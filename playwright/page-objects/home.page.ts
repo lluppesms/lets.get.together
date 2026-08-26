@@ -3,31 +3,23 @@ import { type Page, type Locator } from '@playwright/test';
 export class HomePage {
     readonly page: Page;
     readonly heading: Locator;
-    readonly jokeCard: Locator;
-    readonly jokeCategory: Locator;
-    readonly jokeText: Locator;
-    readonly tellMeAnotherButton: Locator;
-    readonly jokeImageSection: Locator;
+    readonly leadText: Locator;
+    readonly heroCard: Locator;
+    readonly manageCirclesButton: Locator;
+    readonly viewEventsButton: Locator;
+    readonly openCalendarButton: Locator;
 
     constructor(page: Page) {
         this.page = page;
-        this.heading = page.getByRole('heading', { name: /Tell me a Joke/i });
-        this.jokeCard = page.locator('.JokeCard');
-        this.jokeCategory = page.locator('.JokeCategory');
-        this.jokeText = page.locator('.JokeText');
-        this.tellMeAnotherButton = page.getByRole('button', { name: /Tell me another one/i });
-        this.jokeImageSection = page.locator('.joke-image-section');
+        this.heading = page.getByRole('heading', { name: /Get Together/i, level: 1 });
+        this.leadText = page.locator('.lead');
+        this.heroCard = page.locator('.hero-card');
+        this.manageCirclesButton = page.getByRole('link', { name: 'Manage Circles' });
+        this.viewEventsButton = page.getByRole('link', { name: 'View Events' });
+        this.openCalendarButton = page.getByRole('link', { name: 'Open Calendar' });
     }
 
     async goto(): Promise<void> {
         await this.page.goto('/');
-    }
-
-    async getJokeText(): Promise<string> {
-        return (await this.jokeText.textContent()) ?? '';
-    }
-
-    async clickTellMeAnother(): Promise<void> {
-        await this.tellMeAnotherButton.click();
     }
 }

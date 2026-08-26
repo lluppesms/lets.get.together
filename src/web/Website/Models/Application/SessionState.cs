@@ -6,7 +6,7 @@
 // Session Variables
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data;
+namespace GetTogether.Data;
 
 /// <summary>
 /// Session Variables

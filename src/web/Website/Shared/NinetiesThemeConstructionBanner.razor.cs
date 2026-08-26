@@ -6,7 +6,7 @@
 // Nineties construction banner code-behind
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Web.Shared;
+namespace GetTogether.Web.Shared;
 
 /// <summary>
 /// Controls visibility of the 90s under-construction banner.

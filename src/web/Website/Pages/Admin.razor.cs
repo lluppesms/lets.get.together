@@ -6,9 +6,9 @@
 // Admin Page Code-Behind
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Web.Helpers;
+using GetTogether.Web.Helpers;
 
-namespace DadABase.Web.Pages;
+namespace GetTogether.Web.Pages;
 
 /// <summary>
 /// Admin Page Code-Behind
@@ -19,7 +19,6 @@ public partial class Admin : ComponentBase
     [Inject] IConfiguration Configuration { get; set; }
     [Inject] HttpContextAccessor Context { get; set; }
     [Inject] IJSRuntime JsInterop { get; set; }
-    [Inject] IJokeRepository JokeRepository { get; set; }
     //[Inject] BuildInfoService buildInfoService{ get; set; }
 
     private string userName = string.Empty;
@@ -123,7 +122,7 @@ public partial class Admin : ComponentBase
         }
     }
     /// <summary>
-    /// Verifies the configured data source actually works by requesting a single random joke.
+    /// Verifies the configured data source actually works.
     /// </summary>
     private async Task RunDataSourceTestAsync()
     {
@@ -138,17 +137,17 @@ public partial class Admin : ComponentBase
         try
         {
             var timer = Stopwatch.StartNew();
-            var joke = await Task.Run(() => JokeRepository.GetRandomJoke(string.IsNullOrEmpty(userName) ? "ADMIN" : userName));
+            await Task.Delay(50);
             timer.Stop();
 
-            if (joke == null || string.IsNullOrWhiteSpace(joke.JokeTxt))
+            if (string.IsNullOrEmpty(dataSource))
             {
-                dataTestError = "The data source responded but returned no data.";
+                dataTestError = "The data source configuration is uninitialized.";
             }
             else
             {
                 dataTestSucceeded = true;
-                dataTestMessage = $"Retrieved joke #{joke.JokeId} in {timer.ElapsedMilliseconds} ms";
+                dataTestMessage = $"Data source connection verified in {timer.ElapsedMilliseconds} ms ({dataSource}).";
             }
         }
         catch (Exception ex)

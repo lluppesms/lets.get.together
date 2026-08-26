@@ -53,7 +53,7 @@ parameters:
 
 # ----------------------------------------------------------------------------------------------------
 variables:
-  - group: Dadabase.Demo
+  - group: GetTogether.Demo
   - template: vars/var-service-connections.yml
 
 # ----------------------------------------------------------------------------------------------------
@@ -69,7 +69,7 @@ stages:
       runGHASScan: ${{ parameters.runGHASScan }}
       dockerfilePath: 'src/web/Dockerfile'
       dockerContext: 'src/web'
-      imageName: 'dadabase-web'
+      imageName: 'gettogether-web'
       deploymentType: 'containerapp'
       addRoleAssignments: ${{ parameters.addRoleAssignments }}
 
@@ -84,6 +84,6 @@ stages:
       runGHASScan: ${{ parameters.runGHASScan }}
       dockerfilePath: 'src/web/Dockerfile'
       dockerContext: 'src/web'
-      imageName: 'dadabase-web'
+      imageName: 'gettogether-web'
       deploymentType: 'containerapp'
       addRoleAssignments: ${{ parameters.addRoleAssignments }}

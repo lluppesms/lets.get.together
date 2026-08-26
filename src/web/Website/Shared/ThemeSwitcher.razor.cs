@@ -6,7 +6,7 @@
 // Theme switcher component code-behind
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Web.Shared;
+namespace GetTogether.Web.Shared;
 
 /// <summary>
 /// Applies and persists user-selected UI theme.
@@ -24,7 +24,7 @@ public partial class ThemeSwitcher : ComponentBase
     private const string ThemeKey = "theme-mode";
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private DadABase.Web.Repositories.ThemeService ThemeService { get; set; } = default!;
+    [Inject] private GetTogether.Web.Repositories.ThemeService ThemeService { get; set; } = default!;
     private bool _initialized = false;
     private string _pendingTheme = null;
 

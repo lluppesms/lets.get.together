@@ -6,7 +6,7 @@
 // Application Constants
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data;
+namespace GetTogether.Data;
 
 /// <summary>
 /// Application Constants

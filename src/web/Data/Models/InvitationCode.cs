@@ -6,7 +6,7 @@
 // InvitationCode Table
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data.Models;
+namespace GetTogether.Data.Models;
 
 /// <summary>
 /// Represents an invitation code used to join a circle.

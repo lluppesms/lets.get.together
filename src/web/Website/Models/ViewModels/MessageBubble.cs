@@ -6,7 +6,7 @@
 // Message Bubble
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data;
+namespace GetTogether.Data;
 
 /// <summary>
 /// Message Bubble

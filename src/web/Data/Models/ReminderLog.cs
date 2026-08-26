@@ -6,7 +6,7 @@
 // ReminderLog Table
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data.Models;
+namespace GetTogether.Data.Models;
 
 /// <summary>
 /// Represents a sent reminder entry for event notifications.

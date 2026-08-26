@@ -6,7 +6,7 @@
 // Event Table
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data.Models;
+namespace GetTogether.Data.Models;
 
 /// <summary>
 /// Represents an event scheduled within a circle.

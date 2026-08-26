@@ -6,9 +6,9 @@
 // RSVP Repository Interface
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Repositories;
+namespace GetTogether.Data.Repositories;
 
 /// <summary>
 /// Represents the repository interface for accessing and managing RSVP data.

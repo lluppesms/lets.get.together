@@ -6,16 +6,16 @@
 // Circle SQL Repository
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Repositories;
+namespace GetTogether.Data.Repositories;
 
 /// <summary>
 /// SQL Server implementation of <see cref="ICircleRepository"/> using EF Core.
 /// </summary>
-public class CircleSQLRepository(DadABaseDbContext context) : ICircleRepository
+public class CircleSQLRepository(GetTogetherDbContext context) : ICircleRepository
 {
-    private readonly DadABaseDbContext _context = context;
+    private readonly GetTogetherDbContext _context = context;
 
     /// <inheritdoc/>
     public async Task<IList<Circle>> GetCirclesForUserAsync(int userId)

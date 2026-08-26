@@ -6,9 +6,9 @@
 // Event Occurrence Instance
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Services;
+namespace GetTogether.Data.Services;
 
 /// <summary>
 /// Represents a specific occurrence instance of an event (one-off or expanded from a recurrence rule).

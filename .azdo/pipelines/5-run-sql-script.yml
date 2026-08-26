@@ -54,19 +54,19 @@ parameters:
   - name: databaseName
     displayName: Starting Database
     type: string
-    default: 'DADABASE'
+    default: 'GETTOGETHER'
   - name: databaseCopyName
     displayName: Action DBCopy - Copy Database To
     type: string
-    default: 'DADABASEV001'
+    default: 'GETTOGETHERV001'
   - name: resourceGroupName
     displayName: Action DBCopy - Resource Group Name
     type: string
-    default: 'rg-dadabase'
+    default: 'rg-gettogether'
 
 # ----------------------------------------------------------------------------------------------------
 variables:
-  - group: Dadabase.Demo
+  - group: GetTogether.Demo
   - template: vars/var-common.yml
   - template: vars/var-service-connections.yml
 

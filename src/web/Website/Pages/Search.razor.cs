@@ -6,30 +6,35 @@
 // Search Code-Behind
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Web.Pages;
+using Microsoft.AspNetCore.Components.Authorization;
+
+namespace GetTogether.Web.Pages;
 
 /// <summary>
 /// Search Page
 /// </summary>
 public partial class Search : ComponentBase
 {
-    [Inject] IJokeRepository JokeRepository { get; set; }
+    [Inject] IServiceProvider ServiceProvider { get; set; }
     [Inject] IJSRuntime JsInterop { get; set; }
+    [Inject] AuthenticationStateProvider AuthStateProvider { get; set; }
 
     private string SearchTerm = string.Empty;
-    private string SelectedCategory = "ALL";
-    private IReadOnlyList<string> SelectedCategoryList = null;
-    private List<Joke> myJokes = new();
-    private List<string> JokeCategories = new();
-    private readonly string AllJokesConstant = "ALL";
-    private readonly string RecentAdditionsConstant = "RECENT";
-    private const int RecentAdditionsCount = 100;
-    private bool isRecentMode = false;
+    private int? SelectedCircleId = null;
+    private List<Circle> userCircles = new();
+    private List<EventSearchResult> matchingEvents = new();
+    private bool hasSearched = false;
+    private User currentUser = null;
 
-    private static bool MatchesSearchTerm(Joke joke, string searchTerm)
+    private class EventSearchResult
     {
-        return (joke.JokeTxt ?? string.Empty).Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-            || (joke.Attribution ?? string.Empty).Contains(searchTerm, StringComparison.OrdinalIgnoreCase);
+        public int EventId { get; set; }
+        public int CircleId { get; set; }
+        public string CircleName { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Location { get; set; }
+        public DateTime StartUtc { get; set; }
     }
 
     /// <summary>
@@ -42,53 +47,77 @@ public partial class Search : ComponentBase
         if (firstRender)
         {
             await JsInterop.InvokeVoidAsync("syncHeaderTitle");
-            JokeCategories = JokeRepository.GetJokeCategories().ToList();
-            SelectedCategory = AllJokesConstant;
+            await LoadUserCirclesAsync();
             await JsInterop.InvokeVoidAsync("focusOnInputField", "inputText");
             StateHasChanged();
         }
     }
 
-    //// if we want multi-select, use this...
-    //private async Task OnMultiSelectValuesChanged(IEnumerable<string> values)
-    //{
-    //    SelectedCategoryList = values.ToList();
-    //    // if first entry is ALL, remove all other entries
-    //    if (SelectedCategoryList.Count > 0 && SelectedCategoryList[0] == "ALL")
-    //    {
-    //        SelectedCategoryList = new List<string> { "ALL" };
-    //    }
-    //    _ = await Task.FromResult(true);
-    //}
-    private async Task OnSelectedValueChanged(string value)
+    private async Task LoadUserCirclesAsync()
     {
-        SelectedCategoryList = [value];
-        _ = await Task.FromResult(true);
+        using var scope = ServiceProvider.CreateScope();
+        var userRepo = scope.ServiceProvider.GetService<IUserRepository>();
+        var circleRepo = scope.ServiceProvider.GetService<ICircleRepository>();
+
+        if (userRepo == null || circleRepo == null) return;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var externalId = authState.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                         ?? authState.User?.Identity?.Name;
+
+        if (string.IsNullOrEmpty(externalId)) return;
+
+        currentUser = await userRepo.FindByExternalIdAsync(externalId);
+        if (currentUser == null) return;
+
+        userCircles = (await circleRepo.GetCirclesForUserAsync(currentUser.UserId)).ToList();
     }
 
-    private async void ExecuteSearch()
+    private async Task ExecuteSearch()
     {
-        var selectedCategories = !string.IsNullOrEmpty(SelectedCategory) ? SelectedCategory : AllJokesConstant;
+        hasSearched = true;
+        matchingEvents.Clear();
 
         await JsInterop.InvokeVoidAsync("focusOnInputField", "btnSearch");
-        await JsInterop.InvokeVoidAsync("focusOnInputField", "inputText");
 
-        if (selectedCategories == RecentAdditionsConstant)
+        using var scope = ServiceProvider.CreateScope();
+        var eventRepo = scope.ServiceProvider.GetService<IEventRepository>();
+        var circleRepo = scope.ServiceProvider.GetService<ICircleRepository>();
+
+        if (eventRepo == null || circleRepo == null || currentUser == null) return;
+
+        var circlesToSearch = SelectedCircleId.HasValue
+            ? userCircles.Where(c => c.CircleId == SelectedCircleId.Value).ToList()
+            : userCircles;
+
+        foreach (var circle in circlesToSearch)
         {
-            isRecentMode = true;
-            var query = JokeRepository.GetRecentAdditions(RecentAdditionsCount);
-            if (!string.IsNullOrEmpty(SearchTerm))
+            var events = await eventRepo.GetEventsForCircleAsync(circle.CircleId, currentUser.UserId);
+            var filtered = events.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(SearchTerm))
             {
-                query = query.Where(j => MatchesSearchTerm(j, SearchTerm));
+                filtered = filtered.Where(e =>
+                    (e.Title ?? "").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (e.Details ?? "").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase));
             }
-            myJokes = query.ToList();
-        }
-        else
-        {
-            isRecentMode = false;
-            myJokes = JokeRepository.SearchJokes(SearchTerm, selectedCategories).ToList();
+
+            foreach (var evt in filtered)
+            {
+                matchingEvents.Add(new EventSearchResult
+                {
+                    EventId = evt.EventId,
+                    CircleId = evt.CircleId,
+                    CircleName = circle.Name,
+                    Title = evt.Title,
+                    Description = evt.Details ?? string.Empty,
+                    Location = string.Empty,
+                    StartUtc = evt.StartsUtc
+                });
+            }
         }
 
+        matchingEvents = matchingEvents.OrderBy(e => e.StartUtc).ToList();
         StateHasChanged();
     }
 
@@ -96,7 +125,7 @@ public partial class Search : ComponentBase
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
         {
-            ExecuteSearch();
+            _ = ExecuteSearch();
         }
     }
 }

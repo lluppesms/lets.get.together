@@ -6,6 +6,10 @@
 >
 > **Last reviewed:** 2026-08-26
 
+### Rebrand and Purge update (2026-08-26)
+
+All legacy joke domain models (`Joke`, `JokeCategory`, `JokeRating`, `JokeJokeCategory`), repositories (`IJokeRepository`, `JokeSQLRepository`, `JokeJsonRepository`), API controllers (`JokeController`, `CategoryController`, `JokeImageController`), Blazor joke pages, sample JSON datasets, and SQL database joke tables/views/stored procedures have been completely purged. The solution, project files, assembly names, and namespaces have been rebranded from `DadABase.*` to `GetTogether.*` (`GetTogether.Data`, `GetTogether.Web`, `GetTogether.Tests`, `gettogether.net10.web.sln`, `GetTogetherDbContext`). All 74 unit tests and builds pass with 0 errors.
+
 ### Backend Phase 1 update (2026-08-25)
 
 The shared data project now includes the locked Event recurrence model (`IsRecurring`, `RsvpMode`, and `RecurrenceRule`) and the SQL database project includes the Get Together tables under the `Dad` schema. Invitation-code listing preserves the full circle audit trail, while redemption continues to require an active circle member, rejects duplicate active membership, and reactivates a former member's existing membership record.
@@ -17,6 +21,10 @@ Circle repositories now support active-member listing, active-only rosters, add/
 ### Backend Phase 4 update (2026-08-26)
 
 `IRsvpRepository` and `RsvpSQLRepository` support idempotent RSVP upserts (Accept/Decline/Maybe) with series and per-occurrence targeting, `GetRsvpsByEventAsync`, `GetRsvpsByOccurrenceAsync`, and `GetUnansweredMembersAsync`, enforcing active circle membership across all operations. `SendGridNotificationService` supports `SendEventCreationEmailAsync` and `SendReminderEmailAsync`, enforces circle membership for trigger users (per OQ-1) and target audiences, and logs reminders to `ReminderLog`. `CircleSQLRepository.RemoveMemberAsync` purges circle RSVPs upon member departure. Focused xUnit tests verify RSVP workflows, audience targeting, DB logging, and member-leave RSVP cleanup.
+
+### Backend Phase 5 update (2026-08-26)
+
+`ICalendarAggregationService` and `CalendarAggregationService` in `src/web/Data/Services/` aggregate calendar events and expanded occurrences (`IRecurrenceService`) across all active circles (`LeftUtc == null`) for a requesting user within a specified date window. Aggregated items include attached RSVP status (`UserRsvpStatus`, `UserRsvpNotes`) and circle metadata (`CircleId`, `CircleName`, `CircleColorIndex`, `CircleColor`). Strict circle privacy is enforced by excluding former members (`LeftUtc != null`). Service registered in `Program.cs` under SQL data source startup. Focused xUnit tests in `src/web/Tests/ServicesTests/CalendarAggregationService_Tests.cs` cover multi-circle aggregation, date window bounds, recurrence expansion, RSVP attachment, and former-member exclusion.
 
 ### Squad team
 
@@ -40,8 +48,7 @@ Authoritative sources when this document and older prose disagree:
 | Task | Start here | Then inspect |
 | --- | --- | --- |
 | Change a web page or Blazor behavior | `src/web/Website/Pages/`, `Components/`, or `Shared/` | `src/web/Website/Program.cs`, related `.razor.cs`, and scoped `.razor.css` |
-| Change circle/event/RSVP domain logic | `src/web/Data/Repositories/` — `ICircleRepository`, `IEventRepository`, `IRsvpRepository`, `IInvitationCodeRepository`, `IUserRepository` | SQL implementations alongside each interface; `DadABaseDbContext.cs` |
-| Change joke persistence or query behavior | `src/web/Data/Repositories/` and `src/web/Data/` | `IJokeRepository.cs`, `JokeSQLRepository.cs`, `JokeJsonRepository.cs`, `DadABaseDbContext.cs` |
+| Change circle/event/RSVP domain logic | `src/web/Data/Repositories/` — `ICircleRepository`, `IEventRepository`, `IRsvpRepository`, `IInvitationCodeRepository`, `IUserRepository` | SQL implementations alongside each interface; `GetTogetherDbContext.cs` |
 | Change email notifications | `src/web/Website/Services/SendGridNotificationService.cs` | `Services/Interfaces/INotificationService.cs`; `SendGrid:ApiKey` / `SendGrid:FromEmail` config keys |
 | Change web REST endpoints | `src/web/Website/API/` | controller base classes, repository interface, Swagger configuration |
 | Change the serverless API | `src/function/Function/` | `src/function/DataLayer/`, `Entities/`, and function tests |
@@ -76,7 +83,7 @@ The web app supports anonymous access by default. Entra ID authentication is con
 
 ### Data layer
 
-`src/web/Data/` is a shared .NET library containing domain models, `DadABaseDbContext`, repository abstractions, and repository implementations.
+`src/web/Data/` is a shared .NET library containing domain models, `GetTogetherDbContext`, repository abstractions, and repository implementations.
 
 **Get Together domain repositories** (new — added in project-structure setup):
 - `ICircleRepository` / `CircleSQLRepository` — circle CRUD and membership management.
@@ -91,14 +98,14 @@ All Get Together repositories are registered as `Scoped` in `Program.cs` and are
 
 **Placeholder pages**: `/circles`, `/events`, and `/calendar` Blazor pages exist at `src/web/Website/Pages/`. They render a construction banner and are ready for implementation.
 
-**Namespace status**: All Get Together code currently lives under `DadABase.*` namespaces (inherited from the source repo). Renaming to `GetTogether.*` is a planned but deferred task; see `.squad/decisions/inbox/mal-project-structure.md`.
+**Namespace status**: All codebase components have been rebranded to `GetTogether.*` (`GetTogether.Data`, `GetTogether.Web`, `GetTogether.Tests`, `GetTogetherDbContext`).
 
 `IJokeRepository` is the principal boundary for joke operations. It includes reads (all, recent, one, random, categories, search), writes (add, update, delete, ratings/category updates), import/export operations, and image-description updates.
 
 There are two application data modes:
 
 - `DataSource=JSON`: `JokeJsonRepository` reads the deployed `Data/Jokes.json` file. This is the default template mode and is convenient for local demos without SQL.
-- `DataSource=SQL`, `SQLDB`, or `DATABASE` in the web startup code: `JokeSQLRepository` uses EF Core SQL Server through `DadABaseDbContext` and the configured connection string. Get Together repositories are also registered when this mode is active.
+- `DataSource=SQL`, `SQLDB`, or `DATABASE` in the web startup code: `CircleSQLRepository`, `EventSQLRepository`, `RsvpSQLRepository`, `InvitationCodeSQLRepository`, and `UserSQLRepository` use EF Core SQL Server through `GetTogetherDbContext` and the configured connection string.
 
 If SQL is selected without a usable `DefaultConnection`, the web application deliberately falls back to JSON for joke data. An unknown data source also falls back to JSON. Do not assume that local development is database-backed.
 

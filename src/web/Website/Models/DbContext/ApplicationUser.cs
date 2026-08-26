@@ -6,7 +6,7 @@
 // Application User
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data;
+namespace GetTogether.Data;
 
 /// <summary>
 /// Add profile data for application users by adding properties to the ApplicationUser class

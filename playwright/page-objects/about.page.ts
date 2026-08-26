@@ -9,13 +9,13 @@ export class AboutPage {
 
     constructor(page: Page) {
         this.page = page;
-        this.title = page.getByRole('heading', { name: /About Dad-A-Base/i });
+        this.title = page.getByRole('heading', { name: /About Get Together/i });
         this.subtitle = page.locator('.about-subtitle');
-        this.description = page.locator('.about-card p');
+        this.description = page.locator('.about-description');
         this.aboutContainer = page.locator('.about-container');
     }
 
     async goto(): Promise<void> {
-        await this.page.goto('/About');
+        await this.page.goto('/about');
     }
 }

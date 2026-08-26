@@ -118,6 +118,48 @@ Expected configuration keys: `SendGrid:ApiKey`, `SendGrid:FromEmail`, `SendGrid:
 
 ---
 
+### 2026-08-26: Phase 5 Contract — Calendar Aggregation & Views UI (Mal)
+**By:** Lyle MS Luppes (via Mal)
+**What:** Phase 5 Calendar Aggregation & Views UI is fully implemented and verified. Replaced the Phase 0 placeholder at `/calendar` (`Pages/Calendar.razor`, `Pages/Calendar.razor.css`) with interactive view toggle controls (Month/Agenda), month navigation controls, today jump, and multi-circle filtering. `MonthCalendar.razor` provides a 7-column calendar grid with day cells, color-coded circle event chips, and a day drill-down modal/drawer. `AgendaView.razor` presents a chronological date-grouped list of event cards with circle badges, locations, user RSVP status, and direct detail links. `CalendarService` handles event aggregation, circle filtering, and date range calculation across user circles. All 99 xUnit tests in `DadABase.Tests.csproj` pass cleanly with zero build errors.
+
+---
+
+### 2026-08-26: Legacy Joke Domain Purge & Final Cleanup Directive (Mal)
+**By:** Lyle MS Luppes (via Mal)
+**What:** Final cleanup milestone must completely purge all legacy joke-domain references (`Dad Jokes`, `Dadabase`, `Jokes`, `JokeCategory`, `IJokeRepository`, joke controllers, joke views, joke tables, sample data, and `Dad` database schema objects) before final v1 release. Solution files (`.sln`), C# source files, project files (`.csproj`), database DACPAC project (`.sqlproj`), Bicep infrastructure templates, CI/CD pipelines, and documentation will undergo a comprehensive rename from `DadABase.*` to `GetTogether.*`.
+
+---
+
+### 2026-08-26: Phase 6 Execution Handoff — Testing, Privacy Validation & Legacy Purge Plan (Mal)
+**By:** Lyle MS Luppes (via Mal)
+**What:** Phase 6 focuses on comprehensive test suite expansion, cross-circle privacy verification, security hardening, Bicep infrastructure validation, and detailed execution planning for the complete legacy joke purge and solution rename (`DadABase.*` -> `GetTogether.*`).
+
+---
+
+### 2026-08-26: Phase 6 Testing Suite Enhancements & Playwright E2E Coverage (River)
+**By:** Lyle MS Luppes (via River)
+**What:** Phase 6 Playwright browser testing suite enhancements added page object models (`CirclesPage`, `EventsPage`, `CalendarPage`) and fixture extensions, plus smoke and E2E user journey test suites covering Circle management (`circles.smoke.spec.ts`), Event creation & recurrence viewing (`events.smoke.spec.ts`), and Calendar navigation & month/agenda views (`calendar.smoke.spec.ts`). All 99 xUnit tests verified 100% passing.
+
+---
+
+### 2026-08-26: Phase 6 Infrastructure & Config Audit (Wash)
+**By:** Lyle MS Luppes (via Wash)
+**What:** Completed Phase 6 Infra & Config Audit. Created missing Bicep modules (`containerregistry`, `containerappenvironment`, `containerapp`, `functionresources`, `functionflex`) so `infra/Bicep/main.bicep` and `infra/azd-main.bicep` build with zero errors via `az bicep build`. Documented legacy naming occurrences across Bicep, `azure.yaml`, `Dockerfile`, GitHub Actions, and Azure DevOps pipelines, and established the Infrastructure Parameter Renaming Plan for the upcoming legacy joke purge milestone (`dadabase` -> `gettogether`).
+
+---
+
+### 2026-08-26: Legacy Joke Domain Purge & Solution-Wide Rebrand (`DadABase` -> `GetTogether`) Fully Executed (Mal)
+**By:** Lyle MS Luppes (via Mal, Simon, Kaylee, River, Wash)
+**What:** The Legacy Joke Domain Purge and Solution-Wide Rebrand (`DadABase` -> `GetTogether`) is fully executed, verified, and complete with all 74 xUnit tests passing and zero build errors.
+- **Backend & Data Purge**: Deleted `IJokeRepository.cs`, `JokeSQLRepository.cs`, `JokeJsonRepository.cs`, `Joke.cs`, `JokeCategory.cs`, `JokeDto.cs`, `JokeController.cs`, and sample joke JSON seed files. Renamed `DadABaseDbContext` to `GetTogetherDbContext` and updated all `DadABase.*` namespaces to `GetTogether.*`.
+- **Database & DACPAC**: Removed joke tables (`Dad.Joke`, `Dad.JokeCategory`, `Dad.Rating`), `CreateJokeView.sql`, and joke procedures. Updated `Post.Deployment.sql` to include only Get Together schema objects (`Circle`, `CircleMembership`, `Event`, `Rsvp`, `User`, `InvitationCode`, `ReminderLog`).
+- **UI & Frontend**: Updated Blazor components, layout files, and `_Imports.razor` to `GetTogether.*` namespaces and removed legacy joke UI elements.
+- **Projects & Solution**: Renamed `DadABase.Data.csproj` -> `GetTogether.Data.csproj`, `DadABase.Web.csproj` -> `GetTogether.Web.csproj`, `DadABase.Tests.csproj` -> `GetTogether.Tests.csproj`, and `dadabase.net10.web.sln` -> `gettogether.net10.web.sln`.
+- **Infrastructure & DevOps**: Updated Bicep modules, `Dockerfile`, `azure.yaml`, `appsettings.json`, GitHub Actions, and Azure DevOps pipelines to `GetTogether` / `gettogether`.
+- **Tests & Verification**: Purged legacy joke unit test classes and outdated Playwright specs. Verified 100% build clean and 74/74 xUnit tests passing in `GetTogether.Tests`.
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus

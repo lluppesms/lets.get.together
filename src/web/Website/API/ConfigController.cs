@@ -6,9 +6,9 @@
 // Config API Controller
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.API;
+namespace GetTogether.API;
 
-using DadABase.Web.Helpers;
+using GetTogether.Web.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 

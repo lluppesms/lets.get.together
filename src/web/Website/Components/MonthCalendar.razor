@@ -1,0 +1,288 @@
+@namespace GetTogether.Web.Components
+@using GetTogether.Data.Models
+
+<div class="month-calendar-container">
+	<div class="calendar-grid" role="grid" aria-label="Month Calendar">
+		<div class="grid-header-row" role="row">
+			<div class="grid-header-cell" role="columnheader">Sun</div>
+			<div class="grid-header-cell" role="columnheader">Mon</div>
+			<div class="grid-header-cell" role="columnheader">Tue</div>
+			<div class="grid-header-cell" role="columnheader">Wed</div>
+			<div class="grid-header-cell" role="columnheader">Thu</div>
+			<div class="grid-header-cell" role="columnheader">Fri</div>
+			<div class="grid-header-cell" role="columnheader">Sat</div>
+		</div>
+
+		<div class="grid-days-body">
+			@foreach (var day in GetCalendarDays())
+			{
+				var dayEvents = GetEventsForDate(day.Date);
+				var isSelected = selectedDay.HasValue && selectedDay.Value.Date == day.Date;
+
+				<div class="day-cell @(day.IsCurrentMonth ? "current-month" : "other-month") @(day.IsToday ? "is-today" : string.Empty) @(isSelected ? "is-selected" : string.Empty)"
+					 role="gridcell"
+					 tabindex="0"
+					 @onclick="() => OnDayCellClicked(day.Date)"
+					 @onkeydown="(e) => OnDayKeyDown(e, day.Date)"
+					 aria-label="@($"{day.Date:dddd, MMMM d, yyyy}. {dayEvents.Count} event{(dayEvents.Count == 1 ? string.Empty : "s")}")">
+
+					<div class="day-number-bar">
+						<span class="day-number">@day.Date.Day</span>
+						@if (day.IsToday)
+						{
+							<span class="today-badge">Today</span>
+						}
+					</div>
+
+					<div class="day-events-container">
+						@foreach (var ev in dayEvents.Take(MaxVisibleChips))
+						{
+							var myRsvp = GetUserRsvp(ev);
+							var themeClass = GetCircleThemeClass(ev.CircleId);
+
+							<div class="event-chip @themeClass @(ev.CancelledUtc.HasValue ? "chip-cancelled" : string.Empty)"
+								 title="@($"{ev.Title} ({GetCircleName(ev.CircleId)}) - {FormatChipTime(ev.StartsUtc)}")"
+								 @onclick:stopPropagation="true"
+								 @onclick="() => OnEventChipClicked(ev.EventId)">
+								<span class="chip-time">@FormatChipTime(ev.StartsUtc)</span>
+								<span class="chip-title">@ev.Title</span>
+								@if (myRsvp != null)
+								{
+									<span class="chip-rsvp-icon" title="Your RSVP: @myRsvp.Status">
+										@(myRsvp.Status == "Accept" ? "✓" : myRsvp.Status == "Maybe" ? "?" : myRsvp.Status == "Decline" ? "✕" : string.Empty)
+									</span>
+								}
+							</div>
+						}
+
+						@if (dayEvents.Count > MaxVisibleChips)
+						{
+							<button type="button"
+									class="more-events-badge"
+									@onclick:stopPropagation="true"
+									@onclick="() => OnDayCellClicked(day.Date)">
+								+@(dayEvents.Count - MaxVisibleChips) more
+							</button>
+						}
+					</div>
+				</div>
+			}
+		</div>
+	</div>
+
+	@if (selectedDay.HasValue)
+	{
+		var selectedEvents = GetEventsForDate(selectedDay.Value);
+
+		<div class="calendar-modal-backdrop" @onclick="CloseDayModal" role="dialog" aria-modal="true" aria-labelledby="modal-day-heading">
+			<div class="calendar-modal-content" @onclick:stopPropagation="true">
+				<header class="calendar-modal-header">
+					<div>
+						<h3 id="modal-day-heading" class="modal-title">@selectedDay.Value.ToString("dddd, MMMM d, yyyy")</h3>
+						<p class="modal-sub">@selectedEvents.Count event@(selectedEvents.Count == 1 ? string.Empty : "s") on this day</p>
+					</div>
+					<button type="button" class="modal-close-btn" @onclick="CloseDayModal" aria-label="Close modal">✕</button>
+				</header>
+
+				<div class="calendar-modal-body">
+					@if (selectedEvents.Count == 0)
+					{
+						<div class="no-events-day">
+							<p>No events scheduled for this day.</p>
+							<a href="/events" class="btn-create-link">+ Create an Event</a>
+						</div>
+					}
+					else
+					{
+						<div class="modal-events-list">
+							@foreach (var ev in selectedEvents)
+							{
+								var (location, description) = ParseLocationAndDetails(ev.Details);
+								var myRsvp = GetUserRsvp(ev);
+								var themeClass = GetCircleThemeClass(ev.CircleId);
+
+								<article class="modal-event-card @themeClass">
+									<header class="modal-event-card-header">
+										<span class="circle-badge @themeClass">@GetCircleName(ev.CircleId)</span>
+										@if (ev.IsRecurring)
+										{
+											<span class="recurring-pill">🔁 @ev.RecurrenceRule</span>
+										}
+									</header>
+
+									<h4 class="modal-event-title">@ev.Title</h4>
+
+									<div class="modal-event-meta">
+										<div class="meta-line">
+											<span class="meta-icon">⏰</span>
+											<span>@FormatEventTime(ev.StartsUtc, ev.EndsUtc)</span>
+										</div>
+										@if (!string.IsNullOrWhiteSpace(location))
+										{
+											<div class="meta-line">
+												<span class="meta-icon">📍</span>
+												<span>@location</span>
+											</div>
+										}
+									</div>
+
+									<footer class="modal-event-card-footer">
+										<div class="user-rsvp-badge @GetRsvpBadgeClass(myRsvp?.Status)">
+											Your RSVP: <strong>@(myRsvp?.Status ?? "Undecided")</strong>
+										</div>
+										<a href="@($"/events/detail/{ev.EventId}")" class="modal-detail-btn">Details & RSVP →</a>
+									</footer>
+								</article>
+							}
+						</div>
+					}
+				</div>
+
+				<footer class="calendar-modal-footer">
+					<button type="button" class="btn-modal-secondary" @onclick="CloseDayModal">Close</button>
+				</footer>
+			</div>
+		</div>
+	}
+</div>
+
+@code {
+	[Parameter] public DateTime DisplayMonth { get; set; } = DateTime.Today;
+	[Parameter] public List<Event> Events { get; set; } = [];
+	[Parameter] public List<Circle> UserCircles { get; set; } = [];
+	[Parameter] public int CurrentUserId { get; set; }
+	[Parameter] public EventCallback<int> OnSelectEvent { get; set; }
+
+	private DateTime? selectedDay;
+	private const int MaxVisibleChips = 3;
+
+	private struct CalendarDayItem
+	{
+		public DateTime Date { get; set; }
+		public bool IsCurrentMonth { get; set; }
+		public bool IsToday { get; set; }
+	}
+
+	private List<CalendarDayItem> GetCalendarDays()
+	{
+		var firstDayOfMonth = new DateTime(DisplayMonth.Year, DisplayMonth.Month, 1);
+		var startDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+		var startDate = firstDayOfMonth.AddDays(-startDayOfWeek);
+
+		int daysInMonth = DateTime.DaysInMonth(DisplayMonth.Year, DisplayMonth.Month);
+		int totalCells = (int)Math.Ceiling((startDayOfWeek + daysInMonth) / 7.0) * 7;
+
+		var items = new List<CalendarDayItem>(totalCells);
+		for (int i = 0; i < totalCells; i++)
+		{
+			var date = startDate.AddDays(i);
+			items.Add(new CalendarDayItem
+			{
+				Date = date,
+				IsCurrentMonth = date.Month == DisplayMonth.Month && date.Year == DisplayMonth.Year,
+				IsToday = date.Date == DateTime.Today
+			});
+		}
+		return items;
+	}
+
+	private List<Event> GetEventsForDate(DateTime date)
+	{
+		return Events
+			.Where(e => e.StartsUtc.ToLocalTime().Date == date.Date)
+			.OrderBy(e => e.StartsUtc)
+			.ToList();
+	}
+
+	private RSVP GetUserRsvp(Event ev)
+	{
+		return ev.Rsvps?.FirstOrDefault(r => r.UserId == CurrentUserId);
+	}
+
+	private string GetCircleName(int circleId)
+	{
+		var circle = UserCircles.FirstOrDefault(c => c.CircleId == circleId);
+		return circle?.Name ?? "Circle";
+	}
+
+	private static string GetCircleThemeClass(int circleId)
+	{
+		int index = Math.Abs(circleId) % 6;
+		return $"circle-theme-{index}";
+	}
+
+	private static string GetRsvpBadgeClass(string status) => status switch
+	{
+		"Accept" => "rsvp-badge-accept",
+		"Maybe" => "rsvp-badge-maybe",
+		"Decline" => "rsvp-badge-decline",
+		_ => "rsvp-badge-undecided"
+	};
+
+	private static string FormatChipTime(DateTime startsUtc)
+	{
+		var local = startsUtc.ToLocalTime();
+		return local.ToString("h:mm tt");
+	}
+
+	private static string FormatEventTime(DateTime startsUtc, DateTime? endsUtc)
+	{
+		var startLocal = startsUtc.ToLocalTime();
+		if (endsUtc.HasValue)
+		{
+			var endLocal = endsUtc.Value.ToLocalTime();
+			if (startLocal.Date == endLocal.Date)
+			{
+				return $"{startLocal:h:mm tt} - {endLocal:h:mm tt}";
+			}
+			return $"{startLocal:MMM d, h:mm tt} - {endLocal:MMM d, h:mm tt}";
+		}
+		return $"{startLocal:h:mm tt}";
+	}
+
+	private static (string Location, string Description) ParseLocationAndDetails(string rawDetails)
+	{
+		if (string.IsNullOrWhiteSpace(rawDetails)) return (string.Empty, string.Empty);
+		var lines = rawDetails.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+		string loc = string.Empty;
+		var rest = new List<string>();
+		foreach (var line in lines)
+		{
+			if (line.StartsWith("Location: ", StringComparison.OrdinalIgnoreCase))
+			{
+				loc = line.Substring("Location: ".Length).Trim();
+			}
+			else
+			{
+				rest.Add(line);
+			}
+		}
+		return (loc, string.Join(" ", rest));
+	}
+
+	private void OnDayCellClicked(DateTime date)
+	{
+		selectedDay = date;
+	}
+
+	private void OnDayKeyDown(KeyboardEventArgs e, DateTime date)
+	{
+		if (e.Key == "Enter" || e.Key == " ")
+		{
+			selectedDay = date;
+		}
+	}
+
+	private async Task OnEventChipClicked(int eventId)
+	{
+		if (OnSelectEvent.HasDelegate)
+		{
+			await OnSelectEvent.InvokeAsync(eventId);
+		}
+	}
+
+	private void CloseDayModal()
+	{
+		selectedDay = null;
+	}
+}

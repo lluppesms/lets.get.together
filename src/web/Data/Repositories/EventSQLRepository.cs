@@ -6,16 +6,16 @@
 // Event SQL Repository
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Repositories;
+namespace GetTogether.Data.Repositories;
 
 /// <summary>
 /// SQL Server implementation of <see cref="IEventRepository"/> using EF Core.
 /// </summary>
-public class EventSQLRepository(DadABaseDbContext context) : IEventRepository
+public class EventSQLRepository(GetTogetherDbContext context) : IEventRepository
 {
-    private readonly DadABaseDbContext _context = context;
+    private readonly GetTogetherDbContext _context = context;
 
     /// <inheritdoc/>
     public async Task<IList<Event>> GetUpcomingEventsForUserAsync(int userId)

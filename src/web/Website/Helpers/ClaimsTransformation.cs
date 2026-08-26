@@ -6,7 +6,7 @@
 // Claims Transformation Module
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Helpers;
+namespace GetTogether.Helpers;
 
 /// <summary>
 /// Claims Transformation Module

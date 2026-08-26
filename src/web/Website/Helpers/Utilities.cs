@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------------
 using Azure.Core;
 
-namespace DadABase.Web.Helpers;
+namespace GetTogether.Web.Helpers;
 
 /// <summary>
 /// Utilities

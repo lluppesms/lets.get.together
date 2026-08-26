@@ -1,4 +1,4 @@
-﻿namespace DadABase.Helpers;
+namespace GetTogether.Helpers;
 
 /// <summary>
 /// Session Storage Service

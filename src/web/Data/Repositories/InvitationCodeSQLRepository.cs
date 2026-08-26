@@ -8,18 +8,18 @@
 //-----------------------------------------------------------------------
 using Microsoft.Extensions.Logging;
 
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Repositories;
+namespace GetTogether.Data.Repositories;
 
 /// <summary>
 /// SQL Server implementation of <see cref="IInvitationCodeRepository"/> using EF Core.
 /// </summary>
 public class InvitationCodeSQLRepository(
-    DadABaseDbContext context,
+    GetTogetherDbContext context,
     ILogger<InvitationCodeSQLRepository>? logger = null) : IInvitationCodeRepository
 {
-    private readonly DadABaseDbContext _context = context;
+    private readonly GetTogetherDbContext _context = context;
     private readonly ILogger<InvitationCodeSQLRepository>? _logger = logger;
 
     /// <inheritdoc/>

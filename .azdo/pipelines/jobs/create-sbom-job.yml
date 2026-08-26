@@ -19,11 +19,11 @@ parameters:
 - name: continueOnSBOMError
   default: 'true'
 - name: packageName
-  default: 'DadABase'
+  default: 'GetTogether'
 - name: packageVersion
   default: '1.0.0'
 - name: packageSupplier
-  default: 'DadABase'
+  default: 'GetTogether'
 
 # ----------------------------------------------------------------------------------------------------
 jobs:
@@ -129,7 +129,7 @@ jobs:
           -pn "${{ parameters.packageName }}" `
           -pv "${{ parameters.packageVersion }}" `
           -ps "${{ parameters.packageSupplier }}" `
-          -nsb "https://github.com/lluppesms/dadabase.demo" `
+          -nsb "https://github.com/lluppesms/lets.get.together" `
           -m "$outputDir" `
           -V Verbose
 

@@ -1,8 +1,8 @@
 using Azure.Core;
-using DadABase.Web.Helpers;
+using GetTogether.Web.Helpers;
 using GitHub.Copilot;
 
-namespace DadABase.Web.Services;
+namespace GetTogether.Web.Services;
 
 /// <summary>
 /// AI chat service backed by the GitHub Copilot SDK using a Foundry OpenAI-compatible endpoint.

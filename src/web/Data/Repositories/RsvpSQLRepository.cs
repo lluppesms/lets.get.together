@@ -6,18 +6,18 @@
 // RSVP SQL Repository
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Repositories;
+namespace GetTogether.Data.Repositories;
 
 /// <summary>
 /// SQL Server implementation of <see cref="IRsvpRepository"/> using EF Core.
 /// </summary>
-public class RsvpSQLRepository(DadABaseDbContext context) : IRsvpRepository
+public class RsvpSQLRepository(GetTogetherDbContext context) : IRsvpRepository
 {
     private static readonly HashSet<string> AllowedStatuses = ["Accept", "Decline", "Maybe"];
 
-    private readonly DadABaseDbContext _context = context;
+    private readonly GetTogetherDbContext _context = context;
 
     /// <inheritdoc/>
     public async Task<RSVP?> GetRsvpAsync(int eventId, int userId)

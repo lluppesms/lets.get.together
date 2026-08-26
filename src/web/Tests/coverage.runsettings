@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
   ============================================================
-  Coverage exclusions for DadABase.Tests
+  Coverage exclusions for GetTogether.Tests
   ============================================================
   This single file centralises all code-coverage exclusions so
   that no [ExcludeFromCodeCoverage] attributes are required on
   individual source files.
 
   It is wired in automatically via the RunSettingsFilePath MSBuild
-  property in DadABase.Tests.csproj, so it is picked up by every
+  property in GetTogether.Tests.csproj, so it is picked up by every
   dotnet test invocation without needing an explicit /settings flag:
     - local development
     - GitHub Actions (template-webapp-build.yml)

@@ -2,15 +2,15 @@
   "AppSettings": {
     "AppVersion": "1.0.0",
     "AppTitle": "Get Together",
-    "AppDescription": "An ASP.NET Core web app for sharing and exploring community humor",
+    "AppDescription": "Get Together - An ASP.NET Core web app for simple, private event planning for real friends",
     "EnvironmentName": "Development",
     "DataSource": "JSON",
     "EnableSwagger": true,
     "DetailedErrors": true,
     "AiServiceProvider": "CopilotSDK", // "AgentFramework","CopilotSDK"
 
-    "NOTSET-USE-JSON-DefaultConnection": "",
-    "DefaultConnection": "",
+    "NOTSET-USE-JSON-DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=GetTogether;Trusted_Connection=True;MultipleActiveResultSets=true",
+    "DefaultConnection": "Server=tcp:sql-gettogether.database.windows.net,1433;Initial Catalog=GetTogether;Persist Security Info=False;User ID=sqladmin;Password={your_password};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
     "AdminUserList": "",
     "ApiKey": "",
     "BlobStorageAccountName": "",

@@ -1,7 +1,7 @@
-namespace DadABase.Tests;
+namespace GetTogether.Tests;
 
-using DadABase.Data.Models;
-using DadABase.Data.Services;
+using GetTogether.Data.Models;
+using GetTogether.Data.Services;
 
 [ExcludeFromCodeCoverage]
 public class RecurrenceService_Tests
