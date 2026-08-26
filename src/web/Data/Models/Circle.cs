@@ -6,13 +6,13 @@
 // Circle Table
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data.Models;
+namespace GetTogether.Data.Models;
 
 /// <summary>
 /// Represents a social circle in the Get Together domain.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[Table("Circle", Schema = "Dad")]
+[Table("Circle", Schema = "Meetings")]
 public class Circle
 {
     /// <summary>

@@ -1,5 +1,5 @@
 -- -- Good idea, but this needs to be run by someone authorized...
 -- -- ERROR: Server identity does not have the Microsoft Entra Directory Readers permission.
--- CREATE USER [llldadabase1-app-id] FROM EXTERNAL PROVIDER;
--- GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::[Dad] TO [llldadabase1-app-id];
--- GRANT EXECUTE ON SCHEMA::[Dad] TO [llldadabase1-app-id];
+-- CREATE USER [lllmeetup-app-id] FROM EXTERNAL PROVIDER;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::[Meetings] TO [lllmeetup-app-id];
+-- GRANT EXECUTE ON SCHEMA::[Meetings] TO [lllmeetup-app-id];

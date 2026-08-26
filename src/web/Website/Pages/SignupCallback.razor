@@ -1,0 +1,44 @@
+@page "/signup-callback"
+@namespace GetTogether.Web.Pages
+@inject NavigationManager Navigation
+
+<PageTitle>Continue signup | Get Together</PageTitle>
+
+<main class="auth-page callback-page" aria-labelledby="callback-heading">
+    <section class="auth-panel" aria-live="polite">
+        <div class="auth-kicker">One more step</div>
+        <h1 id="callback-heading">Your invitation is ready.</h1>
+        <p class="auth-intro">The invitation code has been captured. Provider sign-in and server-side code validation will finish your onboarding here.</p>
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <p class="auth-message auth-message-error" role="alert">@errorMessage</p>
+        }
+        else
+        {
+            <p class="auth-message auth-message-info" role="status">No account has been created yet.</p>
+        }
+        <div class="callback-actions">
+            <a class="primary-action callback-action" href="/login">Choose a sign-in provider</a>
+            <a class="secondary-action" href="/signup">Use a different code</a>
+        </div>
+    </section>
+</main>
+
+@code {
+    private string errorMessage = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(Navigation.ToAbsoluteUri(Navigation.Uri).Query);
+        if (query.TryGetValue("error", out var error))
+        {
+            errorMessage = error.ToString().ToLowerInvariant() switch
+            {
+                "invalid" => "That invitation code is not valid. Check the code and try again.",
+                "expired" => "That invitation code has expired. Ask your friend for a new code.",
+                "used" => "That invitation code has already been used.",
+                _ => "We could not validate that invitation code. Try again or request a new code."
+            };
+        }
+    }
+}

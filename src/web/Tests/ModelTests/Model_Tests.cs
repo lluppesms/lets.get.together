@@ -6,10 +6,10 @@
 // Model and Service Tests
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Tests;
+namespace GetTogether.Tests;
 
-using DadABase.Web.Models.AIModels;
-using DadABase.Web.Repositories;
+using GetTogether.Web.Models.AIModels;
+using GetTogether.Web.Repositories;
 
 /// <summary>
 /// Tests for model classes and services to ensure coverage.

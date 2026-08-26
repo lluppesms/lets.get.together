@@ -28,7 +28,7 @@ parameters:
   - name: githubRepository
     displayName: GitHub Repository
     type: string
-    default: dadabase.azdo.demo
+    default: gettogether.azdo.demo
   - name: githubWorkflowFile
     displayName: GitHub Workflow File to Start
     type: string
@@ -36,7 +36,7 @@ parameters:
 
 # ----------------------------------------------------------------------------------------------------
 variables:
-  - group: Dadabase.Demo
+  - group: GetTogether.Demo
   - template: vars/var-service-connections.yml
 
 # ----------------------------------------------------------------------------------------------------

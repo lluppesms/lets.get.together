@@ -471,7 +471,7 @@ body[data-bs-theme='dark'] .LayoutFooterStyle,
     width: 250px;
 }
 
-.JokeCard {
+.EventCard {
     background: var(--card-bg-light);
     box-shadow: var(--shadow-md);
     padding: 2rem;
@@ -484,7 +484,7 @@ body[data-bs-theme='dark'] .LayoutFooterStyle,
     backdrop-filter: blur(10px);
 }
 
-.JokeCard::before {
+.EventCard::before {
     content: '';
     position: absolute;
     top: 0;
@@ -494,30 +494,30 @@ body[data-bs-theme='dark'] .LayoutFooterStyle,
     background: linear-gradient(90deg, var(--primary-gradient-start), var(--highlight-color), var(--accent-color));
 }
 
-.JokeCard:hover {
+.EventCard:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
 }
 
-body[data-bs-theme='dark'] .JokeCard,
-.theme-dark .JokeCard {
+body[data-bs-theme='dark'] .EventCard,
+.theme-dark .EventCard {
     background: var(--card-bg-dark);
     border: 1px solid var(--surface-border-dark);
 }
 
-.JokeText {
+.EventText {
     color: var(--text-primary-light);
     font-size: 1.1rem;
     line-height: 1.8;
     font-weight: 400;
 }
 
-body[data-bs-theme='dark'] .JokeText,
-.theme-dark .JokeText {
+body[data-bs-theme='dark'] .EventText,
+.theme-dark .EventText {
     color: var(--text-primary-dark);
 }
 
-.JokeCategory {
+.EventCategory {
     background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
     color: white;
     font-size: 0.75rem;
@@ -782,7 +782,7 @@ body[data-bs-theme='dark'] .form-control,
         width: 100%;
     }
 
-    .joke-image {
+    .event-image {
         max-width: 100%;
         width: 100%;
     }
@@ -876,7 +876,7 @@ body[data-bs-theme='dark'] .form-control,
     text-shadow: 1px 1px #000000 !important;
 }
 
-.theme-nineties .JokeCard,
+.theme-nineties .EventCard,
 .theme-nineties .CategoryCard,
 .theme-nineties .card {
     background: linear-gradient(135deg, #ff00ff, #00ffff) !important;

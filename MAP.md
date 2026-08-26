@@ -4,7 +4,23 @@
 >
 > **Purpose:** Give Copilot a fast, evidence-based map of the repository so routine work can start at the owning project instead of scanning the whole tree.
 >
-> **Last reviewed:** 2026-08-25
+> **Last reviewed:** 2026-08-26
+
+### Backend Phase 1 update (2026-08-25)
+
+The shared data project now includes the locked Event recurrence model (`IsRecurring`, `RsvpMode`, and `RecurrenceRule`) and the SQL database project includes the Get Together tables under the `Dad` schema. Invitation-code listing preserves the full circle audit trail, while redemption continues to require an active circle member, rejects duplicate active membership, and reactivates a former member's existing membership record.
+
+### Backend Phase 2 update (2026-08-25)
+
+Circle repositories now support active-member listing, active-only rosters, add/reactivate, and remove operations (including RSVP cleanup). Invitation generation is available to any active member without a hard cap and is logged; circle invite listings retain all statuses and revocation remains active-member guarded.
+
+### Backend Phase 4 update (2026-08-26)
+
+`IRsvpRepository` and `RsvpSQLRepository` support idempotent RSVP upserts (Accept/Decline/Maybe) with series and per-occurrence targeting, `GetRsvpsByEventAsync`, `GetRsvpsByOccurrenceAsync`, and `GetUnansweredMembersAsync`, enforcing active circle membership across all operations. `SendGridNotificationService` supports `SendEventCreationEmailAsync` and `SendReminderEmailAsync`, enforces circle membership for trigger users (per OQ-1) and target audiences, and logs reminders to `ReminderLog`. `CircleSQLRepository.RemoveMemberAsync` purges circle RSVPs upon member departure. Focused xUnit tests verify RSVP workflows, audience targeting, DB logging, and member-leave RSVP cleanup.
+
+### Backend Phase 5 update (2026-08-26)
+
+`ICalendarAggregationService` and `CalendarAggregationService` in `src/web/Data/Services/` aggregate calendar events and expanded occurrences (`IRecurrenceService`) across all active circles (`LeftUtc == null`) for a requesting user within a specified date window. Aggregated items include attached RSVP status (`UserRsvpStatus`, `UserRsvpNotes`) and circle metadata (`CircleId`, `CircleName`, `CircleColorIndex`, `CircleColor`). Strict circle privacy is enforced by excluding former members (`LeftUtc != null`). Service registered in `Program.cs` under SQL data source startup. Focused xUnit tests in `src/web/Tests/ServicesTests/CalendarAggregationService_Tests.cs` cover multi-circle aggregation, date window bounds, recurrence expansion, RSVP attachment, and former-member exclusion.
 
 ### Squad team
 
@@ -28,8 +44,7 @@ Authoritative sources when this document and older prose disagree:
 | Task | Start here | Then inspect |
 | --- | --- | --- |
 | Change a web page or Blazor behavior | `src/web/Website/Pages/`, `Components/`, or `Shared/` | `src/web/Website/Program.cs`, related `.razor.cs`, and scoped `.razor.css` |
-| Change circle/event/RSVP domain logic | `src/web/Data/Repositories/` — `ICircleRepository`, `IEventRepository`, `IRsvpRepository`, `IInvitationCodeRepository`, `IUserRepository` | SQL implementations alongside each interface; `DadABaseDbContext.cs` |
-| Change joke persistence or query behavior | `src/web/Data/Repositories/` and `src/web/Data/` | `IJokeRepository.cs`, `JokeSQLRepository.cs`, `JokeJsonRepository.cs`, `DadABaseDbContext.cs` |
+| Change circle/event/RSVP domain logic | `src/web/Data/Repositories/` — `ICircleRepository`, `IEventRepository`, `IRsvpRepository`, `IInvitationCodeRepository`, `IUserRepository` | SQL implementations alongside each interface; `GetTogetherDbContext.cs` |
 | Change email notifications | `src/web/Website/Services/SendGridNotificationService.cs` | `Services/Interfaces/INotificationService.cs`; `SendGrid:ApiKey` / `SendGrid:FromEmail` config keys |
 | Change web REST endpoints | `src/web/Website/API/` | controller base classes, repository interface, Swagger configuration |
 | Change the serverless API | `src/function/Function/` | `src/function/DataLayer/`, `Entities/`, and function tests |
@@ -56,13 +71,15 @@ The normal request path is:
 5. Optional AI helpers call Azure OpenAI / Microsoft Agent or Copilot SDK integrations and can use Blob Storage for generated images.
 6. Optional OpenTelemetry/Azure Monitor configuration emits application telemetry.
 
-Phase 0 starter product surfaces now include placeholder Blazor pages at `/circles`, `/events`, and `/calendar`, with corresponding top navigation links in `src/web/Website/Shared/NavMenu.razor`.
+Phase 2 circle management is implemented at `src/web/Website/Pages/Circles.razor` with scoped responsive styling in `Circles.razor.css`. The authenticated page supports `/circles` and `/circles/{CircleId:int}`, circle switching/detail/member roster, member-editable settings, leave confirmation, and invite generation/history/revocation with locally derived active/consumed/expired/revoked status. It resolves the persisted app user from the authenticated external subject before every circle-scoped repository call and shows an unavailable state when SQL-only repositories are not registered.
+
+Phase 1 authentication UI surfaces now include `/login`, `/signup`, and `/signup-callback` under `src/web/Website/Pages/`. The shared `LoginDisplay` links anonymous users to `/login`; Microsoft Entra uses the existing Microsoft Identity UI when `AzureAD:TenantId` is configured, while Google and Facebook are displayed as pending providers until backend OAuth registration exists. Signup currently validates invitation-code shape and carries the code to the callback route; server-side validation and redemption remain a contract boundary.
 
 The web app supports anonymous access by default. Entra ID authentication is configured only when `AzureAD:TenantId` is present; individual pages/endpoints can then apply authorization. API key handling is implemented in the web API support code and must be preserved when changing controllers.
 
 ### Data layer
 
-`src/web/Data/` is a shared .NET library containing domain models, `DadABaseDbContext`, repository abstractions, and repository implementations.
+`src/web/Data/` is a shared .NET library containing domain models, `GetTogetherDbContext`, repository abstractions, and repository implementations.
 
 **Get Together domain repositories** (new — added in project-structure setup):
 - `ICircleRepository` / `CircleSQLRepository` — circle CRUD and membership management.
@@ -77,18 +94,18 @@ All Get Together repositories are registered as `Scoped` in `Program.cs` and are
 
 **Placeholder pages**: `/circles`, `/events`, and `/calendar` Blazor pages exist at `src/web/Website/Pages/`. They render a construction banner and are ready for implementation.
 
-**Namespace status**: All Get Together code currently lives under `DadABase.*` namespaces (inherited from the source repo). Renaming to `GetTogether.*` is a planned but deferred task; see `.squad/decisions/inbox/mal-project-structure.md`.
+**Namespace status**: All codebase components have been rebranded to `GetTogether.*` (`GetTogether.Data`, `GetTogether.Web`, `GetTogether.Tests`, `GetTogetherDbContext`).
 
 `IJokeRepository` is the principal boundary for joke operations. It includes reads (all, recent, one, random, categories, search), writes (add, update, delete, ratings/category updates), import/export operations, and image-description updates.
 
 There are two application data modes:
 
 - `DataSource=JSON`: `JokeJsonRepository` reads the deployed `Data/Jokes.json` file. This is the default template mode and is convenient for local demos without SQL.
-- `DataSource=SQL`, `SQLDB`, or `DATABASE` in the web startup code: `JokeSQLRepository` uses EF Core SQL Server through `DadABaseDbContext` and the configured connection string. Get Together repositories are also registered when this mode is active.
+- `DataSource=SQL`, `SQLDB`, or `DATABASE` in the web startup code: `CircleSQLRepository`, `EventSQLRepository`, `RsvpSQLRepository`, `InvitationCodeSQLRepository`, and `UserSQLRepository` use EF Core SQL Server through `GetTogetherDbContext` and the configured connection string.
 
 If SQL is selected without a usable `DefaultConnection`, the web application deliberately falls back to JSON for joke data. An unknown data source also falls back to JSON. Do not assume that local development is database-backed.
 
-The SQL domain is represented under the `Dad` schema and includes jokes, categories, joke/category associations, ratings, and the full Get Together schema (User, Circle, CircleMembership, InvitationCode, Event, RSVP, ReminderLog). The SQL database project is the schema authority for deployment; do not treat EF migrations or JSON seed data as a substitute for DACPAC changes.
+The SQL domain is represented under the `Dad` schema and includes jokes, categories, joke/category associations, ratings, and the full Get Together schema (User, Circle, CircleMembership, InvitationCode, Event, RSVP, ReminderLog). Event recurrence is stored as `IsRecurring`, integer `RsvpMode` (`PerOccurrence` or `Series`), and nullable `RecurrenceRule`. The SQL database project is the schema authority for deployment; do not treat EF migrations or JSON seed data as a substitute for DACPAC changes.
 
 For Get Together planning and implementation, SQL Server is expected to be a shared database host with app objects isolated to a unique application schema. Application identities should be granted schema-scoped rights (least privilege) and must not be granted broad full-database permissions.
 
@@ -108,18 +125,18 @@ src/
     Website/       Blazor Server web host, pages, components, APIs, services, static/data files
     Data/          Shared joke domain, EF Core context, repository interface and implementations
     Tests/         Web/data xUnit tests and coverage.runsettings
-    dadabase.net10.web.sln
+    gettogether.web.sln
   function/
     Function/      Azure Functions isolated worker host and HTTP triggers
     DataLayer/     Function data access
     Entities/      Function entities/DTOs
     Tests/         Function xUnit tests and test JSON
     TestHarness/   HTTP request assets where present
-    DadABase.Net10.Function.sln
+    gettogether.net10.Function.sln
   mcp/             Shared, Stdio, and SSE MCP projects; DadJokeMCP.sln
   console/         CLI host; DadJoke.console.sln
   analyzer/        AI/batch analyzer; DadJokeAnalyzer.sln
-  database/        SQL Server Database Project/DACPAC source; sql.database.sln
+  database/        SQL Server Database Project/DACPAC source; GetTogether.Sql.Database.sln
   Directory.Build.props
 
 infra/
@@ -131,7 +148,7 @@ playwright/        TypeScript Playwright smoke, basic, UI, and API suites; fixtu
 .github/
   copilot-instructions.md  Repository-wide Copilot rules
   instructions/             Focused authoring rules
-  skills/                   Repository skills, including Dadabase Playwright guidance
+  skills/                   Repository skills, including Playwright guidance
   agents/                   Custom agent modes
   prompts/                  Task prompts
   workflows/                GitHub Actions entry workflows and reusable templates
@@ -151,10 +168,10 @@ Build output such as `bin/`, `obj/`, publish folders, and test result folders ma
 
 | Area | Language / framework | Evidence and notes |
 | --- | --- | --- |
-| Web | C#, ASP.NET Core, Blazor Server, .NET 10 | `src/web/Website/DadABase.Web.csproj`, `Program.cs` |
+| Web | C#, ASP.NET Core, Blazor Server, .NET 10 | `src/web/Website/gettogether.web.csproj`, `Program.cs` |
 | UI | Razor/HTML/CSS, MudBlazor, Blazored LocalStorage, SweetAlert2 integration | Web project package references and `.razor`/`.razor.css` files |
-| Shared data | C#, EF Core 10, SQL Server provider, Newtonsoft.Json | `src/web/Data/DadABase.Data.csproj` |
-| Function API | C#, Azure Functions isolated worker, .NET 10 | `src/function/Function/DadABase.Function.csproj` |
+| Shared data | C#, EF Core 10, SQL Server provider, Newtonsoft.Json | `src/web/Data/gettogether.web.csproj` |
+| Function API | C#, Azure Functions isolated worker, .NET 10 | `src/function/Function/gettogether.Function.csproj` |
 | Console/analyzer | C#, .NET 10; console uses Spectre.Console; analyzer uses its AI/data packages | `src/console/`, `src/analyzer/` project files |
 | MCP | C#, .NET 10, Model Context Protocol SDK projects | `src/mcp/` project files |
 | Database | T-SQL / SQL Server Database Project / DACPAC | `src/database/` |
@@ -168,7 +185,7 @@ Notable web packages include MudBlazor, Azure Identity, Azure OpenAI, Microsoft 
 
 ### Web configuration
 
-`src/web/Website/applicationSettings.json` is a checked-in template/configuration file copied to output. It contains `AppSettings` including `DataSource`, `DefaultConnection`, `ApiKey`, `AdminUserList`, `EnableSwagger`, AI settings, and Blob Storage settings, plus `AzureAD`, `APPLICATIONINSIGHTS_CONNECTION_STRING`, and `VisualStudioTenantId` settings.
+`src/web/Website/applicationSettings.json` is a checked-in template/configuration file copied to output. It contains `AppSettings` including `DataSource`, `DefaultConnection`, `ApiKey`, `AdminUserList`, `EnableSwagger`, AI settings, and Blob Storage settings, plus `AzureAD`, empty `Authentication:Google` and `Authentication:Facebook` provider placeholders, `APPLICATIONINSIGHTS_CONNECTION_STRING`, and `VisualStudioTenantId` settings.
 
 Web startup loads, in this general order:
 
@@ -178,6 +195,8 @@ Web startup loads, in this general order:
 4. Azure Key Vault when `KeyVaultName` is set.
 
 Use environment variables, User Secrets, or Key Vault for real credentials. Do not put connection strings, API keys, tenant credentials, or passwords in committed configuration. `DefaultAzureCredential` is the managed identity/default credential boundary. `VisualStudioTenantId` is a local-development override and must not be used as an Azure deployment substitute.
+
+Provider environment names use double underscores: `AzureAD__*`, `Authentication__Google__*`, and `Authentication__Facebook__*`. Key Vault names use double hyphens for nested keys. Bicep currently wires only `AzureAD__*`; Google and Facebook remain template/documentation placeholders until runtime provider registration is implemented.
 
 The function host uses `appsettings.json` if present, environment variables, and User Secrets. Its startup is in `src/function/Function/Program.cs`.
 
@@ -193,8 +212,8 @@ The function host uses `appsettings.json` if present, environment variables, and
 
 ### C# unit and component-facing tests
 
-- Web/data tests: `src/web/Tests/` in `DadABase.Tests.csproj`.
-- Function tests: `src/function/Tests/` in `DadABase.Function.Tests.csproj`.
+- Web/data tests: `src/web/Tests/` in `gettogether.Tests.csproj`.
+- Function tests: `src/function/Tests/` in `gettogether.Function.Tests.csproj`.
 - Framework: xUnit v3, xunit runner, Microsoft.NET.Test.Sdk, Moq, EF Core InMemory/TestHost where needed.
 - Shared setup/data: `BaseTest.cs`, `BaseWebTest.cs`, and `SampleData/` under web tests; function test data includes `Jokes.json`.
 - Coverage: both test projects point to a local `coverage.runsettings`; the web project includes coverage exclusions.
@@ -203,10 +222,10 @@ The function host uses `appsettings.json` if present, environment variables, and
 Useful commands:
 
 ```text
-dotnet test src/web/Tests/DadABase.Tests.csproj
-dotnet test src/function/Tests/DadABase.Function.Tests.csproj
-dotnet test src/web/dadabase.net10.web.sln
-dotnet test src/function/DadABase.Net10.Function.sln
+dotnet test src/web/Tests/gettogether.Tests.csproj
+dotnet test src/function/Tests/gettogether.Function.Tests.csproj
+dotnet test src/web/gettogether.web.sln
+dotnet test src/function/gettogether.Net10.Function.sln
 ```
 
 `CONTRIBUTING.md` also documents `dotnet test` from the web source folder and full Playwright setup. The exact solution/project command is preferable when narrowing a change.
@@ -223,7 +242,9 @@ dotnet test src/function/DadABase.Net10.Function.sln
 
 The local config currently targets the deployed application URL by default; inspect the selected config before assuming a local server is used. `package.json` currently declares Playwright dependencies but does not define named `test:*` scripts, so use `npx playwright test` with the appropriate config or the repository's pipeline commands. Install browsers with `npx playwright install` when needed.
 
-`dadabase-playwright-testing` under `.github/skills/` contains project-specific testing guidance and should be consulted for anonymous homepage, category, and search smoke work.
+`gettogether-playwright-testing` under `.github/skills/` contains project-specific testing guidance and should be consulted for anonymous homepage, category, and search smoke work.
+
+Phase 2 repository access tests in `src/web/Tests/RepositoryTests/GetTogetherAccess_Tests.cs` cover multi-circle listing, active-member rosters, circle privacy guards, invitation lifecycle/statuses, and member leave behavior. No authenticated circle Playwright fixture exists yet.
 
 ## 8. GitHub Actions
 
@@ -253,13 +274,13 @@ Azure DevOps mirrors much of the GitHub deployment capability but uses composed 
 - `jobs/` contains reusable build, deploy, scan, Playwright, DACPAC, SQL, function, container, and SBOM jobs.
 - `steps/` contains the lower-level deployment, scanning, SQL, GitHub dispatch, and DACPAC steps.
 - `vars/` contains shared and environment-specific settings (`dev`, `qa`, `prod`, common, service connections, and source location).
-- `.azdo/pipelines/readme.md` documents the shared Bicep parameter process, deployment types, environments, variable group `Dadabase.Demo`, and setup requirements.
+- `.azdo/pipelines/readme.md` documents the shared Bicep parameter process, deployment types, environments, variable group `gettogether.Demo`, and setup requirements.
 
 The Azure DevOps YAML authoring contracts are `.github/instructions/azure-devops-pipeline-instructions.md` and `.github/instructions/bicep-instructions.md`.
 
 ## 10. SQL and Data Operations
 
-The SQL database project is `src/database/sql.database.sqlproj`. Schema objects are under `src/database/Dad/`, including tables, views, schemas, and deployment scripts. `Patch/` holds manual or operational scripts. Related explanatory material is in `Docs/sql/`.
+The SQL database project is `src/database/GetTogether.Sql.Database.sqlproj`. Schema objects are under `src/database/Dad/`, including tables, views, schemas, and deployment scripts. `Patch/` holds manual or operational scripts. Related explanatory material is in `Docs/sql/`.
 
 For schema changes:
 
@@ -284,7 +305,7 @@ Use `.github/instructions/sql-database-dacpac-instructions.md` before editing SQ
 
 ### Skills
 
-`.github/skills/` contains reusable skills. `dadabase-playwright-testing` is the project-specific skill. Other local skills cover .NET/C#, EF Core, SQL, Bicep/Aspire/Azure DevOps, GitHub, testing, document generation, frontend/design, and skill creation. Some shared skills may also be supplied by the `my.copilot.skills` workspace referenced by `README.md` and `dadabase.demo.gh.code-workspace`; distinguish local repository skills from external workspace skills.
+`.github/skills/` contains reusable skills. `gettogether-playwright-testing` is the project-specific skill. Other local skills cover .NET/C#, EF Core, SQL, Bicep/Aspire/Azure DevOps, GitHub, testing, document generation, frontend/design, and skill creation. Some shared skills may also be supplied by the `my.copilot.skills` workspace referenced by `README.md` and `gettogether.demo.gh.code-workspace`; distinguish local repository skills from external workspace skills.
 
 ### Prompts and commands
 
@@ -297,9 +318,9 @@ Prerequisites are .NET 10 SDK, Node.js 18+, Git, and optionally gitleaks for sec
 The workspace tasks target the web project:
 
 ```text
-dotnet build src/web/Website/DadABase.Web.csproj
-dotnet publish src/web/Website/DadABase.Web.csproj
-dotnet watch run --project src/web/Website/DadABase.Web.csproj
+dotnet build src/web/Website/gettogether.Web.csproj
+dotnet publish src/web/Website/gettogether.Web.csproj
+dotnet watch run --project src/web/Website/gettogether.Web.csproj
 ```
 
 Run the web host from `src/web/Website/` with `dotnet run`. For a local JSON-mode demo, no SQL server is required; use User Secrets or environment variables for AI/auth/database settings.
@@ -320,7 +341,7 @@ For every source, infrastructure, workflow, test, or Copilot-customization chang
 ## 14. Known Caveats and Drift Signals
 
 - `MAP.md` must stay more current than generated architecture exports. `Docs/Application-Architecture.md` contains useful diagrams but has historical claims, including older package versions and an MSTest description that does not match the current xUnit project files.
-- The current web build task path in the workspace context is the valid path: `src/web/Website/DadABase.Web.csproj`. Older notes may mention stale or moved paths; verify task definitions before relying on them.
+- The current web build task path in the workspace context is the valid path: `src/web/Website/gettogether.Web.csproj`. Older notes may mention stale or moved paths; verify task definitions before relying on them.
 - `src/web/Website/applicationSettings.json` is a template and contains placeholder values. Treat all deployment secrets as external configuration.
 - The default Playwright config targets a deployed site and the root `package.json` has no named Playwright test scripts. Inspect config selection and invoke Playwright directly.
 - Data source selection changes behavior substantially. Tests and local runs may use JSON or in-memory data while production uses Azure SQL.

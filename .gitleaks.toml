@@ -1,7 +1,7 @@
-# Gitleaks configuration for dadabase.demo
+# Gitleaks configuration for lets.get.together
 # Full rule reference: https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
 
-title = "dadabase.demo gitleaks config"
+title = "lets.get.together gitleaks config"
 
 [extend]
 # Extend the default ruleset — catches AWS keys, GitHub tokens, connection strings, etc.

@@ -6,7 +6,7 @@
 // Message bubble component code-behind
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Web.Components;
+namespace GetTogether.Web.Components;
 
 /// <summary>
 /// Displays one chat message bubble.

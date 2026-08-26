@@ -73,8 +73,8 @@ Avoid turning Playwright into a substitute for all .NET tests. Business rules, r
 Common local commands:
 
 ```powershell
-dotnet test .\src\web\Tests\DadABase.Tests.csproj
-dotnet test .\src\function\Tests\DadABase.Function.Tests.csproj
+dotnet test .\src\web\Tests\GetTogether.Tests.csproj
+dotnet test .\src\function\Tests\GetTogether.Function.Tests.csproj
 npx playwright test
 ```
 
@@ -90,7 +90,7 @@ Use the repo's existing Playwright configuration files rather than inventing new
 
 When an agent is asked to test the running app, explore the UI, capture selectors, or generate Playwright coverage for the anonymous web experience, prefer the repository-specific skill:
 
-- `dadabase-playwright-testing`
+- `GetTogether-playwright-testing`
 
 That skill is the purpose-built app-testing guide for this repository and should be treated as the first-choice workflow for browser-based app testing by agents. Use the general Playwright or web app testing tools only when the repository-specific skill does not cover the requested scenario.
 

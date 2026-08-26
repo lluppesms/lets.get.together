@@ -1,4 +1,4 @@
-﻿namespace DadABase.Helpers;
+namespace GetTogether.Helpers;
 
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;

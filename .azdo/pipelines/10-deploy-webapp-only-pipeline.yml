@@ -17,12 +17,12 @@ trigger:
 
 # ----------------------------------------------------------------------------------------------------
 variables:
-  - group: Dadabase.Demo
+  - group: GetTogether.Demo
 
 # ----------------------------------------------------------------------------------------------------
 resources:
   pipelines:
-  - pipeline: dadabase.web.build.deploy    # internal identifier for the resource
+  - pipeline: gettogether.web.build.deploy    # internal identifier for the resource
     source: 2.1-bicep-build-deploy-webapp  # name of the pipeline that produces an artifact
     branch: main                           # should only allow builds from the main branch to be used
 
@@ -44,10 +44,10 @@ stages:
   - template: stages/webapp-deploy-stages.yml
     parameters:
       environments: [ '${{ parameters.deployToEnvironment }}' ]
-      pipelineResourceIdentifier: 'dadabase.web.build.deploy'
+      pipelineResourceIdentifier: 'gettogether.web.build.deploy'
 
 - ${{ if eq(parameters.deployToEnvironment, 'MULTIPLE') }}:
   - template: stages/webapp-deploy-stages.yml
     parameters:
       environments: ['DEV','PROD']
-      pipelineResourceIdentifier: 'dadabase.web.build.deploy'
+      pipelineResourceIdentifier: 'gettogether.web.build.deploy'

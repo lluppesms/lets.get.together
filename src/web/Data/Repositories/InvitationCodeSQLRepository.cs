@@ -6,16 +6,21 @@
 // Invitation Code SQL Repository
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using Microsoft.Extensions.Logging;
 
-namespace DadABase.Data.Repositories;
+using GetTogether.Data.Models;
+
+namespace GetTogether.Data.Repositories;
 
 /// <summary>
 /// SQL Server implementation of <see cref="IInvitationCodeRepository"/> using EF Core.
 /// </summary>
-public class InvitationCodeSQLRepository(DadABaseDbContext context) : IInvitationCodeRepository
+public class InvitationCodeSQLRepository(
+    GetTogetherDbContext context,
+    ILogger<InvitationCodeSQLRepository>? logger = null) : IInvitationCodeRepository
 {
-    private readonly DadABaseDbContext _context = context;
+    private readonly GetTogetherDbContext _context = context;
+    private readonly ILogger<InvitationCodeSQLRepository>? _logger = logger;
 
     /// <inheritdoc/>
     public async Task<InvitationCode> CreateCodeAsync(int circleId, int createdByUserId, DateTime? expiresUtc = null)
@@ -38,6 +43,12 @@ public class InvitationCodeSQLRepository(DadABaseDbContext context) : IInvitatio
 
         _context.InvitationCodes!.Add(code);
         await _context.SaveChangesAsync();
+        _logger?.LogInformation(
+            "Generated invitation code {InvitationCodeId} for circle {CircleId} by user {UserId} at {CreatedUtc}.",
+            code.InvitationCodeId,
+            circleId,
+            createdByUserId,
+            code.CreatedUtc);
         return code;
     }
 
@@ -52,7 +63,7 @@ public class InvitationCodeSQLRepository(DadABaseDbContext context) : IInvitatio
         }
 
         return await _context.InvitationCodes!
-            .Where(ic => ic.CircleId == circleId && ic.RevokedUtc == null)
+            .Where(ic => ic.CircleId == circleId)
             .Include(ic => ic.CreatedByUser)
             .Include(ic => ic.RedeemedByUser)
             .OrderByDescending(ic => ic.CreatedUtc)
@@ -77,17 +88,36 @@ public class InvitationCodeSQLRepository(DadABaseDbContext context) : IInvitatio
         var invitation = await FindValidCodeAsync(code)
             ?? throw new InvalidOperationException("Invitation code is invalid, already used, or expired.");
 
+        var isAlreadyMember = await _context.CircleMemberships!
+            .AnyAsync(m => m.CircleId == invitation.CircleId && m.UserId == newUserId && m.LeftUtc == null);
+        if (isAlreadyMember)
+        {
+            throw new InvalidOperationException("The user is already an active member of this circle.");
+        }
+
         invitation.RedeemedByUserId = newUserId;
         invitation.RedeemedUtc = DateTime.UtcNow;
 
-        var membership = new CircleMembership
+        var membership = await _context.CircleMemberships!
+            .FirstOrDefaultAsync(m => m.CircleId == invitation.CircleId && m.UserId == newUserId);
+        if (membership is null)
         {
-            CircleId = invitation.CircleId,
-            UserId = newUserId,
-            Role = "Member",
-            JoinedUtc = DateTime.UtcNow
-        };
-        _context.CircleMemberships!.Add(membership);
+            membership = new CircleMembership
+            {
+                CircleId = invitation.CircleId,
+                UserId = newUserId,
+                Role = "Member",
+                JoinedUtc = DateTime.UtcNow
+            };
+            _context.CircleMemberships!.Add(membership);
+        }
+        else
+        {
+            membership.LeftUtc = null;
+            membership.JoinedUtc = DateTime.UtcNow;
+            membership.Role = "Member";
+        }
+
         await _context.SaveChangesAsync();
         return membership;
     }

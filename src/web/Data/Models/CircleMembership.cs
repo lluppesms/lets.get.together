@@ -6,13 +6,13 @@
 // CircleMembership Table
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data.Models;
+namespace GetTogether.Data.Models;
 
 /// <summary>
 /// Represents membership of a user in a circle.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[Table("CircleMembership", Schema = "Dad")]
+[Table("CircleMembership", Schema = "Meetings")]
 public class CircleMembership
 {
     /// <summary>

@@ -6,9 +6,9 @@
 // Invitation Code Repository Interface
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Repositories;
+namespace GetTogether.Data.Repositories;
 
 /// <summary>
 /// Represents the repository interface for managing invitation codes.
@@ -22,7 +22,7 @@ public interface IInvitationCodeRepository
     Task<InvitationCode> CreateCodeAsync(int circleId, int createdByUserId, DateTime? expiresUtc = null);
 
     /// <summary>
-    /// Returns all invitation codes created by the specified user for the specified circle.
+    /// Returns all invitation codes for the specified circle, including redeemed, expired, and revoked codes.
     /// </summary>
     Task<IList<InvitationCode>> GetCodesForCircleAsync(int circleId, int requestingUserId);
 
@@ -33,6 +33,7 @@ public interface IInvitationCodeRepository
 
     /// <summary>
     /// Redeems the code for the specified user, adds them to the associated circle, and returns the membership.
+    /// Reactivates an existing inactive membership instead of creating a duplicate record.
     /// Throws InvalidOperationException if the code is already used, expired, or revoked.
     /// </summary>
     Task<CircleMembership> RedeemCodeAsync(string code, int newUserId);

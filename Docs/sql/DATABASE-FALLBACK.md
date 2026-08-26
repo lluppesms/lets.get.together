@@ -18,18 +18,18 @@ To use SQL Server database for joke storage, provide a connection string in `app
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=.;Database=DadABase;Authentication=Active Directory Interactive;"
+    "DefaultConnection": "Server=.;Database=LetsGetTogether;Authentication=Active Directory Interactive;"
   }
 }
 ```
 
 Or via environment variable:
 ```bash
-export ConnectionStrings__DefaultConnection="Server=.;Database=DadABase;Integrated Security=true;"
+export ConnectionStrings__DefaultConnection="Server=.;Database=LetsGetTogether;Integrated Security=true;"
 ```
 
 When a connection string is configured:
-- The application uses `DadABaseDbContext` with Entity Framework Core
+- The application uses `LetsGetTogetherDbContext` with Entity Framework Core
 - Jokes are stored in SQL Server database
 - Uses `JokeRepository` for data access
 - Supports all SQL Server features (stored procedures, views, etc.)
@@ -81,7 +81,7 @@ Comment out or remove the connection string:
 ```json
 {
   "ConnectionStrings": {
-    // "DefaultConnection": "Server=.;Database=DadABase;..."
+    // "DefaultConnection": "Server=.;Database=LetsGetTogether;..."
   }
 }
 ```
@@ -92,7 +92,7 @@ Add the connection string back:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=.;Database=DadABase;Authentication=Active Directory Interactive;"
+    "DefaultConnection": "Server=.;Database=LetsGetTogether;Authentication=Active Directory Interactive;"
   }
 }
 ```
@@ -113,7 +113,7 @@ var useDatabase = !string.IsNullOrEmpty(connectionString);
 if (useDatabase)
 {
     // SQL Server mode
-    builder.Services.AddDbContext<DadABaseDbContext>(options =>
+    builder.Services.AddDbContext<LetsGetTogetherDbContext>(options =>
         options.UseSqlServer(connectionString));
     builder.Services.AddScoped<IJokeRepository, JokeRepository>();
 }

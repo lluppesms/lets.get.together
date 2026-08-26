@@ -6,13 +6,13 @@
 // User Table
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data.Models;
+namespace GetTogether.Data.Models;
 
 /// <summary>
 /// Represents an application user in the Get Together domain.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[Table("User", Schema = "Dad")]
+[Table("User", Schema = "Meetings")]
 public class User
 {
     /// <summary>

@@ -1,0 +1,561 @@
+@page "/events/detail/{EventId:int}"
+@attribute [Authorize]
+@namespace GetTogether.Web.Pages
+@using System.Security.Claims
+@using GetTogether.Data.Models
+@using GetTogether.Data.Repositories
+@using GetTogether.Web.Components
+@using GetTogether.Web.Services.Interfaces
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IServiceProvider Services
+@inject NavigationManager Navigation
+
+<PageTitle>@(eventModel is not null ? $"{eventModel.Title} | Event Detail" : "Event Detail") | Get Together</PageTitle>
+
+<main class="event-detail-page" aria-labelledby="detail-heading">
+	<nav class="breadcrumb-nav" aria-label="Breadcrumb">
+		<a href="/events" class="back-link">← Back to Upcoming Events</a>
+	</nav>
+
+	@if (!string.IsNullOrWhiteSpace(errorMessage))
+	{
+		<div class="detail-alert detail-alert-error" role="alert">@errorMessage</div>
+	}
+	else if (!string.IsNullOrWhiteSpace(actionMessage))
+	{
+		<div class="detail-alert detail-alert-success" role="status" aria-live="polite">@actionMessage</div>
+	}
+
+	@if (isLoading)
+	{
+		<div class="detail-status" role="status" aria-live="polite">Loading event details...</div>
+	}
+	else if (eventRepository is null || rsvpRepository is null || circleRepository is null || userRepository is null)
+	{
+		<div class="detail-alert detail-alert-warning" role="alert">
+			Event data is not available in this environment. Connect the app to its SQL data source and try again.
+		</div>
+	}
+	else if (eventModel is null)
+	{
+		<div class="detail-empty">
+			<h2>Event Not Found</h2>
+			<p>The event you requested could not be found or you do not have permission to view it.</p>
+			<a href="/events" class="detail-btn detail-btn-primary">Return to Events</a>
+		</div>
+	}
+	else
+	{
+		var (location, details) = ParseLocationAndDetails(eventModel.Details);
+
+		<header class="detail-header">
+			<div class="header-top-row">
+				<div class="header-badges">
+					<span class="circle-badge">@(eventModel.Circle?.Name ?? "Circle")</span>
+					@if (eventModel.IsRecurring)
+					{
+						<span class="recurring-badge">🔁 @eventModel.RecurrenceRule</span>
+					}
+					@if (eventModel.CancelledUtc.HasValue)
+					{
+						<span class="cancelled-badge">Cancelled</span>
+					}
+				</div>
+
+				@if (!eventModel.CancelledUtc.HasValue)
+				{
+					<div class="header-actions">
+						<button class="detail-btn detail-btn-outline-primary"
+								type="button"
+								@onclick="OpenReminderModal"
+								disabled="@isBusy"
+								aria-label="Send reminder email to circle members">
+							🔔 Send Reminder
+						</button>
+					</div>
+				}
+			</div>
+
+			<h1 id="detail-heading">@eventModel.Title</h1>
+
+			<p class="organizer-info">
+				Organized by <strong>@(eventModel.CreatedByUser?.DisplayName ?? "Circle Member")</strong>
+				on @eventModel.CreatedUtc.ToLocalTime().ToString("MMM d, yyyy")
+			</p>
+		</header>
+
+		<div class="detail-grid">
+			<section class="detail-main" aria-label="Event Specifications">
+				<article class="info-card">
+					<h3>📅 Date & Time</h3>
+					<p class="info-highlight">
+						@FormatEventDateTime(eventModel.StartsUtc, eventModel.EndsUtc)
+					</p>
+				</article>
+
+				@if (!string.IsNullOrWhiteSpace(location))
+				{
+					<article class="info-card">
+						<h3>📍 Location</h3>
+						<p class="info-highlight">@location</p>
+					</article>
+				}
+
+				@if (eventModel.IsRecurring)
+				{
+					<article class="info-card recurrence-card">
+						<h3>🔁 Recurrence Schedule</h3>
+						<div class="recurrence-info">
+							<p><strong>Frequency:</strong> Repeats @eventModel.RecurrenceRule</p>
+							<p><strong>RSVP Application:</strong>
+								@(eventModel.RsvpMode == RsvpMode.PerOccurrence
+									? "Per Occurrence — Members RSVP separately to each week's instance."
+									: "Series — A single RSVP applies to the entire event series.")
+							</p>
+						</div>
+					</article>
+				}
+
+				@if (!string.IsNullOrWhiteSpace(details))
+				{
+					<article class="info-card">
+						<h3>📝 Description & Details</h3>
+						<p class="details-body">@details</p>
+					</article>
+				}
+
+				@if (eventModel.CancelledUtc.HasValue)
+				{
+					<article class="info-card cancelled-card" role="alert">
+						<h3>⚠️ Event Cancelled</h3>
+						<p>This event was cancelled on @eventModel.CancelledUtc.Value.ToLocalTime().ToString("MMM d, yyyy @ h:mm tt").</p>
+					</article>
+				}
+				else
+				{
+					<article class="info-card danger-zone">
+						<h3>Manage Event</h3>
+						<p>If plans change, any circle member can cancel this event.</p>
+						@if (showCancelConfirm)
+						{
+							<div class="cancel-confirm-box" role="alertdialog" aria-labelledby="cancel-confirm-heading">
+								<p id="cancel-confirm-heading">Are you sure you want to cancel "@eventModel.Title"?</p>
+								<div class="confirm-actions">
+									<button class="detail-btn detail-btn-danger" type="button" @onclick="CancelEventAsync" disabled="@isBusy">
+										Yes, Cancel Event
+									</button>
+									<button class="detail-btn detail-btn-secondary" type="button" @onclick="() => showCancelConfirm = false" disabled="@isBusy">
+										Keep Event
+									</button>
+								</div>
+							</div>
+						}
+						else
+						{
+							<button class="detail-btn detail-btn-outline-danger" type="button" @onclick="() => showCancelConfirm = true" disabled="@isBusy">
+								Cancel Event
+							</button>
+						}
+					</article>
+				}
+			</section>
+
+			<aside class="detail-sidebar" aria-label="RSVP and Roster">
+				<section class="rsvp-card" aria-labelledby="rsvp-section-heading">
+					<h2 id="rsvp-section-heading">Your RSVP</h2>
+
+					@if (eventModel.CancelledUtc.HasValue)
+					{
+						<p class="muted-text">RSVPs are closed because this event is cancelled.</p>
+					}
+					else
+					{
+						<p class="rsvp-sub">Will you be attending?</p>
+
+						<div class="current-rsvp-banner">
+							Current status: <span class="badge status-badge-@selectedStatus.ToLowerInvariant()">@selectedStatus</span>
+							@if (!string.IsNullOrWhiteSpace(myRsvpStatusMessage))
+							{
+								<span class="status-feedback" role="status" aria-live="polite">@myRsvpStatusMessage</span>
+							}
+						</div>
+
+						<div class="rsvp-options" role="radiogroup" aria-label="RSVP Options">
+							<button class="rsvp-choice rsvp-accept @(selectedStatus == "Accept" ? "selected" : string.Empty)"
+									type="button"
+									@onclick='() => SetRsvpStatusAsync("Accept")'
+									disabled="@isBusy"
+									aria-pressed="@(selectedStatus == "Accept" ? "true" : "false")"
+									aria-label="Accept RSVP">
+								✓ Accept
+							</button>
+							<button class="rsvp-choice rsvp-maybe @(selectedStatus == "Maybe" ? "selected" : string.Empty)"
+									type="button"
+									@onclick='() => SetRsvpStatusAsync("Maybe")'
+									disabled="@isBusy"
+									aria-pressed="@(selectedStatus == "Maybe" ? "true" : "false")"
+									aria-label="Maybe RSVP">
+								? Maybe
+							</button>
+							<button class="rsvp-choice rsvp-decline @(selectedStatus == "Decline" ? "selected" : string.Empty)"
+									type="button"
+									@onclick='() => SetRsvpStatusAsync("Decline")'
+									disabled="@isBusy"
+									aria-pressed="@(selectedStatus == "Decline" ? "true" : "false")"
+									aria-label="Decline RSVP">
+								✕ Decline
+							</button>
+						</div>
+
+						<div class="rsvp-notes-group">
+							<label for="rsvp-notes">Optional Note</label>
+							<textarea id="rsvp-notes"
+									  class="rsvp-notes-input"
+									  @bind="rsvpNotes"
+									  @bind:event="oninput"
+									  placeholder="e.g. Running 10 mins late or bringing snacks!"
+									  maxlength="500"
+									  rows="2"></textarea>
+						</div>
+
+						<button class="detail-btn detail-btn-primary w-100"
+								type="button"
+								@onclick="SaveRsvpAsync"
+								disabled="@(isBusy || string.IsNullOrEmpty(selectedStatus))">
+							@(isBusy ? "Saving..." : "Save RSVP & Note")
+						</button>
+					}
+				</section>
+
+				<RsvpRoster Rsvps="rsvps" CircleMembers="circleMembers" />
+			</aside>
+		</div>
+
+		@if (showReminderModal)
+		{
+			var unansweredCount = undecidedMembers.Count;
+			<div class="modal-backdrop" @onclick="CloseReminderModal" role="presentation">
+				<div class="modal-card" @onclick:stopPropagation="true" role="dialog" aria-modal="true" aria-labelledby="reminder-modal-title">
+					<header class="modal-header">
+						<h3 id="reminder-modal-title">🔔 Send Event Reminder</h3>
+						<button type="button" class="modal-close-btn" @onclick="CloseReminderModal" aria-label="Close modal">✕</button>
+					</header>
+					<div class="modal-body">
+						<p class="modal-intro">Send an email reminder to members who haven't responded to <strong>@eventModel.Title</strong>?</p>
+
+						<div class="reminder-target-box">
+							<div class="target-count-badge">
+								<span class="count-number">@unansweredCount</span>
+								<span class="count-label">Unanswered</span>
+							</div>
+							<p class="target-description">
+								@if (unansweredCount > 0)
+								{
+									<span>A notification email will be sent to <strong>@unansweredCount</strong> circle member@(unansweredCount == 1 ? string.Empty : "s") who have not yet submitted an RSVP for this event.</span>
+								}
+								else
+								{
+									<span>All members of <strong>@(eventModel.Circle?.Name ?? "this circle")</strong> have already responded to this event! There are currently 0 unanswered members.</span>
+								}
+							</p>
+						</div>
+					</div>
+					<footer class="modal-footer">
+						<button type="button"
+								class="detail-btn detail-btn-primary"
+								@onclick="SendReminderAsync"
+								disabled="@(isBusy || unansweredCount == 0)"
+								aria-label="@($"Send reminder email to {unansweredCount} unanswered members")">
+							@(isBusy ? "Sending..." : $"Send Reminder ({unansweredCount})")
+						</button>
+						<button type="button"
+								class="detail-btn detail-btn-secondary"
+								@onclick="CloseReminderModal"
+								disabled="@isBusy">
+							Cancel
+						</button>
+					</footer>
+				</div>
+			</div>
+		}
+	}
+</main>
+
+@code {
+	[Parameter] public int EventId { get; set; }
+
+	private IEventRepository eventRepository;
+	private IRsvpRepository rsvpRepository;
+	private ICircleRepository circleRepository;
+	private IUserRepository userRepository;
+	private INotificationService notificationService;
+	private User currentUser;
+	private Event eventModel;
+	private readonly List<RSVP> rsvps = [];
+	private readonly List<CircleMembership> circleMembers = [];
+	private readonly List<RSVP> acceptedRsvps = [];
+	private readonly List<RSVP> maybeRsvps = [];
+	private readonly List<RSVP> declinedRsvps = [];
+	private readonly List<CircleMembership> undecidedMembers = [];
+
+	private string selectedStatus = "Accept";
+	private string rsvpNotes;
+	private bool isLoading = true;
+	private bool isBusy;
+	private bool showCancelConfirm;
+	private bool showReminderModal;
+	private string errorMessage = string.Empty;
+	private string actionMessage = string.Empty;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		isLoading = true;
+		errorMessage = string.Empty;
+		actionMessage = string.Empty;
+
+		eventRepository = Services.GetService<IEventRepository>();
+		rsvpRepository = Services.GetService<IRsvpRepository>();
+		circleRepository = Services.GetService<ICircleRepository>();
+		userRepository = Services.GetService<IUserRepository>();
+		notificationService = Services.GetService<INotificationService>();
+
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		if (authState.User?.Identity?.IsAuthenticated != true)
+		{
+			Navigation.NavigateTo("/login");
+			return;
+		}
+
+		var externalId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+		if (string.IsNullOrWhiteSpace(externalId) || userRepository is null)
+		{
+			errorMessage = "We could not resolve your application account. Please sign in again.";
+			isLoading = false;
+			return;
+		}
+
+		currentUser = await userRepository.FindByExternalIdAsync(externalId);
+		if (currentUser is null)
+		{
+			errorMessage = "Application user record not found.";
+			isLoading = false;
+			return;
+		}
+
+		await LoadEventDataAsync();
+		isLoading = false;
+	}
+
+	private async Task LoadEventDataAsync()
+	{
+		if (eventRepository is null || rsvpRepository is null || circleRepository is null || currentUser is null) return;
+
+		eventModel = await eventRepository.GetEventAsync(EventId, currentUser.UserId);
+		if (eventModel is null) return;
+
+		var rsvpList = await rsvpRepository.GetRsvpsForEventAsync(EventId, currentUser.UserId);
+		rsvps.Clear();
+		rsvps.AddRange(rsvpList);
+
+		var membersList = await circleRepository.GetMembersAsync(eventModel.CircleId, currentUser.UserId);
+		circleMembers.Clear();
+		circleMembers.AddRange(membersList);
+
+		var myRsvp = rsvps.FirstOrDefault(r => r.UserId == currentUser.UserId);
+		if (myRsvp is not null)
+		{
+			selectedStatus = myRsvp.Status;
+			rsvpNotes = myRsvp.Notes;
+		}
+
+		CategorizeRsvps();
+	}
+
+	private void CategorizeRsvps()
+	{
+		acceptedRsvps.Clear();
+		maybeRsvps.Clear();
+		declinedRsvps.Clear();
+		undecidedMembers.Clear();
+
+		acceptedRsvps.AddRange(rsvps.Where(r => r.Status == "Accept"));
+		maybeRsvps.AddRange(rsvps.Where(r => r.Status == "Maybe"));
+		declinedRsvps.AddRange(rsvps.Where(r => r.Status == "Decline"));
+
+		var respondedUserIds = rsvps.Select(r => r.UserId).ToHashSet();
+		undecidedMembers.AddRange(circleMembers.Where(m => !respondedUserIds.Contains(m.UserId)));
+	}
+
+	private string myRsvpStatusMessage = string.Empty;
+
+	private async Task SetRsvpStatusAsync(string status)
+	{
+		if (rsvpRepository is null || currentUser is null || isBusy) return;
+
+		selectedStatus = status;
+		myRsvpStatusMessage = "Saving...";
+
+		// Instant optimistic UI update
+		var existingRsvp = rsvps.FirstOrDefault(r => r.UserId == currentUser.UserId);
+		var oldStatus = existingRsvp?.Status;
+		var oldNotes = existingRsvp?.Notes;
+
+		if (existingRsvp is not null)
+		{
+			existingRsvp.Status = status;
+			if (rsvpNotes is not null) existingRsvp.Notes = rsvpNotes;
+		}
+		else
+		{
+			rsvps.Add(new RSVP
+			{
+				EventId = EventId,
+				UserId = currentUser.UserId,
+				Status = status,
+				Notes = rsvpNotes,
+				User = currentUser
+			});
+		}
+
+		CategorizeRsvps();
+		StateHasChanged();
+
+		try
+		{
+			await rsvpRepository.UpsertRsvpAsync(EventId, currentUser.UserId, status, rsvpNotes);
+			myRsvpStatusMessage = $"✓ Set to {status}";
+			actionMessage = $"Your RSVP has been saved as '{status}'!";
+		}
+		catch (Exception ex)
+		{
+			// Revert on failure
+			if (existingRsvp is not null)
+			{
+				existingRsvp.Status = oldStatus;
+				existingRsvp.Notes = oldNotes;
+			}
+			CategorizeRsvps();
+			myRsvpStatusMessage = string.Empty;
+			errorMessage = ex.Message;
+		}
+	}
+
+	private Task SetRsvpAccept() => SetRsvpStatusAsync("Accept");
+	private Task SetRsvpMaybe() => SetRsvpStatusAsync("Maybe");
+	private Task SetRsvpDecline() => SetRsvpStatusAsync("Decline");
+
+	private async Task SaveRsvpAsync()
+	{
+		if (rsvpRepository is null || currentUser is null || isBusy || string.IsNullOrEmpty(selectedStatus)) return;
+
+		isBusy = true;
+		actionMessage = string.Empty;
+		errorMessage = string.Empty;
+
+		try
+		{
+			await rsvpRepository.UpsertRsvpAsync(EventId, currentUser.UserId, selectedStatus, rsvpNotes);
+			myRsvpStatusMessage = $"✓ Set to {selectedStatus}";
+			actionMessage = "Your RSVP and note have been saved successfully!";
+			await LoadEventDataAsync();
+		}
+		catch (Exception ex)
+		{
+			errorMessage = ex.Message;
+		}
+		finally
+		{
+			isBusy = false;
+		}
+	}
+
+	private async Task CancelEventAsync()
+	{
+		if (eventRepository is null || currentUser is null || isBusy) return;
+
+		isBusy = true;
+		errorMessage = string.Empty;
+
+		try
+		{
+			await eventRepository.CancelEventAsync(EventId, currentUser.UserId);
+			actionMessage = "Event cancelled successfully.";
+			showCancelConfirm = false;
+			await LoadEventDataAsync();
+		}
+		catch (Exception ex)
+		{
+			errorMessage = ex.Message;
+		}
+		finally
+		{
+			isBusy = false;
+		}
+	}
+
+	private void OpenReminderModal()
+	{
+		showReminderModal = true;
+	}
+
+	private void CloseReminderModal()
+	{
+		showReminderModal = false;
+	}
+
+	private async Task SendReminderAsync()
+	{
+		if (notificationService is null || rsvpRepository is null || currentUser is null || isBusy) return;
+
+		isBusy = true;
+		errorMessage = string.Empty;
+		actionMessage = string.Empty;
+
+		try
+		{
+			var recipients = await rsvpRepository.GetUnansweredMembersAsync(EventId, currentUser.UserId);
+			await notificationService.SendReminderEmailAsync(eventModel, recipients, currentUser.UserId);
+			actionMessage = $"Reminder email sent to {recipients.Count} unanswered member(s).";
+			showReminderModal = false;
+		}
+		catch (Exception ex)
+		{
+			errorMessage = ex.Message;
+		}
+		finally
+		{
+			isBusy = false;
+		}
+	}
+
+	private static (string Location, string Details) ParseLocationAndDetails(string rawDetails)
+	{
+		if (string.IsNullOrWhiteSpace(rawDetails)) return (null, null);
+		if (rawDetails.StartsWith("Location: ", StringComparison.OrdinalIgnoreCase))
+		{
+			var parts = rawDetails.Split(["\n\n"], 2, StringSplitOptions.RemoveEmptyEntries);
+			var location = parts[0].Substring("Location: ".Length).Trim();
+			var details = parts.Length > 1 ? parts[1].Trim() : null;
+			return (location, details);
+		}
+		return (null, rawDetails);
+	}
+
+	private static string FormatEventDateTime(DateTime startsUtc, DateTime? endsUtc)
+	{
+		var localStart = startsUtc.ToLocalTime();
+		var startFormatted = localStart.ToString("dddd, MMMM d, yyyy @ h:mm tt");
+
+		if (endsUtc.HasValue)
+		{
+			var localEnd = endsUtc.Value.ToLocalTime();
+			if (localEnd.Date == localStart.Date)
+			{
+				return $"{startFormatted} - {localEnd:h:mm tt}";
+			}
+			return $"{startFormatted} to {localEnd:dddd, MMMM d @ h:mm tt}";
+		}
+
+		return startFormatted;
+	}
+}

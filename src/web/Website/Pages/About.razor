@@ -1,15 +1,24 @@
 ﻿@page "/about"
+@namespace GetTogether.Web.Pages
+
 <PageTitle>About | Get Together</PageTitle>
 
 <div class="about-container">
     <div class="about-card">
         <h1 class="about-title">About Get Together</h1>
-        <h2 class="about-question">Where can people share their favorite humor?</h2>
-        <h2 class="about-subtitle">In @DatabaseType, of course! 😄</h2>
+        <h2 class="about-subtitle">Simple, private event planning for real friends.</h2>
         <p class="about-description">
-            Welcome to the growing Get Together collection. Whether you're looking for a groan-worthy pun
-            or a quick laugh, we've got you covered. Search through categories, get random picks,
-            or even generate AI-powered joke illustrations!
+            Get Together is a dead-simple way to organize informal gatherings with your actual friends — pickleball, a movie night, a standing coffee date, a volunteer shift — without the bloat of a public event platform. Create a circle of friends, post a thing to do, and everyone taps Accept, Decline, or Maybe. That's it!
         </p>
+
+        <div class="about-features mt-4">
+            <h3 class="h5 font-weight-bold mb-3">Core Capabilities</h3>
+            <ul class="about-list" style="list-style-type: disc; padding-left: 1.5rem; line-height: 1.8;">
+                <li><strong>Private Circles:</strong> Closed groups for real friends with single-use invitation codes.</li>
+                <li><strong>Quick Events:</strong> One-off or recurring event creation (weekly, biweekly, monthly) in under a minute.</li>
+                <li><strong>Instant RSVPs:</strong> Accept / Decline / Maybe responses with live member attendance rosters.</li>
+                <li><strong>Unified Calendar:</strong> Interactively view all upcoming events across circles in month grid or agenda list styles.</li>
+            </ul>
+        </div>
     </div>
 </div>

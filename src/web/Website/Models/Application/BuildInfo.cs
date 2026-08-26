@@ -6,7 +6,7 @@
 // Build Info ViewModel
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data;
+namespace GetTogether.Data;
 
 /// <summary>
 /// Build Info

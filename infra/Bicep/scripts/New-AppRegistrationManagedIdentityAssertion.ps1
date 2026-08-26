@@ -15,7 +15,7 @@
 #
 # Example: create one shared app registration for multiple environments
 #   .\New-AppRegistrationManagedIdentityAssertion.ps1 `
-#       -DisplayName "dadabase-demo-web" `
+#       -DisplayName "gettogether-demo-web" `
 #       -TenantId "11111111-1111-1111-1111-111111111111" `
 #       -ManagedIdentityObjectId "22222222-2222-2222-2222-222222222222","33333333-3333-3333-3333-333333333333" `
 #       -RedirectUris "https://myapp-dev.azurewebsites.net/signin-oidc","https://myapp-qa.azurewebsites.net/signin-oidc","https://myapp-prod.azurewebsites.net/signin-oidc"

@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------------
 using System.Reflection;
 
-namespace DadABase.Web.Shared;
+namespace GetTogether.Web.Shared;
 
 /// <summary>
 /// Provides state and behavior for the application's main layout.

@@ -1,7 +1,7 @@
-# DadABase Web Application - Production Dockerfile
+# GetTogether Web Application - Production Dockerfile
 # Build context: src/web
-# Build command: docker build -t dadabase-web:latest -f Dockerfile .
-# Run command: docker run --rm -p 8000:8080 -p 8001:8081 dadabase-web:latest
+# Build command: docker build -t gettogether-web:latest -f Dockerfile .
+# Run command: docker run --rm -p 8000:8080 -p 8001:8081 gettogether-web:latest
 # Browse to: http://localhost:8000
 
 # ============================================
@@ -11,6 +11,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 
 # Install required dependencies for Azure Identity MSAL runtime
 RUN apt-get update && apt-get install -y \
+    curl \
     libdbus-1-3 \
     libx11-6 \
     libglib2.0-0 \
@@ -29,11 +30,11 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy project files for restore (in order of dependencies)
-COPY ["Data/DadABase.Data.csproj", "Data/"]
-COPY ["Website/DadABase.Web.csproj", "Website/"]
+COPY ["Data/GetTogether.Data.csproj", "Data/"]
+COPY ["Website/GetTogether.Web.csproj", "Website/"]
 
 # Restore dependencies
-RUN dotnet restore "Website/DadABase.Web.csproj"
+RUN dotnet restore "Website/GetTogether.Web.csproj"
 
 # Copy all source files
 COPY ["Data/", "Data/"]
@@ -41,7 +42,7 @@ COPY ["Website/", "Website/"]
 
 # Build the application
 WORKDIR /src/Website
-RUN dotnet build "DadABase.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build --no-restore
+RUN dotnet build "GetTogether.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build --no-restore
 
 # ============================================
 # Stage 3: Publish image
@@ -49,7 +50,7 @@ RUN dotnet build "DadABase.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build --n
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 
-RUN dotnet publish "DadABase.Web.csproj" \
+RUN dotnet publish "GetTogether.Web.csproj" \
     -c $BUILD_CONFIGURATION \
     -o /app/publish \
     /p:UseAppHost=false
@@ -68,4 +69,7 @@ ENV ASPNETCORE_URLS=http://+:8080
 ENV DOTNET_RUNNING_IN_CONTAINER=true
 ENV ASPNETCORE_HTTP_PORTS=8080
 
-ENTRYPOINT ["dotnet", "DadABase.Web.dll"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl --fail --silent http://localhost:8080/ || exit 1
+
+ENTRYPOINT ["dotnet", "GetTogether.Web.dll"]

@@ -82,7 +82,7 @@ Both use parameter file `infra/Bicep/main.bicepparam` with web app deployments u
 
 ```bicep
 param deploymentType = 'containerapp'
-param containerImage = 'your-registry.azurecr.io/dadabase-web:latest'
+param containerImage = 'your-registry.azurecr.io/LetsGetTogether-web:latest'
 ```
 
 **CI/CD Workflows:**
@@ -130,7 +130,7 @@ GitHub Actions and Azure DevOps both use the shared `infra/Bicep/main.bicepparam
 ### For Azure DevOps
 
 3. **Azure DevOps Service Connection** configured with appropriate permissions
-4. **Azure DevOps Variable Group** named `Dadabase.Demo` with:
+4. **Azure DevOps Variable Group** named `LetsGetTogether.Demo` with:
    - `#{APP_NAME}#`
    - `#{INSTANCE_NUMBER}#`
   - `#{ENVCODE}#` (`dev`, `qa`, or `prod`)
@@ -180,9 +180,9 @@ The pipeline uses parameter file `infra/Bicep/main.bicepparam`; deployment mode 
 
 ```bash
 # Set variables
-RESOURCE_GROUP="rg-dadabase-dev"
+RESOURCE_GROUP="rg-LetsGetTogether-dev"
 LOCATION="eastus"
-APP_NAME="dadabase"
+APP_NAME="LetsGetTogether"
 ENV_CODE="dev"
 
 # Create resource group
@@ -198,7 +198,7 @@ az deployment group create \
     deploymentType=webapp
 
 # Build and deploy application
-dotnet publish src/web/Website/DadABase.Web.csproj -c Release -o ./publish
+dotnet publish src/web/Website/LetsGetTogether.Web.csproj -c Release -o ./publish
 cd publish
 zip -r ../deploy.zip .
 az webapp deploy \
@@ -256,9 +256,9 @@ The pipeline uses parameter file `infra/Bicep/main.bicepparam` with `deploymentT
 
 ```bash
 # Set variables
-RESOURCE_GROUP="rg-dadabase-dev"
+RESOURCE_GROUP="rg-LetsGetTogether-dev"
 LOCATION="eastus"
-APP_NAME="dadabase"
+APP_NAME="LetsGetTogether"
 ENV_CODE="dev"
 
 # Create resource group
@@ -279,17 +279,17 @@ ACR_NAME=$(az acr list --resource-group $RESOURCE_GROUP --query "[0].name" -o ts
 ACR_LOGIN_SERVER=$(az acr show --name $ACR_NAME --query loginServer -o tsv)
 
 # Build and push Docker image
-docker build -t dadabase-web:latest -f src/web/Dockerfile src/web
-docker tag dadabase-web:latest $ACR_LOGIN_SERVER/dadabase-web:latest
+docker build -t LetsGetTogether-web:latest -f src/web/Dockerfile src/web
+docker tag LetsGetTogether-web:latest $ACR_LOGIN_SERVER/LetsGetTogether-web:latest
 az acr login --name $ACR_NAME
-docker push $ACR_LOGIN_SERVER/dadabase-web:latest
+docker push $ACR_LOGIN_SERVER/LetsGetTogether-web:latest
 
 # Update Container App
 CONTAINER_APP_NAME=$(az containerapp list -g $RESOURCE_GROUP --query "[0].name" -o tsv)
 az containerapp update \
   --name $CONTAINER_APP_NAME \
   --resource-group $RESOURCE_GROUP \
-  --image $ACR_LOGIN_SERVER/dadabase-web:latest
+  --image $ACR_LOGIN_SERVER/LetsGetTogether-web:latest
 ```
 
 ## When to Use Which Option

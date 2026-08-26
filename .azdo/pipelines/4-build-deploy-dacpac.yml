@@ -44,7 +44,7 @@ parameters:
 
 # ----------------------------------------------------------------------------------------------------
 variables:
-  - group: Dadabase.Demo
+  - group: GetTogether.Demo
   - template: vars/var-common.yml
   - template: vars/var-service-connections.yml
 

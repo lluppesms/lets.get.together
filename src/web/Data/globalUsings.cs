@@ -1,5 +1,5 @@
-// Global usings for DadABase.Data
-global using DadABase.Data.Helpers;
+// Global usings for GetTogether.Data
+global using GetTogether.Data.Helpers;
 global using System.ComponentModel.DataAnnotations;
 global using System.ComponentModel.DataAnnotations.Schema;
 global using System.Diagnostics.CodeAnalysis;

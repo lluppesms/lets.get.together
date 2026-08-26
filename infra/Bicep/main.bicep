@@ -4,7 +4,7 @@
 // To deploy this Bicep manually:
 // 	 az login
 //   az account set --subscription <subscriptionId>
-//   az deployment group create -n "manual-$(Get-Date -Format 'yyyyMMdd-HHmmss')" --resource-group rg_dadabase_test --template-file 'main.bicep' --parameters appName=xxx-dad-test environmentCode=test keyVaultOwnerUserId=xxxxxxxx-xxxx-xxxx
+//   az deployment group create -n "manual-$(Get-Date -Format 'yyyyMMdd-HHmmss')" --resource-group rg_gettogether_test --template-file 'main.bicep' --parameters appName=xxx-gettogether-test environmentCode=test keyVaultOwnerUserId=xxxxxxxx-xxxx-xxxx
 // --------------------------------------------------------------------------------
 param appName string = ''
 param environmentCode string = 'azd'
@@ -37,7 +37,7 @@ param webApiKey string = ''
 
 param functionStorageSku string = 'Standard_LRS'
 
-param sqlDatabaseName string = 'dadabase'
+param sqlDatabaseName string = 'gettogether'
 @allowed(['Basic','Standard','Premium','BusinessCritical','GeneralPurpose'])
 param sqlSkuTier string = 'GeneralPurpose'
 param sqlSkuFamily string = 'Gen5'

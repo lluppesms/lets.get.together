@@ -6,9 +6,9 @@
 // Circle Repository Interface
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Repositories;
+namespace GetTogether.Data.Repositories;
 
 /// <summary>
 /// Represents the repository interface for accessing and managing circle data.
@@ -36,6 +36,12 @@ public interface ICircleRepository
     /// Returns the created circle.
     /// </summary>
     Task<Circle> CreateCircleAsync(Circle circle, int creatorUserId);
+
+    /// <summary>
+    /// Adds a user to the circle, or reactivates their previous membership.
+    /// The requesting user must be an active member.
+    /// </summary>
+    Task<CircleMembership> AddMemberAsync(int circleId, int userId, int requestingUserId);
 
     /// <summary>
     /// Updates circle name/description. Only members may update.

@@ -3,12 +3,18 @@ import { HomePage } from '../page-objects/home.page';
 import { SearchPage } from '../page-objects/search.page';
 import { AboutPage } from '../page-objects/about.page';
 import { LayoutComponent } from '../page-objects/layout.component';
+import { CirclesPage } from '../page-objects/circles.page';
+import { EventsPage } from '../page-objects/events.page';
+import { CalendarPage } from '../page-objects/calendar.page';
 
 type SmokeTestFixtures = {
     homePage: HomePage;
     searchPage: SearchPage;
     aboutPage: AboutPage;
     layout: LayoutComponent;
+    circlesPage: CirclesPage;
+    eventsPage: EventsPage;
+    calendarPage: CalendarPage;
 };
 
 export const test = base.extend<SmokeTestFixtures>({
@@ -23,6 +29,15 @@ export const test = base.extend<SmokeTestFixtures>({
     },
     layout: async ({ page }, use) => {
         await use(new LayoutComponent(page));
+    },
+    circlesPage: async ({ page }, use) => {
+        await use(new CirclesPage(page));
+    },
+    eventsPage: async ({ page }, use) => {
+        await use(new EventsPage(page));
+    },
+    calendarPage: async ({ page }, use) => {
+        await use(new CalendarPage(page));
     },
 });
 

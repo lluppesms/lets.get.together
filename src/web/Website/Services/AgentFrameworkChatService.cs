@@ -1,11 +1,11 @@
 using Azure.AI.OpenAI;
-using DadABase.Web.Helpers;
+using GetTogether.Web.Helpers;
 using Microsoft.Agents.AI;
 using OpenAI.Chat;
 using System.ClientModel;
 using System.Collections.Concurrent;
 
-namespace DadABase.Web.Services;
+namespace GetTogether.Web.Services;
 
 /// <summary>
 /// AI chat service backed by Azure OpenAI through Microsoft Agent Framework.
@@ -63,7 +63,7 @@ public class AgentFrameworkChatService : IAiChatService
         var chatClient = azureClient.GetChatClient(openaiDeploymentName);
 
         return chatClient.AsAIAgent(
-            name: "DadABaseAIHelper",
+            name: "LetsGetTogetherAIHelper",
             instructions: systemPrompt
         );
     }

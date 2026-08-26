@@ -3,21 +3,21 @@
 # ----------------------------------------------------------------------------------------------------
 variables:
   - name: appFolderName
-    value: 'src/Dadabase'
+    value: 'src/web'
   - name: appSolutionName
-    value: 'dadabase.net10.web'
+    value: 'gettogether.web'
 
   - name: appProjectFolderName
-    value: 'DadABase.Web'
+    value: 'Website'
   - name: appProjectName
-    value: 'DadABase.Web'
+    value: 'GetTogether.Web'
   - name: appProjectExtension
     value: 'csproj'
 
   - name: testFolderName 
-    value: 'DadABase.Tests'
+    value: 'Tests'
   - name: testProjectName
-    value: 'DadABase.Tests'
+    value: 'GetTogether.Tests'
 
   - name: buildPlatform
     value: 'Any CPU'

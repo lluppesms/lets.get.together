@@ -1,6 +1,487 @@
 @page "/events"
+@page "/events/{CircleId:int}"
+@attribute [Authorize]
+@namespace GetTogether.Web.Pages
+@using System.Security.Claims
+@using GetTogether.Data.Models
+@using GetTogether.Data.Repositories
+@using GetTogether.Web.Components
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IServiceProvider Services
+@inject NavigationManager Navigation
 
 <PageTitle>Events | Get Together</PageTitle>
 
-<h1>Events</h1>
-<p>This area is part of the Get Together Phase 0 conversion.</p>
+<main class="events-page" aria-labelledby="events-heading">
+	<header class="events-header">
+		<div>
+			<p class="events-kicker">Gatherings with friends</p>
+			<h1 id="events-heading">Upcoming Events</h1>
+			<p class="events-intro">See what's happening across your circles and RSVP in a tap.</p>
+		</div>
+		<div class="header-actions">
+			@if (currentUser is not null && userCircles.Count > 0)
+			{
+				<button class="events-btn events-btn-primary" type="button" @onclick="ToggleCreateForm" aria-expanded="@showCreateForm">
+					@(showCreateForm ? "Close Form" : "+ Create Event")
+				</button>
+			}
+		</div>
+	</header>
+
+	@if (!string.IsNullOrWhiteSpace(errorMessage))
+	{
+		<div class="events-alert events-alert-error" role="alert">@errorMessage</div>
+	}
+	else if (!string.IsNullOrWhiteSpace(actionMessage))
+	{
+		<div class="events-alert events-alert-success" role="status" aria-live="polite">@actionMessage</div>
+	}
+
+	@if (isLoading)
+	{
+		<div class="events-status" role="status" aria-live="polite">Loading upcoming events...</div>
+	}
+	else if (eventRepository is null || circleRepository is null || rsvpRepository is null || userRepository is null)
+	{
+		<div class="events-alert events-alert-warning" role="alert">
+			Event data is not available in this environment. Connect the app to its SQL data source and try again.
+		</div>
+	}
+	else
+	{
+		if (showCreateForm && currentUser is not null)
+		{
+			<EventCreate InitialCircleId="@selectedCircleFilter"
+						 UserCircles="@userCircles"
+						 CurrentUserId="@currentUser.UserId"
+						 OnEventCreated="HandleEventCreated"
+						 OnCancel="() => showCreateForm = false" />
+		}
+
+		<div class="events-toolbar">
+			<div class="filter-group">
+				<label for="circle-filter">Filter by Circle:</label>
+				<select id="circle-filter" class="circle-filter-select" value="@selectedCircleFilter" @onchange="OnCircleFilterChanged">
+					<option value="0">All My Circles (@userCircles.Count)</option>
+					@foreach (var circle in userCircles)
+					{
+						<option value="@circle.CircleId">@circle.Name</option>
+					}
+				</select>
+			</div>
+			<div class="events-count">
+				Showing @events.Count event@(events.Count == 1 ? string.Empty : "s")
+			</div>
+		</div>
+
+		@if (events.Count == 0)
+		{
+			<section class="events-empty" aria-labelledby="empty-events-heading">
+				<h2 id="empty-events-heading">No upcoming events</h2>
+				<p>
+					@(selectedCircleFilter > 0
+						? "There are no upcoming events scheduled for this circle."
+						: "You have no upcoming events across your circles.")
+				</p>
+				@if (userCircles.Count > 0)
+				{
+					<button class="events-btn events-btn-primary" type="button" @onclick="ToggleCreateForm">
+						Create First Event
+					</button>
+				}
+				else
+				{
+					<p class="empty-sub">Join or create a circle first to start organizing events.</p>
+				}
+			</section>
+		}
+		else
+		{
+			<div class="events-grid" role="region" aria-label="Upcoming Events List">
+				@foreach (var ev in events)
+				{
+					var (location, details) = ParseLocationAndDetails(ev.Details);
+					var myRsvp = GetUserRsvp(ev);
+					var acceptCount = ev.Rsvps.Count(r => r.Status == "Accept");
+					var declineCount = ev.Rsvps.Count(r => r.Status == "Decline");
+					var maybeCount = ev.Rsvps.Count(r => r.Status == "Maybe");
+
+					<article class="event-card @(ev.CancelledUtc.HasValue ? "event-card-cancelled" : string.Empty)">
+						<header class="event-card-header">
+							<div class="event-meta-top">
+								<span class="circle-badge">@(ev.Circle?.Name ?? "Circle")</span>
+								@if (ev.IsRecurring)
+								{
+									<span class="recurring-badge" title="Recurring Event (@ev.RecurrenceRule)">
+										🔁 @ev.RecurrenceRule
+									</span>
+								}
+								@if (ev.CancelledUtc.HasValue)
+								{
+									<span class="cancelled-badge">Cancelled</span>
+								}
+							</div>
+							<h2 class="event-card-title">
+								<a href="@($"/events/detail/{ev.EventId}")">@ev.Title</a>
+							</h2>
+						</header>
+
+						<div class="event-card-body">
+							<div class="event-info-line">
+								<span class="info-icon" aria-hidden="true">📅</span>
+								<time datetime="@ev.StartsUtc.ToString("o")">
+									@FormatEventDateTime(ev.StartsUtc, ev.EndsUtc)
+								</time>
+							</div>
+
+							@if (!string.IsNullOrWhiteSpace(location))
+							{
+								<div class="event-info-line">
+									<span class="info-icon" aria-hidden="true">📍</span>
+									<span>@location</span>
+								</div>
+							}
+
+							@if (!string.IsNullOrWhiteSpace(details))
+							{
+								<p class="event-snippet">@TruncateText(details, 120)</p>
+							}
+						</div>
+
+						<footer class="event-card-footer">
+							<div class="rsvp-summary">
+								<span class="rsvp-count rsvp-accept" title="Accepted">✓ @acceptCount</span>
+								<span class="rsvp-count rsvp-maybe" title="Maybe">? @maybeCount</span>
+								<span class="rsvp-count rsvp-decline" title="Declined">✕ @declineCount</span>
+								@if (cardFeedback.TryGetValue(ev.EventId, out var feedback) && !string.IsNullOrWhiteSpace(feedback))
+								{
+									<span class="quick-rsvp-feedback" role="status" aria-live="polite">@feedback</span>
+								}
+							</div>
+
+							<div class="rsvp-actions-container">
+								<div class="rsvp-actions" aria-label="Quick RSVP">
+									<button class="rsvp-btn rsvp-btn-accept @(myRsvp?.Status == "Accept" ? "active" : string.Empty)"
+											type="button"
+											@onclick="() => QuickRsvpAcceptAsync(ev.EventId)"
+											disabled="@(busyEventIds.Contains(ev.EventId) || ev.CancelledUtc.HasValue)"
+											aria-pressed="@(myRsvp?.Status == "Accept" ? "true" : "false")"
+											aria-label="@($"Accept RSVP for {ev.Title}")">
+										✓ Accept
+									</button>
+									<button class="rsvp-btn rsvp-btn-maybe @(myRsvp?.Status == "Maybe" ? "active" : string.Empty)"
+											type="button"
+											@onclick="() => QuickRsvpMaybeAsync(ev.EventId)"
+											disabled="@(busyEventIds.Contains(ev.EventId) || ev.CancelledUtc.HasValue)"
+											aria-pressed="@(myRsvp?.Status == "Maybe" ? "true" : "false")"
+											aria-label="@($"Maybe RSVP for {ev.Title}")">
+										? Maybe
+									</button>
+									<button class="rsvp-btn rsvp-btn-decline @(myRsvp?.Status == "Decline" ? "active" : string.Empty)"
+											type="button"
+											@onclick="() => QuickRsvpDeclineAsync(ev.EventId)"
+											disabled="@(busyEventIds.Contains(ev.EventId) || ev.CancelledUtc.HasValue)"
+											aria-pressed="@(myRsvp?.Status == "Decline" ? "true" : "false")"
+											aria-label="@($"Decline RSVP for {ev.Title}")">
+										✕ Decline
+									</button>
+								</div>
+
+								@if (!ev.CancelledUtc.HasValue)
+								{
+									<div class="quick-note-toggle">
+										<button class="note-toggle-btn"
+												type="button"
+												@onclick="() => ToggleQuickNote(ev.EventId)"
+												aria-expanded="@openNoteEventIds.Contains(ev.EventId)">
+											@(openNoteEventIds.Contains(ev.EventId) ? "Hide Note" : (!string.IsNullOrWhiteSpace(myRsvp?.Notes) ? $"✍️ Note: \"{TruncateText(myRsvp.Notes, 20)}\"" : "+ Optional Note"))
+										</button>
+
+										@if (openNoteEventIds.Contains(ev.EventId))
+										{
+											<div class="quick-note-box">
+												<input type="text"
+													   class="quick-note-input"
+													   placeholder="Add an optional RSVP note..."
+													   value="@GetEventNoteInput(ev.EventId, myRsvp?.Notes)"
+													   @onchange="(e) => SetEventNoteInput(ev.EventId, e.Value?.ToString())"
+													   maxlength="200" />
+												<div class="quick-note-footer">
+													<span class="note-hint">Note saves when you tap Accept, Maybe, Decline or Save Note.</span>
+													<button class="note-save-btn"
+															type="button"
+															@onclick='() => SaveQuickNoteAsync(ev.EventId, myRsvp?.Status ?? "Accept")'
+															disabled="@(busyEventIds.Contains(ev.EventId))">
+														Save Note
+													</button>
+												</div>
+											</div>
+										}
+									</div>
+								}
+							</div>
+
+							<div class="event-detail-link">
+								<a href="@($"/events/detail/{ev.EventId}")" class="detail-btn">Details & Roster →</a>
+							</div>
+						</footer>
+					</article>
+				}
+			</div>
+		}
+	}
+</main>
+
+@code {
+	[Parameter] public int CircleId { get; set; }
+
+	private IEventRepository eventRepository;
+	private ICircleRepository circleRepository;
+	private IRsvpRepository rsvpRepository;
+	private IUserRepository userRepository;
+	private User currentUser;
+	private readonly List<Circle> userCircles = [];
+	private readonly List<Event> events = [];
+	private int selectedCircleFilter;
+	private bool isLoading = true;
+	private bool showCreateForm;
+	private string errorMessage = string.Empty;
+	private string actionMessage = string.Empty;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		isLoading = true;
+		errorMessage = string.Empty;
+		actionMessage = string.Empty;
+
+		eventRepository = Services.GetService<IEventRepository>();
+		circleRepository = Services.GetService<ICircleRepository>();
+		rsvpRepository = Services.GetService<IRsvpRepository>();
+		userRepository = Services.GetService<IUserRepository>();
+
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		if (authState.User?.Identity?.IsAuthenticated != true)
+		{
+			Navigation.NavigateTo("/login");
+			return;
+		}
+
+		var externalId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+		if (string.IsNullOrWhiteSpace(externalId) || userRepository is null)
+		{
+			errorMessage = "We could not resolve your application account. Please sign in again.";
+			isLoading = false;
+			return;
+		}
+
+		currentUser = await userRepository.FindByExternalIdAsync(externalId);
+		if (currentUser is null)
+		{
+			errorMessage = "Application user record not found.";
+			isLoading = false;
+			return;
+		}
+
+		if (circleRepository is not null)
+		{
+			var circlesList = await circleRepository.GetCirclesForUserAsync(currentUser.UserId);
+			userCircles.Clear();
+			userCircles.AddRange(circlesList);
+		}
+
+		selectedCircleFilter = CircleId > 0 ? CircleId : 0;
+		await RefreshEventsAsync();
+		isLoading = false;
+	}
+
+	private async Task OnCircleFilterChanged(ChangeEventArgs e)
+	{
+		if (int.TryParse(e.Value?.ToString(), out var circleId))
+		{
+			selectedCircleFilter = circleId;
+			if (circleId > 0)
+			{
+				Navigation.NavigateTo($"/events/{circleId}", false);
+			}
+			else
+			{
+				Navigation.NavigateTo("/events", false);
+			}
+			await RefreshEventsAsync();
+		}
+	}
+
+	private async Task RefreshEventsAsync()
+	{
+		if (eventRepository is null || currentUser is null) return;
+
+		events.Clear();
+		IList<Event> loaded;
+		if (selectedCircleFilter > 0)
+		{
+			loaded = await eventRepository.GetEventsForCircleAsync(selectedCircleFilter, currentUser.UserId);
+		}
+		else
+		{
+			loaded = await eventRepository.GetUpcomingEventsForUserAsync(currentUser.UserId);
+		}
+
+		events.AddRange(loaded);
+	}
+
+	private void ToggleCreateForm()
+	{
+		showCreateForm = !showCreateForm;
+	}
+
+	private async Task HandleEventCreated(Event newEvent)
+	{
+		showCreateForm = false;
+		actionMessage = $"Event '{newEvent.Title}' created successfully!";
+		await RefreshEventsAsync();
+	}
+
+	private readonly HashSet<int> openNoteEventIds = [];
+	private readonly Dictionary<int, string> eventNoteInputs = [];
+	private readonly HashSet<int> busyEventIds = [];
+	private readonly Dictionary<int, string> cardFeedback = [];
+
+	private void ToggleQuickNote(int eventId)
+	{
+		if (openNoteEventIds.Contains(eventId))
+		{
+			openNoteEventIds.Remove(eventId);
+		}
+		else
+		{
+			openNoteEventIds.Add(eventId);
+		}
+	}
+
+	private string GetEventNoteInput(int eventId, string existingNotes)
+	{
+		if (eventNoteInputs.TryGetValue(eventId, out var input))
+		{
+			return input;
+		}
+		return existingNotes ?? string.Empty;
+	}
+
+	private void SetEventNoteInput(int eventId, string value)
+	{
+		eventNoteInputs[eventId] = value ?? string.Empty;
+	}
+
+	private async Task QuickRsvpAsync(int eventId, string status)
+	{
+		if (rsvpRepository is null || currentUser is null || busyEventIds.Contains(eventId)) return;
+
+		busyEventIds.Add(eventId);
+		cardFeedback[eventId] = "Saving...";
+		actionMessage = string.Empty;
+		errorMessage = string.Empty;
+
+		eventNoteInputs.TryGetValue(eventId, out var noteText);
+
+		// Optimistic UI update for instant feedback
+		var ev = events.FirstOrDefault(e => e.EventId == eventId);
+		var existingRsvp = ev?.Rsvps.FirstOrDefault(r => r.UserId == currentUser.UserId);
+		var oldStatus = existingRsvp?.Status;
+		var oldNotes = existingRsvp?.Notes;
+
+		if (ev is not null)
+		{
+			if (existingRsvp is not null)
+			{
+				existingRsvp.Status = status;
+				if (noteText is not null) existingRsvp.Notes = noteText;
+			}
+			else
+			{
+				ev.Rsvps.Add(new RSVP
+				{
+					EventId = eventId,
+					UserId = currentUser.UserId,
+					Status = status,
+					Notes = noteText,
+					User = currentUser
+				});
+			}
+		}
+
+		StateHasChanged();
+
+		try
+		{
+			await rsvpRepository.UpsertRsvpAsync(eventId, currentUser.UserId, status, noteText);
+			cardFeedback[eventId] = $"✓ {status}";
+			actionMessage = $"RSVP updated to '{status}'!";
+			await RefreshEventsAsync();
+		}
+		catch (Exception ex)
+		{
+			// Revert on failure
+			if (existingRsvp is not null)
+			{
+				existingRsvp.Status = oldStatus;
+				existingRsvp.Notes = oldNotes;
+			}
+			cardFeedback.Remove(eventId);
+			errorMessage = ex.Message;
+		}
+		finally
+		{
+			busyEventIds.Remove(eventId);
+		}
+	}
+
+	private Task QuickRsvpAcceptAsync(int eventId) => QuickRsvpAsync(eventId, "Accept");
+	private Task QuickRsvpMaybeAsync(int eventId) => QuickRsvpAsync(eventId, "Maybe");
+	private Task QuickRsvpDeclineAsync(int eventId) => QuickRsvpAsync(eventId, "Decline");
+	private Task SaveQuickNoteAsync(int eventId, string currentStatus) => QuickRsvpAsync(eventId, currentStatus);
+
+	private RSVP GetUserRsvp(Event ev)
+	{
+		if (currentUser is null) return null;
+		return ev.Rsvps.FirstOrDefault(r => r.UserId == currentUser.UserId);
+	}
+
+	private static (string Location, string Details) ParseLocationAndDetails(string rawDetails)
+	{
+		if (string.IsNullOrWhiteSpace(rawDetails)) return (null, null);
+		if (rawDetails.StartsWith("Location: ", StringComparison.OrdinalIgnoreCase))
+		{
+			var parts = rawDetails.Split(["\n\n"], 2, StringSplitOptions.RemoveEmptyEntries);
+			var location = parts[0].Substring("Location: ".Length).Trim();
+			var details = parts.Length > 1 ? parts[1].Trim() : null;
+			return (location, details);
+		}
+		return (null, rawDetails);
+	}
+
+	private static string FormatEventDateTime(DateTime startsUtc, DateTime? endsUtc)
+	{
+		var localStart = startsUtc.ToLocalTime();
+		var startFormatted = localStart.ToString("ddd, MMM d, yyyy @ h:mm tt");
+
+		if (endsUtc.HasValue)
+		{
+			var localEnd = endsUtc.Value.ToLocalTime();
+			if (localEnd.Date == localStart.Date)
+			{
+				return $"{startFormatted} - {localEnd:h:mm tt}";
+			}
+			return $"{startFormatted} to {localEnd:ddd, MMM d @ h:mm tt}";
+		}
+
+		return startFormatted;
+	}
+
+	private static string TruncateText(string text, int maxLength)
+	{
+		if (string.IsNullOrWhiteSpace(text) || text.Length <= maxLength) return text;
+		return text.Substring(0, maxLength).TrimEnd() + "...";
+	}
+}
+

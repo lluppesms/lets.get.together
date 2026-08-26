@@ -6,7 +6,7 @@
 // Config API Tests
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Tests;
+namespace GetTogether.Tests;
 
 using Microsoft.Extensions.Configuration;
 

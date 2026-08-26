@@ -15,9 +15,9 @@ test.describe('Navigation Smoke Tests', () => {
         await expect(layout.logo).toHaveAttribute('alt', 'Logo');
     });
 
-    test('brand title "The Dad-A-Base" is visible', async ({ layout }) => {
+    test('brand title "Get Together" is visible', async ({ layout }) => {
         await expect(layout.brandTitle).toBeVisible();
-        await expect(layout.brandTitle).toContainText('The Dad-A-Base');
+        await expect(layout.brandTitle).toContainText('Get Together');
     });
 
     test('home tab is present and active on home page', async ({ layout }) => {
@@ -29,6 +29,24 @@ test.describe('Navigation Smoke Tests', () => {
         await layout.searchTab.click();
         await expect(page).toHaveURL(/\/Search/i);
         await expect(layout.searchTab).toHaveClass(/active/);
+    });
+
+    test('circles tab navigates to /circles', async ({ layout, page }) => {
+        await layout.circlesTab.click();
+        await expect(page).toHaveURL(/\/circles/i);
+        await expect(layout.circlesTab).toHaveClass(/active/);
+    });
+
+    test('events tab navigates to /events', async ({ layout, page }) => {
+        await layout.eventsTab.click();
+        await expect(page).toHaveURL(/\/events/i);
+        await expect(layout.eventsTab).toHaveClass(/active/);
+    });
+
+    test('calendar tab navigates to /calendar', async ({ layout, page }) => {
+        await layout.calendarTab.click();
+        await expect(page).toHaveURL(/\/calendar/i);
+        await expect(layout.calendarTab).toHaveClass(/active/);
     });
 
     test('about tab navigates to /About', async ({ layout, page }) => {

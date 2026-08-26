@@ -16,7 +16,7 @@ estimated_reading_time: 4
 ## Azure SQL Database Copy
 
 ``` SQL
-CREATE DATABASE database092501 AS COPY OF Dadabase
+CREATE DATABASE database092501 AS COPY OF LetsGetTogether
 ```
 
 ## Query Permissions In Master
@@ -85,8 +85,8 @@ instead of broad database data roles.
 
 ```SQL
 CREATE USER [yourAppManagedIdentityName] FROM EXTERNAL PROVIDER;
-GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::[Dad] TO [yourAppManagedIdentityName];
-GRANT EXECUTE ON SCHEMA::[Dad] TO [yourAppManagedIdentityName];
+GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::[Meetings] TO [yourAppManagedIdentityName];
+GRANT EXECUTE ON SCHEMA::[Meetings] TO [yourAppManagedIdentityName];
 ```
 
 ## Grant Server Roles

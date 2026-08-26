@@ -38,12 +38,12 @@ on:
       databaseCopyName:
         description: 'Database Copy Name (for DBCOPY action)'
         required: false
-        default: 'DadABaseV02'
+        default: 'GetTogetherV02'
         type: string
       resourceGroupName:
         description: 'Resource Group Name (for DBCOPY action)'
         required: false
-        default: 'rg-dadabase-dev'
+        default: 'rg-gettogether-dev'
         type: string
 
 # ------------------------------------------------------------------------------------------------------------------------

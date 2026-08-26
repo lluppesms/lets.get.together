@@ -6,13 +6,13 @@
 // RSVP Table
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data.Models;
+namespace GetTogether.Data.Models;
 
 /// <summary>
 /// Represents an RSVP from a user for an event.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[Table("RSVP", Schema = "Dad")]
+[Table("RSVP", Schema = "Meetings")]
 public class RSVP
 {
     /// <summary>
@@ -48,6 +48,11 @@ public class RSVP
     /// </summary>
     [StringLength(1000)]
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the optional occurrence date/time for per-occurrence RSVPs.
+    /// </summary>
+    public DateTime? OccurrenceDate { get; set; }
 
     /// <summary>
     /// Gets or sets the UTC date and time when this RSVP was recorded.

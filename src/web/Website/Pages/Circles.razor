@@ -1,6 +1,290 @@
 @page "/circles"
+@page "/circles/{CircleId:int}"
+@attribute [Authorize]
+@namespace GetTogether.Web.Pages
+@using System.Security.Claims
+@using GetTogether.Data.Models
+@using GetTogether.Data.Repositories
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IServiceProvider Services
+@inject NavigationManager Navigation
 
 <PageTitle>Circles | Get Together</PageTitle>
 
-<h1>Circles</h1>
-<p>This area is part of the Get Together Phase 0 conversion.</p>
+<main class="circles-page" aria-labelledby="circles-heading">
+	<header class="circles-header">
+		<div>
+			<p class="circles-kicker">Your private groups</p>
+			<h1 id="circles-heading">Circles</h1>
+			<p class="circles-intro">Choose a circle to see its people and invitations.</p>
+		</div>
+		@if (currentUser is not null)
+		{
+			<span class="current-user" title="Signed-in account">@currentUser.DisplayName</span>
+		}
+	</header>
+
+	@if (!string.IsNullOrWhiteSpace(errorMessage))
+	{
+		<div class="circle-alert circle-alert-error" role="alert">@errorMessage</div>
+	}
+	else if (!string.IsNullOrWhiteSpace(actionMessage))
+	{
+		<div class="circle-alert circle-alert-success" role="status" aria-live="polite">@actionMessage</div>
+	}
+	else if (isLoading)
+	{
+		<div class="circle-status" role="status" aria-live="polite">Loading your circles...</div>
+	}
+	else if (circleRepository is null || invitationRepository is null || userRepository is null)
+	{
+		<div class="circle-alert circle-alert-warning" role="alert">Circle data is not available in this environment. Connect the app to its SQL data source and try again.</div>
+	}
+	else if (circles.Count == 0)
+	{
+		<section class="circle-empty" aria-labelledby="empty-heading">
+			<h2 id="empty-heading">No circles yet</h2>
+			<p>You will see a circle here when someone invites you.</p>
+		</section>
+	}
+	else
+	{
+		<div class="circle-layout">
+			<aside class="circle-switcher" aria-labelledby="switcher-heading">
+				<h2 id="switcher-heading">Your circles</h2>
+				<nav aria-label="Circle switcher">
+					@foreach (var circle in circles)
+					{
+						<a class="circle-choice @(selectedCircle?.CircleId == circle.CircleId ? "circle-choice-selected" : string.Empty)" href="@($"/circles/{circle.CircleId}")" aria-current="@(selectedCircle?.CircleId == circle.CircleId ? "page" : null)">
+							<span class="circle-choice-name">@circle.Name</span>
+							<span class="circle-choice-meta">@circle.Members.Count active member@(circle.Members.Count == 1 ? string.Empty : "s")</span>
+						</a>
+					}
+				</nav>
+			</aside>
+
+			@if (selectedCircle is not null)
+			{
+				<section class="circle-detail" aria-labelledby="circle-detail-heading">
+					<div class="detail-heading">
+						<div>
+							<p class="circles-kicker">Circle detail</p>
+							<h2 id="circle-detail-heading">@selectedCircle.Name</h2>
+							@if (!string.IsNullOrWhiteSpace(selectedCircle.Description))
+							{
+								<p class="circle-description">@selectedCircle.Description</p>
+							}
+						</div>
+						<button class="circle-action circle-action-danger" type="button" @onclick="RequestLeave" disabled="@isBusy">Leave circle</button>
+					</div>
+
+					@if (showLeaveConfirmation)
+					{
+						<div class="circle-confirmation" role="alertdialog" aria-labelledby="leave-heading" aria-describedby="leave-copy">
+							<h3 id="leave-heading">Leave @selectedCircle.Name?</h3>
+							<p id="leave-copy">You will lose access to this circle's people, events, and invitations.</p>
+							<div class="circle-actions">
+								<button class="circle-action circle-action-danger" type="button" @onclick="LeaveCircleAsync" disabled="@isBusy">Yes, leave</button>
+								<button class="circle-action" type="button" @onclick="CancelLeave" disabled="@isBusy">Keep circle</button>
+							</div>
+						</div>
+					}
+
+					<div class="circle-sections">
+						<section class="circle-panel" aria-labelledby="members-heading">
+							<div class="panel-heading"><h3 id="members-heading">Members</h3><span>@members.Count</span></div>
+							@if (members.Count == 0)
+							{
+								<p class="circle-muted">Member details are unavailable.</p>
+							}
+							else
+							{
+								<ul class="member-list">
+									@foreach (var member in members)
+									{
+										<li><span class="member-name">@(member.User?.DisplayName ?? "Member")</span><span class="member-email">@(member.User?.EmailAddress ?? "Email unavailable")</span></li>
+									}
+								</ul>
+							}
+						</section>
+
+						<section class="circle-panel" aria-labelledby="settings-heading">
+							<div class="panel-heading"><h3 id="settings-heading">Settings</h3></div>
+							<EditForm Model="settingsModel" OnValidSubmit="SaveSettingsAsync">
+								<DataAnnotationsValidator />
+								<label for="circle-name">Name</label>
+								<InputText id="circle-name" class="circle-input" @bind-Value="settingsModel.Name" maxlength="200" />
+								<ValidationMessage For="@(() => settingsModel.Name)" />
+								<label for="circle-description">Description</label>
+								<InputTextArea id="circle-description" class="circle-input" @bind-Value="settingsModel.Description" maxlength="1000" rows="3" />
+								<div class="circle-actions"><button class="circle-action circle-action-primary" type="submit" disabled="@isBusy">@(isBusy ? "Saving..." : "Save changes")</button></div>
+							</EditForm>
+						</section>
+
+						<section class="circle-panel circle-panel-wide" aria-labelledby="invites-heading">
+							<div class="panel-heading"><h3 id="invites-heading">Invitation codes</h3><span>@inviteCodes.Count</span></div>
+							<div class="invite-create">
+								<label for="invite-expiration">Expires in days</label>
+								<InputNumber id="invite-expiration" class="circle-input invite-days" @bind-Value="expirationDays" min="1" max="365" />
+								<button class="circle-action circle-action-primary" type="button" @onclick="GenerateInviteAsync" disabled="@isBusy">@(isBusy ? "Working..." : "Generate code")</button>
+							</div>
+							@if (generatedCode is not null)
+							{
+								<div class="generated-code" role="status">
+									<label for="generated-code">New invitation code</label>
+									<input id="generated-code" class="circle-input" value="@generatedCode" readonly aria-describedby="generated-code-help" />
+									<span id="generated-code-help">Copy this code to share it with someone you want to invite.</span>
+								</div>
+							}
+							@if (inviteCodes.Count == 0)
+							{
+								<p class="circle-muted">No invitation codes have been generated.</p>
+							}
+							else
+							{
+								<div class="invite-table-wrap"><table class="invite-table"><caption class="visually-hidden">Invitation code history</caption><thead><tr><th scope="col">Code</th><th scope="col">Status</th><th scope="col">Expires</th><th scope="col"><span class="visually-hidden">Action</span></th></tr></thead><tbody>
+									@foreach (var invite in inviteCodes)
+									{
+										var status = GetInviteStatus(invite);
+										<tr><td><code>@invite.Code</code></td><td><span class="invite-status invite-status-@status.ToLowerInvariant()">@status</span></td><td>@FormatDate(invite.ExpiresUtc)</td><td>@if (status == "Active") { <button class="text-action" type="button" @onclick="() => RevokeInviteAsync(invite.InvitationCodeId)" disabled="@isBusy">Revoke</button> }</td></tr>
+									}
+								</tbody></table></div>
+							}
+						</section>
+					</div>
+				</section>
+			}
+		</div>
+	}
+</main>
+
+@code {
+	[Parameter] public int CircleId { get; set; }
+
+	private ICircleRepository circleRepository;
+	private IInvitationCodeRepository invitationRepository;
+	private IUserRepository userRepository;
+	private User currentUser;
+	private readonly List<Circle> circles = [];
+	private readonly List<CircleMembership> members = [];
+	private readonly List<InvitationCode> inviteCodes = [];
+	private Circle selectedCircle;
+	private Circle settingsModel = new();
+	private AuthenticationState authenticationState;
+	private bool isLoading = true;
+	private bool isBusy;
+	private bool showLeaveConfirmation;
+	private string errorMessage = string.Empty;
+	private string actionMessage = string.Empty;
+	private string generatedCode;
+	private int expirationDays = 7;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		isLoading = true;
+		errorMessage = string.Empty;
+		circleRepository = Services.GetService<ICircleRepository>();
+		invitationRepository = Services.GetService<IInvitationCodeRepository>();
+		userRepository = Services.GetService<IUserRepository>();
+		authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		if (authenticationState.User?.Identity?.IsAuthenticated != true)
+		{
+			Navigation.NavigateTo("/login");
+			return;
+		}
+
+		var externalId = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+		if (string.IsNullOrWhiteSpace(externalId) || userRepository is null)
+		{
+			errorMessage = "We could not resolve your application account. Please sign in again or contact the site owner.";
+			isLoading = false;
+			return;
+		}
+
+		try
+		{
+			currentUser = await userRepository.FindByExternalIdAsync(externalId);
+			if (currentUser is null)
+			{
+				errorMessage = "Your signed-in account is not registered for Get Together.";
+			}
+			else if (circleRepository is not null)
+			{
+				circles.Clear();
+				circles.AddRange(await circleRepository.GetCirclesForUserAsync(currentUser.UserId));
+				if (CircleId > 0)
+				{
+					await LoadCircleAsync(CircleId);
+				}
+				else if (circles.Count > 0)
+				{
+					Navigation.NavigateTo($"/circles/{circles[0].CircleId}", replace: true);
+					return;
+				}
+			}
+		}
+		catch (Exception exception)
+		{
+			errorMessage = "We could not load your circles right now. Please try again.";
+			Console.Error.WriteLine(exception);
+		}
+		finally
+		{
+			isLoading = false;
+		}
+	}
+
+	private async Task LoadCircleAsync(int circleId)
+	{
+		generatedCode = null;
+		actionMessage = string.Empty;
+		showLeaveConfirmation = false;
+		selectedCircle = await circleRepository.GetCircleAsync(circleId, currentUser.UserId);
+		if (selectedCircle is null)
+		{
+			errorMessage = "That circle does not exist or you are not a member.";
+			return;
+		}
+		members.Clear();
+		members.AddRange(await circleRepository.GetMembersAsync(circleId, currentUser.UserId));
+		inviteCodes.Clear();
+		inviteCodes.AddRange(await invitationRepository.GetCodesForCircleAsync(circleId, currentUser.UserId));
+		settingsModel = new Circle { CircleId = selectedCircle.CircleId, Name = selectedCircle.Name, Description = selectedCircle.Description, CreatedByUserId = selectedCircle.CreatedByUserId, CreatedUtc = selectedCircle.CreatedUtc, IsArchived = selectedCircle.IsArchived };
+	}
+
+	private async Task SaveSettingsAsync()
+	{
+		await RunActionAsync(async () => { await circleRepository.UpdateCircleAsync(settingsModel, currentUser.UserId); selectedCircle.Name = settingsModel.Name; selectedCircle.Description = settingsModel.Description; actionMessage = "Circle settings saved."; });
+	}
+
+	private async Task GenerateInviteAsync()
+	{
+		await RunActionAsync(async () => { var invite = await invitationRepository.CreateCodeAsync(selectedCircle.CircleId, currentUser.UserId, DateTime.UtcNow.AddDays(expirationDays)); inviteCodes.Insert(0, invite); generatedCode = invite.Code; });
+	}
+
+	private async Task RevokeInviteAsync(int invitationCodeId)
+	{
+		await RunActionAsync(async () => { await invitationRepository.RevokeCodeAsync(invitationCodeId, currentUser.UserId); var invite = inviteCodes.FirstOrDefault(code => code.InvitationCodeId == invitationCodeId); if (invite is not null) invite.RevokedUtc = DateTime.UtcNow; actionMessage = "Invitation code revoked."; });
+	}
+
+	private async Task LeaveCircleAsync()
+	{
+		await RunActionAsync(async () => { await circleRepository.RemoveMemberAsync(selectedCircle.CircleId, currentUser.UserId, currentUser.UserId); Navigation.NavigateTo("/circles", replace: true); });
+	}
+
+	private async Task RunActionAsync(Func<Task> action)
+	{
+		isBusy = true;
+		errorMessage = string.Empty;
+		actionMessage = string.Empty;
+		try { await action(); }
+		catch (Exception exception) { errorMessage = "That action could not be completed. Please try again."; Console.Error.WriteLine(exception); }
+		finally { isBusy = false; }
+	}
+
+	private void RequestLeave() => showLeaveConfirmation = true;
+	private void CancelLeave() => showLeaveConfirmation = false;
+
+	private static string GetInviteStatus(InvitationCode invite) => invite.RevokedUtc is not null ? "Revoked" : invite.RedeemedByUserId is not null || invite.RedeemedUtc is not null ? "Consumed" : invite.ExpiresUtc is not null && invite.ExpiresUtc <= DateTime.UtcNow ? "Expired" : "Active";
+	private static string FormatDate(DateTime? date) => date?.ToLocalTime().ToString("g") ?? "Never";
+}

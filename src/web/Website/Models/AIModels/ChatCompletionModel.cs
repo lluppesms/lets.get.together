@@ -1,4 +1,4 @@
-﻿namespace DadABase.Web.Models.AIModels;
+namespace GetTogether.Web.Models.AIModels;
 
 /// <summary>
 /// Chat Completion Configuration

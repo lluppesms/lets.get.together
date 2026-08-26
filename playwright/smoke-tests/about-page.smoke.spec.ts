@@ -14,13 +14,13 @@ test.describe('About Page Smoke Tests', () => {
         await expect(aboutPage.title).toBeVisible();
     });
 
-    test('contains SQL Dad-A-Base subtitle', async ({ aboutPage }) => {
-        await expect(aboutPage.subtitle).toContainText('Dad-A-Base');
+    test('contains Get Together subtitle', async ({ aboutPage }) => {
+        await expect(aboutPage.subtitle).toContainText('Simple, private event planning');
     });
 
     test('description paragraph is visible', async ({ aboutPage }) => {
         await expect(aboutPage.description).toBeVisible();
-        await expect(aboutPage.description).toContainText('dad jokes');
+        await expect(aboutPage.description).toContainText('informal gatherings');
     });
 
     test('about container is present', async ({ aboutPage }) => {

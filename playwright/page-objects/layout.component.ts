@@ -7,6 +7,9 @@ export class LayoutComponent {
     readonly brandTitle: Locator;
     readonly homeTab: Locator;
     readonly searchTab: Locator;
+    readonly circlesTab: Locator;
+    readonly eventsTab: Locator;
+    readonly calendarTab: Locator;
     readonly aboutTab: Locator;
     readonly loginLink: Locator;
     readonly themeDropdownTrigger: Locator;
@@ -27,6 +30,9 @@ export class LayoutComponent {
         this.brandTitle = page.locator('#headerPageTitle');
         this.homeTab = page.locator('a.nav-tab-top', { has: page.locator('text=Home') });
         this.searchTab = page.locator('a.nav-tab-top', { has: page.locator('text=Search') });
+        this.circlesTab = page.locator('a.nav-tab-top', { has: page.locator('text=Circles') });
+        this.eventsTab = page.locator('a.nav-tab-top', { has: page.locator('text=Events') });
+        this.calendarTab = page.locator('a.nav-tab-top', { has: page.locator('text=Calendar') });
         this.aboutTab = page.locator('a.nav-tab-top', { has: page.locator('text=About') });
         this.loginLink = page.locator('.navbar-login a');
         this.themeDropdownTrigger = page.locator('#themeDropdown');

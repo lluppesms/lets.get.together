@@ -1,4 +1,4 @@
-namespace DadABase.Web.Services;
+namespace GetTogether.Web.Services;
 
 /// <summary>
 /// Provides image generation and image blob storage operations.

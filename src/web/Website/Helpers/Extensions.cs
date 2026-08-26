@@ -6,7 +6,7 @@
 // Extensions
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Helpers;
+namespace GetTogether.Helpers;
 
 /// <summary>
 /// Generic Extensions

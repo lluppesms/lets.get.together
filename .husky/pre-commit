@@ -74,11 +74,8 @@ format_solution() {
 }
 
 FORMAT_ERROR=0
-format_solution "src/web/dadabase.net10.web.sln"      || FORMAT_ERROR=1
-format_solution "src/function/dadabase.net10.function.sln" || FORMAT_ERROR=1
-format_solution "src/mcp/DadJokeMCP.sln"              || FORMAT_ERROR=1
-format_solution "src/console/DadJoke.console.sln"     || FORMAT_ERROR=1
-format_solution "src/analyzer/DadJokeAnalyzer.sln"    || FORMAT_ERROR=1
+format_solution "src/web/gettogether.web.sln"      || FORMAT_ERROR=1
+format_solution "src/database/GetTogether.Sql.Database.sln"              || FORMAT_ERROR=1
 
 if [ $FORMAT_ERROR -ne 0 ]; then
   echo "❌ dotnet format encountered errors. Fix the issues above and try again."

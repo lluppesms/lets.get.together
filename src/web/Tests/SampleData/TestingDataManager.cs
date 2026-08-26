@@ -6,8 +6,9 @@
 // Testing Data Manager
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
-namespace DadABase.SampleData;
+using GetTogether.Data.Models;
+using GetTogether.Data;
+namespace GetTogether.SampleData;
 
 /// <summary>
 /// Testing Data Manager
@@ -20,7 +21,6 @@ public partial class TestingData
     /// </summary>
     public TestingData()
     {
-        //// Initialize();
     }
 
     #region Data Variables
@@ -52,48 +52,28 @@ public partial class TestingData
     /// <summary>
     /// The database builder
     /// </summary>
-    private DbContextOptions<ProjectEntities> DatabaseOptions = null;
+    private DbContextOptions<GetTogetherDbContext> DatabaseOptions = null;
     #endregion
 
     /// <summary>
     /// Initializes the testing data module, including creating the sample data
     /// </summary>
-    public async Task<ProjectEntities> Initialize()
+    public async Task<GetTogetherDbContext> Initialize()
     {
-        //Settings = new AppSettings
-        //{
-        //    UserName = UserName
-        //};
         DatabaseOptions = CreateDatabaseContextOptions();
-        var db = new ProjectEntities(DatabaseOptions);
-        SeedData(db);
+        var db = new GetTogetherDbContext(DatabaseOptions);
         await Task.FromResult(true);
         return db;
-    }
-
-    /// <summary>
-    /// Creates the actual test data.
-    /// </summary>
-    public static void SeedData(ProjectEntities db)
-    {
-        if (!db.Joke.Any())
-        {
-            Create_Category_Data(db);
-            Create_Joke_Data(db);
-            db.SaveChanges();
-        }
-
-        AddDataModelCodeCoverage();
     }
 
     /// <summary>
     /// Creates the new database context options.
     /// </summary>
     /// <returns></returns>
-    public static DbContextOptions<ProjectEntities> CreateDatabaseContextOptions()
+    public static DbContextOptions<GetTogetherDbContext> CreateDatabaseContextOptions()
     {
         // Name in-memory database by GUID to ensure every test run has a new database not affected by others
-        var options = new DbContextOptionsBuilder<ProjectEntities>()
+        var options = new DbContextOptionsBuilder<GetTogetherDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         return options;

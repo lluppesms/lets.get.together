@@ -1,12 +1,13 @@
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
-using DadABase.Web.Models.Application;
-using DadABase.Data;
-using DadABase.Data.Models;
-using DadABase.Data.Repositories;
-using DadABase.Web.Repositories;
+using GetTogether.Web.Models.Application;
+using GetTogether.Data;
+using GetTogether.Data.Models;
+using GetTogether.Data.Repositories;
+using GetTogether.Data.Services;
+using GetTogether.Web.Repositories;
 using Microsoft.OpenApi;
-using DadABase.Web.Helpers;
+using GetTogether.Web.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +25,7 @@ builder.Services.Configure<AppSettings>(appSettings);
 var settings = appSettings.Get<AppSettings>();
 
 // set the application title from the app settings
-DadABase.Data.Constants.Initialize(settings);
+GetTogether.Data.Constants.Initialize(settings);
 
 // Add Azure Key Vault if configured
 var keyVaultName = builder.Configuration["KeyVaultName"];
@@ -78,39 +79,17 @@ builder.Services.AddSingleton<AppSettings>(settings);
 // ----- Configure Database Context and Repositories -----------------------------------------------------------------
 var configuredDataSource = appSettings["DataSource"];
 var connectionString = appSettings["DefaultConnection"];
-var useJsonDataSource = string.Equals(configuredDataSource, "JSON", StringComparison.OrdinalIgnoreCase);
 var useSqlDataSource = string.Equals(configuredDataSource, "SQL", StringComparison.OrdinalIgnoreCase)
     || string.Equals(configuredDataSource, "SQLDB", StringComparison.OrdinalIgnoreCase)
     || string.Equals(configuredDataSource, "DATABASE", StringComparison.OrdinalIgnoreCase);
 
 if (useSqlDataSource && !string.IsNullOrWhiteSpace(connectionString))
 {
-    Console.WriteLine("Using SQL Database for Joke Source (DataSource=SQL)...");
-    // Use SQL Server database for joke storage
-    builder.Services.AddDbContext<DadABaseDbContext>(options => options.UseSqlServer(connectionString));
-    builder.Services.AddScoped<IJokeRepository, JokeSQLRepository>();
+    Console.WriteLine("Using SQL Database for Get Together Source (DataSource=SQL)...");
+    builder.Services.AddDbContext<GetTogetherDbContext>(options => options.UseSqlServer(connectionString));
 
     // Add Identity DbContext (for authentication) - always uses database if connection string exists
     builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
-}
-else
-{
-    if (useSqlDataSource && string.IsNullOrWhiteSpace(connectionString))
-    {
-        Console.WriteLine("DataSource=SQL was configured, but DefaultConnection is empty. Falling back to JSON file source.");
-    }
-    else if (!useJsonDataSource && !useSqlDataSource)
-    {
-        Console.WriteLine($"Unknown DataSource '{configuredDataSource}'. Falling back to JSON file source.");
-    }
-    else
-    {
-        Console.WriteLine("Using JSON File for Joke Source (DataSource=JSON)...");
-    }
-
-    // Fallback to JSON file-based joke storage
-    var jsonFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "Data/Jokes.json");
-    builder.Services.AddSingleton<IJokeRepository>(sp => new JokeJsonRepository(jsonFilePath));
 }
 
 // ----- Register Get Together domain repositories (SQL only; no JSON fallback for domain data) -------
@@ -121,6 +100,8 @@ if (useSqlDataSource && !string.IsNullOrWhiteSpace(connectionString))
     builder.Services.AddScoped<IInvitationCodeRepository, InvitationCodeSQLRepository>();
     builder.Services.AddScoped<IRsvpRepository, RsvpSQLRepository>();
     builder.Services.AddScoped<IUserRepository, UserSQLRepository>();
+    builder.Services.AddScoped<IRecurrenceService, RecurrenceService>();
+    builder.Services.AddScoped<ICalendarAggregationService, CalendarAggregationService>();
 }
 
 // ----- Notification service (SendGrid) ---------------------------------------------------------------
@@ -128,10 +109,8 @@ builder.Services.AddScoped<INotificationService, SendGridNotificationService>();
 
 builder.Services.AddAiServices(builder.Configuration);
 builder.Services.AddSingleton<IAIHelper, AIHelper>();
-builder.Services.AddSingleton<IJokeImageQueue, JokeImageQueue>();
-builder.Services.AddHostedService<JokeImageQueueService>();
 builder.Services.AddScoped<IBuildInfoService, BuildInfoService>();
-builder.Services.AddScoped<DadABase.Web.Repositories.ThemeService>();
+builder.Services.AddScoped<GetTogether.Web.Repositories.ThemeService>();
 
 // ----- Configure Authentication ---------------------------------------------------------------------
 var authSettings = builder.Configuration.GetSection("AzureAD");
@@ -189,7 +168,7 @@ if (settings.EnableSwagger)
         options.DocumentFilter<CustomSwaggerFilter>();
         options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
         // See https://github.com/domaindrivendev/Swashbuckle.AspNetCore#include-descriptions-from-xml-comments
-        var documentationPath = Path.Combine(AppContext.BaseDirectory, "DadABase.Web.xml");
+        var documentationPath = Path.Combine(AppContext.BaseDirectory, "GetTogether.Web.xml");
         options.IncludeXmlComments(documentationPath);
         options.SwaggerDoc("v1", new OpenApiInfo
         {

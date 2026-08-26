@@ -177,9 +177,9 @@ In `7-scan-code.yml`:
 |-----------|---------|-------------|
 | `environmentName` | `DEV` | Deployment environment name |
 | `continueOnSBOMError` | `true` | Continue pipeline if SBOM generation fails |
-| `packageName` | `DadABase` | SBOM package name field |
+| `packageName` | `LetsGetTogether` | SBOM package name field |
 | `packageVersion` | `1.0.0` | SBOM package version field |
-| `packageSupplier` | `DadABase` | SBOM supplier/organization field |
+| `packageSupplier` | `LetsGetTogether` | SBOM supplier/organization field |
 
 ### Example: Calling the SBOM Job Template Directly from a Stage
 

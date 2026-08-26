@@ -140,9 +140,9 @@ jobs:
       - name: continueAfterScanErrors
         value: ${{ eq(parameters.continueOnScanError, 'true') }}
       - name: nugetScanSolutionPattern
-        value: 'dadabase*.sln'
+        value: 'gettogether*.sln'
       - name: nugetScanProjectPattern
-        value: 'dadabase*.csproj'
+        value: 'gettogether*.csproj'
       - template: ../vars/var-common.yml
     steps:
     - bash: |
@@ -370,7 +370,7 @@ jobs:
 #         codeql database create "$DB_PATH" \
 #           --language=csharp \
 #           --source-root "$(Build.SourcesDirectory)" \
-#           --command "dotnet build $(Build.SourcesDirectory)/src/DadABase.Web/DadABase.Web.csproj -c Release"
+#           --command "dotnet build $(Build.SourcesDirectory)/src/web/Website/GetTogether.Web.csproj -c Release"
 #       displayName: 'Create CodeQL database'
 #
 #     - bash: |

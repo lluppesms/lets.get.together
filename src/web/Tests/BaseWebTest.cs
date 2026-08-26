@@ -1,4 +1,4 @@
-﻿/*
+/*
   ----------------------------------------------------------------------------------------------------
   ===> 01/30/2023:  these lines are probably wrong and need attention...:
 
@@ -6,8 +6,9 @@
   // LINE 109:  var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
   ----------------------------------------------------------------------------------------------------
 */
-namespace DadABase.Tests;
+namespace GetTogether.Tests;
 
+using GetTogether.SampleData;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
 
@@ -15,7 +16,7 @@ using Microsoft.Extensions.Hosting;
 public abstract class BaseWebTesting
 {
     protected TestingData testData = null;
-    protected ProjectEntities db;
+    protected GetTogetherDbContext db;
     protected AppSettings appSettings;
     protected HttpClient _client;
     protected IHost _host;
@@ -75,7 +76,7 @@ public abstract class BaseWebTesting
     /// <returns>The full path to the target project.</returns>
     private static string GetProjectPath(string solutionRelativePath, Assembly startupAssembly)
     {
-        var solutionName = "DadABase.Website";
+        var solutionName = "GetTogether.Website";
 
         // Get name of the target project which we want to test
         var projectName = startupAssembly.GetName().Name;

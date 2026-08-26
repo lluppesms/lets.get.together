@@ -1,12 +1,12 @@
 using Azure.AI.OpenAI;
 using Azure.Storage.Blobs;
-using DadABase.Web.Helpers;
+using GetTogether.Web.Helpers;
 using OpenAI;
 using OpenAI.Images;
 using System.ClientModel;
 using System.Text.Json;
 
-namespace DadABase.Web.Services;
+namespace GetTogether.Web.Services;
 
 /// <summary>
 /// Image service that preserves the existing Azure OpenAI, MAI, OpenAI, and blob-storage image behavior.

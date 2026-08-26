@@ -6,7 +6,7 @@
 // Application Database Context
 // </summary>
 //-----------------------------------------------------------------------
-namespace DadABase.Data;
+namespace GetTogether.Data;
 
 /// <summary>
 /// Application Database Context
@@ -15,21 +15,6 @@ namespace DadABase.Data;
 [ExcludeFromCodeCoverage]
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
-    /// <summary>
-    /// Jokes
-    /// </summary>
-    public DbSet<Joke> Jokes { get; set; }
-
-    /// <summary>
-    /// Joke Categories
-    /// </summary>
-    public DbSet<JokeCategory> JokeCategories { get; set; }
-
-    /// <summary>
-    /// Joke Ratings
-    /// </summary>
-    public DbSet<JokeRating> JokeRatings { get; set; }
-
     /// <summary>
     /// On Model Creating
     /// </summary>

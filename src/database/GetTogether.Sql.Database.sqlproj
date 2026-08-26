@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build">
+  <Sdk Name="Microsoft.Build.Sql" Version="2.0.0" />
+  <PropertyGroup>
+    <Name>sql.database</Name>
+    <TargetFramework>net472</TargetFramework>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql170DatabaseSchemaProvider</DSP>
+    <ModelCollation>1033,CI</ModelCollation>
+    <EnableDefaultSqlItems>False</EnableDefaultSqlItems>
+    <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
+    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <ProjectGuid>{8b3e4f01-6a8c-4d2e-9f3a-1c5d7e8f9a0b}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <PreDeploy Include="Meetings\Pre.Deployment.sql" />
+    <PostDeploy Include="Meetings\Post.Deployment.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Schemas\" />
+    <Folder Include="Meetings\" />
+    <Folder Include="Meetings\Stored Procedures" />
+    <Folder Include="Meetings\Tables" />
+    <Folder Include="Meetings\Views" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="Schemas\Meetings.sql" />
+    <Build Include="Meetings\Tables\User.sql" />
+    <Build Include="Meetings\Tables\Circle.sql" />
+    <Build Include="Meetings\Tables\CircleMembership.sql" />
+    <Build Include="Meetings\Tables\InvitationCode.sql" />
+    <Build Include="Meetings\Tables\Event.sql" />
+    <Build Include="Meetings\Tables\RSVP.sql" />
+    <Build Include="Meetings\Tables\ReminderLog.sql" />
+  </ItemGroup>
+</Project>

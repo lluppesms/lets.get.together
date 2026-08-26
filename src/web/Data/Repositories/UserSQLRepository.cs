@@ -6,16 +6,16 @@
 // User SQL Repository
 // </summary>
 //-----------------------------------------------------------------------
-using DadABase.Data.Models;
+using GetTogether.Data.Models;
 
-namespace DadABase.Data.Repositories;
+namespace GetTogether.Data.Repositories;
 
 /// <summary>
 /// SQL Server implementation of <see cref="IUserRepository"/> using EF Core.
 /// </summary>
-public class UserSQLRepository(DadABaseDbContext context) : IUserRepository
+public class UserSQLRepository(GetTogetherDbContext context) : IUserRepository
 {
-    private readonly DadABaseDbContext _context = context;
+    private readonly GetTogetherDbContext _context = context;
 
     /// <inheritdoc/>
     public async Task<User?> FindByExternalIdAsync(string externalId)

@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace DadABase.Web.Pages;
+namespace GetTogether.Web.Pages;
 
 /// <summary>
 /// Error Model

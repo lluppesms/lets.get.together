@@ -55,7 +55,7 @@ These Azure DevOps YML files are designed to run as multi-stage environment depl
 
 ---
 
-## 4. Required Variable Group: Dadabase.Demo
+## 4. Required Variable Group: GetTogether.Demo
 
 To create this variable group, customize and run this command in Azure Cloud Shell.
 
@@ -67,12 +67,12 @@ az login
 az pipelines variable-group create \
   --organization=https://dev.azure.com/<yourAzDOOrg>/ \
   --project='<yourAzDOProject>' \
-  --name Dadabase.Demo \
+  --name GetTogether.Demo \
   --variables \
-      APP_NAME='full-dadabase' \
+      APP_NAME='full-gettogether' \
       
       RESOURCE_GROUP_LOCATION='centralus' \
-      RESOURCE_GROUP_PREFIX='rg-dadabase' \
+      RESOURCE_GROUP_PREFIX='rg-gettogether' \
       
       WEB_API_KEY='somesecretstring' \
       
@@ -94,8 +94,8 @@ az pipelines variable-group create \
       OPENAI_IMAGE_APIKEY='yourkey' \
       OPENAI_CHAT_APIKEY='yourkey' \
       
-      SQL_SERVER_NAME_PREFIX='your-dadabase-server-prefix' \
-      SQL_DATABASE_NAME='DadABase' \
+      SQL_SERVER_NAME_PREFIX='your-gettogether-server-prefix' \
+      SQL_DATABASE_NAME='GetTogether' \
       SQLADMIN_LOGIN_USERID='youruser@yourdomain.com' \
       SQLADMIN_LOGIN_USERSID='yoursid' \
       SQLADMIN_LOGIN_TENANTID='yourtennant' \

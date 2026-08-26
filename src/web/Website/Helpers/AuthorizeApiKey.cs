@@ -10,7 +10,7 @@
 
 using Microsoft.Extensions.Primitives;
 
-namespace DadABase.Web.Attributes;
+namespace GetTogether.Web.Attributes;
 
 /// <summary>
 /// API Key Authorization Attribute

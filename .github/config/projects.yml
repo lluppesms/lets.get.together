@@ -25,47 +25,47 @@ projects:
   web:
     shortName: 'web'
     rootDirectory: 'src/web/Website'
-    projectName: 'DadABase.Web'
+    projectName: 'GetTogether.Web'
     testDirectory: 'src/web/Tests'
-    testProjectName: 'DadABase.Tests'
+    testProjectName: 'GetTogether.Tests'
 
   # Azure Function App
   function:
     shortName: 'func'
     rootDirectory: 'src/function/Function'
-    projectName: 'DadABase.Function'
+    projectName: 'GetTogether.Function'
     testDirectory: 'src/function/Tests'
-    testProjectName: 'DadABase.Function.Tests'
+    testProjectName: 'GetTogether.Function.Tests'
 
   # Console Application
   console:
     shortName: 'console'
     rootDirectory: 'src/console'
-    projectName: 'dadabase.net10.console'
+    projectName: 'GetTogether.Console'
     testDirectory: ''
     testProjectName: ''
 
   # MCP (Model Context Protocol) Server
   mcp:
     shortName: 'mcp'
-    rootDirectory: 'src/mcp/DadJokeMCP'
-    projectName: 'DadJokeMCP'
+    rootDirectory: 'src/mcp/GetTogetherMCP'
+    projectName: 'GetTogetherMCP'
     testDirectory: ''
     testProjectName: ''
 
   # MCP SSE Server
   mcpsse:
     shortName: 'mcpsse'
-    rootDirectory: 'src/mcp/DadJokeMCPSSE'
-    projectName: 'DadJokeMCPSSE'
+    rootDirectory: 'src/mcp/GetTogetherMCPSSE'
+    projectName: 'GetTogetherMCPSSE'
     testDirectory: ''
     testProjectName: ''
 
-  # Joke Analyzer
+  # GetTogether Analyzer
   analyzer:
     shortName: 'analyzer'
-    rootDirectory: 'src/analyzer'
-    projectName: 'JokeAnalyzer'
+    rootDirectory: 'src/gettogetheranalyzer'
+    projectName: 'GetTogetherAnalyzer'
     testDirectory: ''
     testProjectName: ''
 
