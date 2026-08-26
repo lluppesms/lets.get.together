@@ -34,7 +34,7 @@ public class EventSQLRepository(DadABaseDbContext context) : IEventRepository
     }
 
     /// <inheritdoc/>
-    public async Task<IList<Event>> GetEventsForCircleAsync(int circleId, int requestingUserId)
+    public async Task<IList<Event>> GetEventsByCircleAsync(int circleId, int requestingUserId)
     {
         var isMember = await _context.CircleMemberships!
             .AnyAsync(m => m.CircleId == circleId && m.UserId == requestingUserId && m.LeftUtc == null);
@@ -51,7 +51,7 @@ public class EventSQLRepository(DadABaseDbContext context) : IEventRepository
     }
 
     /// <inheritdoc/>
-    public async Task<Event?> GetEventAsync(int eventId, int requestingUserId)
+    public async Task<Event?> GetByIdAsync(int eventId, int requestingUserId)
     {
         var ev = await _context.Events!
             .Include(e => e.Circle)
@@ -70,7 +70,7 @@ public class EventSQLRepository(DadABaseDbContext context) : IEventRepository
     }
 
     /// <inheritdoc/>
-    public async Task<Event> CreateEventAsync(Event newEvent, int creatorUserId)
+    public async Task<Event> CreateAsync(Event newEvent, int creatorUserId)
     {
         var isMember = await _context.CircleMemberships!
             .AnyAsync(m => m.CircleId == newEvent.CircleId && m.UserId == creatorUserId && m.LeftUtc == null);
@@ -87,7 +87,7 @@ public class EventSQLRepository(DadABaseDbContext context) : IEventRepository
     }
 
     /// <inheritdoc/>
-    public async Task UpdateEventAsync(Event updatedEvent, int requestingUserId)
+    public async Task UpdateAsync(Event updatedEvent, int requestingUserId)
     {
         var isMember = await _context.CircleMemberships!
             .AnyAsync(m => m.CircleId == updatedEvent.CircleId && m.UserId == requestingUserId && m.LeftUtc == null);
@@ -99,6 +99,39 @@ public class EventSQLRepository(DadABaseDbContext context) : IEventRepository
         _context.Events!.Update(updatedEvent);
         await _context.SaveChangesAsync();
     }
+
+    /// <inheritdoc/>
+    public async Task DeleteAsync(int eventId, int requestingUserId)
+    {
+        var ev = await _context.Events!.FirstOrDefaultAsync(e => e.EventId == eventId)
+            ?? throw new InvalidOperationException("Event not found.");
+
+        var isMember = await _context.CircleMemberships!
+            .AnyAsync(m => m.CircleId == ev.CircleId && m.UserId == requestingUserId && m.LeftUtc == null);
+        if (!isMember)
+        {
+            throw new InvalidOperationException("Only circle members may delete events.");
+        }
+
+        _context.Events!.Remove(ev);
+        await _context.SaveChangesAsync();
+    }
+
+    /// <inheritdoc/>
+    public Task<IList<Event>> GetEventsForCircleAsync(int circleId, int requestingUserId)
+        => GetEventsByCircleAsync(circleId, requestingUserId);
+
+    /// <inheritdoc/>
+    public Task<Event?> GetEventAsync(int eventId, int requestingUserId)
+        => GetByIdAsync(eventId, requestingUserId);
+
+    /// <inheritdoc/>
+    public Task<Event> CreateEventAsync(Event newEvent, int creatorUserId)
+        => CreateAsync(newEvent, creatorUserId);
+
+    /// <inheritdoc/>
+    public Task UpdateEventAsync(Event updatedEvent, int requestingUserId)
+        => UpdateAsync(updatedEvent, requestingUserId);
 
     /// <inheritdoc/>
     public async Task CancelEventAsync(int eventId, int requestingUserId)

@@ -60,4 +60,10 @@ Locked the Phase 2 circles and membership boundary to the existing repository co
 
 📌 Team update (2026-08-25T21-08-16Z): Kaylee's Phase 2 circles UI consumes the existing circle, invitation, and user repository contracts, passes persisted user IDs for circle-scoped calls, and exposes an accessible unavailable state when SQL-only registrations are absent.
 
+---
+
+### 2026-08-26 — Phase 3 Execution Handoff
+
+Coordinated Phase 3: Event Creation & Recurrence Rules. Key locked decisions: recurrence fields (`IsRecurring`, `RsvpMode`, `RecurrenceRule`) already exist on the `Event` entity and SQL schema authority (`Dad.Event`). Recurrence rule vocabulary includes Weekly, Biweekly, Monthly; all events are circle-scoped (`CircleId`); any active circle member (`LeftUtc == null`) can view, create, edit, or cancel events in their circle. Produced `.squad/decisions/inbox/mal-phase3-execution-handoff.md` detailing scope, files to touch, ownership boundaries (Simon for backend/helpers, Kaylee for Blazor UI/events page, River for xUnit & Playwright tests, Wash for CI/CD deploy verification), acceptance checks, and risk mitigations. No feature code implemented.
+
 

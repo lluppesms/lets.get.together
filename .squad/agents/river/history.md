@@ -21,3 +21,12 @@ The locked Phase 1 handoff calls for signup browser coverage, but River's inbox 
 ### 2026-08-25T21:00:00Z — Phase 2 focused test follow-up
 
 The reported `--no-build --no-restore` failure was not reproducible: both focused circle membership tests passed, the build-backed focused run passed, and the full web test project passed 54/54. No production or test defect was identified; stale or transient test-run state remains the likely explanation.
+
+### 2026-08-26 — Phase 3 Event & Recurrence Expansion Tests
+
+- Added `RecurrenceExpander` utility in `src/web/Data/Helpers/RecurrenceExpander.cs` for expanding Weekly, Biweekly, and Monthly event recurrence rules.
+- Created `src/web/Tests/RepositoryTests/EventRepository_Tests.cs` covering Phase 3 xUnit scenarios:
+  1. Event CRUD operations (`CreateEventAsync`, `GetEventAsync`, `GetEventsForCircleAsync`, `GetUpcomingEventsForUserAsync`, `UpdateEventAsync`, `CancelEventAsync`).
+  2. Circle-member access guards denying non-member reads, creates, updates, and cancellations with `InvalidOperationException` or `null`/empty returns.
+  3. Recurrence expansion logic for `Weekly` (7-day intervals), `Biweekly` (14-day / `INTERVAL=2`), `Monthly` (calendar month offsets), non-recurring events, and boundary limits (`untilUtc`, `maxCount`).
+- All 18 narrow tests in `EventRepository_Tests` passed cleanly (total web test suite: 82/82 passing).

@@ -31,3 +31,10 @@ The locked decision ledger confirms Entra ID, Google, and Facebook are in v1. Ka
 - The existing circles page already covered the supported Phase 2 contracts: circle switching/detail, active member roster, settings, leaving, and invite lifecycle history/statuses.
 - Removed the misleading no-op generated-code click handler, added accessible success feedback for settings and invite revocation, and cleared transient detail state when switching circles.
 - No new circle contract gap was found; SQL-only unavailable states remain explicit and accessible.
+
+### 2026-08-26 - Phase 3 UI for Events & Recurrence
+
+- Built `Components/EventCreate.razor` and `Components/EventCreate.razor.css` to handle event creation with Title, Circle selection, Location, Description, Start/End Date & Time, IsRecurring toggle, RecurrenceRule (Weekly, Biweekly, Monthly), and RsvpMode (PerOccurrence vs Series).
+- Updated `Pages/Events.razor` and created `Pages/Events.razor.css` for viewing upcoming events by selected circle or across all user circles with a circle filter dropdown, toggleable event creation form, quick RSVP action buttons directly on event cards, and count badges.
+- Built `Pages/EventDetail.razor` and `Pages/EventDetail.razor.css` for viewing full event specifications, location, formatted times, recurrence schedule info, interactive user RSVP with notes, categorized member RSVP roster (Accepted, Maybe, Declined, Undecided), and event cancellation.
+- All Razor pages follow the repository resolution pattern via `IServiceProvider`, render accessible warning alerts in JSON/non-SQL mode, and use single quotes for Blazor `@onclick` string literals. Verified build and all 82 xUnit tests passing.

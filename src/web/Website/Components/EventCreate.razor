@@ -1,0 +1,289 @@
+@namespace DadABase.Web.Components
+@using System.ComponentModel.DataAnnotations
+@using DadABase.Data.Models
+@using DadABase.Data.Repositories
+@inject IEventRepository EventRepository
+
+<div class="event-create-container" role="region" aria-labelledby="event-create-heading">
+	<div class="event-create-header">
+		<h2 id="event-create-heading">Create New Event</h2>
+		<p class="event-create-sub">Schedule a gathering for your circle</p>
+	</div>
+
+	@if (!string.IsNullOrWhiteSpace(errorMessage))
+	{
+		<div class="event-alert event-alert-error" role="alert">@errorMessage</div>
+	}
+
+	<EditForm Model="formModel" OnValidSubmit="SubmitEventAsync">
+		<DataAnnotationsValidator />
+
+		<div class="form-group">
+			<label for="event-title">Event Title <span class="required">*</span></label>
+			<InputText id="event-title" class="event-input" @bind-Value="formModel.Title" placeholder="e.g. Saturday Pickleball or Movie Night" maxlength="200" aria-required="true" />
+			<ValidationMessage For="@(() => formModel.Title)" />
+		</div>
+
+		<div class="form-group">
+			<label for="event-circle">Circle <span class="required">*</span></label>
+			<InputSelect id="event-circle" class="event-input" @bind-Value="formModel.CircleId" aria-required="true">
+				@if (UserCircles.Count == 0)
+				{
+					<option value="0" disabled>No circles available</option>
+				}
+				else
+				{
+					@foreach (var circle in UserCircles)
+					{
+						<option value="@circle.CircleId">@circle.Name</option>
+					}
+				}
+			</InputSelect>
+			<ValidationMessage For="@(() => formModel.CircleId)" />
+		</div>
+
+		<div class="form-group">
+			<label for="event-location">Location</label>
+			<InputText id="event-location" class="event-input" @bind-Value="formModel.Location" placeholder="e.g. Community Park Court 2 or Marcus Theatre" maxlength="500" />
+		</div>
+
+		<div class="form-group">
+			<label for="event-description">Description / Details</label>
+			<InputTextArea id="event-description" class="event-input event-textarea" @bind-Value="formModel.Description" placeholder="Add any details, instructions, or what to bring..." maxlength="1500" rows="3" />
+		</div>
+
+		<div class="form-row">
+			<div class="form-group form-group-half">
+				<label for="event-start-date">Start Date <span class="required">*</span></label>
+				<InputDate id="event-start-date" class="event-input" @bind-Value="formModel.StartDate" aria-required="true" />
+			</div>
+			<div class="form-group form-group-half">
+				<label for="event-start-time">Start Time</label>
+				<input id="event-start-time" type="time" class="event-input" value="@FormatTimeSpan(formModel.StartTime)" @onchange="OnStartTimeChanged" />
+			</div>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group form-group-half">
+				<label for="event-end-date">End Date (optional)</label>
+				<InputDate id="event-end-date" class="event-input" @bind-Value="formModel.EndDate" />
+			</div>
+			<div class="form-group form-group-half">
+				<label for="event-end-time">End Time (optional)</label>
+				<input id="event-end-time" type="time" class="event-input" value="@FormatTimeSpan(formModel.EndTime)" @onchange="OnEndTimeChanged" />
+			</div>
+		</div>
+
+		<div class="form-group form-group-toggle">
+			<label class="toggle-label" for="event-recurring">
+				<InputCheckbox id="event-recurring" class="toggle-checkbox" @bind-Value="formModel.IsRecurring" />
+				<span class="toggle-text">This is a recurring event</span>
+			</label>
+		</div>
+
+		@if (formModel.IsRecurring)
+		{
+			<div class="recurrence-panel" aria-label="Recurrence Options">
+				<div class="form-group">
+					<label for="event-recurrence-rule">Repeat Schedule</label>
+					<InputSelect id="event-recurrence-rule" class="event-input" @bind-Value="formModel.RecurrenceRule">
+						<option value="Weekly">Weekly</option>
+						<option value="Biweekly">Biweekly (Every 2 Weeks)</option>
+						<option value="Monthly">Monthly</option>
+					</InputSelect>
+				</div>
+
+				<div class="form-group">
+					<label for="event-rsvp-mode">RSVP Application</label>
+					<InputSelect id="event-rsvp-mode" class="event-input" @bind-Value="formModel.RsvpMode">
+						<option value="@RsvpMode.PerOccurrence">Per Occurrence (RSVP separately each time)</option>
+						<option value="@RsvpMode.Series">Series (One RSVP applies to all occurrences)</option>
+					</InputSelect>
+					<span class="form-hint">
+						@(formModel.RsvpMode == RsvpMode.PerOccurrence
+							? "Members RSVP individually to each instance (recommended for drop-in events)."
+							: "A single RSVP covers every upcoming instance in the series.")
+					</span>
+				</div>
+			</div>
+		}
+
+		<div class="event-form-actions">
+			<button class="event-btn event-btn-primary" type="submit" disabled="@isSaving">
+				@(isSaving ? "Creating Event..." : "Create Event")
+			</button>
+			@if (OnCancel.HasDelegate)
+			{
+				<button class="event-btn event-btn-secondary" type="button" @onclick="CancelAsync" disabled="@isSaving">
+					Cancel
+				</button>
+			}
+		</div>
+	</EditForm>
+</div>
+
+@code {
+	[Parameter] public int? InitialCircleId { get; set; }
+	[Parameter] public IList<Circle> UserCircles { get; set; } = [];
+	[Parameter] public int CurrentUserId { get; set; }
+	[Parameter] public EventCallback<Event> OnEventCreated { get; set; }
+	[Parameter] public EventCallback OnCancel { get; set; }
+
+	private EventFormModel formModel = new();
+	private bool isSaving;
+	private string errorMessage = string.Empty;
+
+	protected override void OnParametersSet()
+	{
+		if (formModel.CircleId == 0)
+		{
+			if (InitialCircleId.HasValue && InitialCircleId.Value > 0)
+			{
+				formModel.CircleId = InitialCircleId.Value;
+			}
+			else if (UserCircles.Count > 0)
+			{
+				formModel.CircleId = UserCircles[0].CircleId;
+			}
+		}
+	}
+
+	private static string FormatTimeSpan(TimeSpan? ts)
+	{
+		return ts.HasValue ? $"{ts.Value.Hours:D2}:{ts.Value.Minutes:D2}" : string.Empty;
+	}
+
+	private void OnStartTimeChanged(ChangeEventArgs e)
+	{
+		if (TimeSpan.TryParse(e.Value?.ToString(), out var ts))
+		{
+			formModel.StartTime = ts;
+		}
+		else
+		{
+			formModel.StartTime = null;
+		}
+	}
+
+	private void OnEndTimeChanged(ChangeEventArgs e)
+	{
+		if (TimeSpan.TryParse(e.Value?.ToString(), out var ts))
+		{
+			formModel.EndTime = ts;
+		}
+		else
+		{
+			formModel.EndTime = null;
+		}
+	}
+
+	private async Task SubmitEventAsync()
+	{
+		if (isSaving) return;
+		isSaving = true;
+		errorMessage = string.Empty;
+
+		try
+		{
+			if (formModel.CircleId <= 0)
+			{
+				errorMessage = "Please select a valid circle.";
+				isSaving = false;
+				return;
+			}
+
+			var startDate = formModel.StartDate ?? DateTime.Today;
+			var startTime = formModel.StartTime ?? new TimeSpan(18, 0, 0);
+			var startLocal = startDate.Date.Add(startTime);
+			var startsUtc = DateTime.SpecifyKind(startLocal, DateTimeKind.Local).ToUniversalTime();
+
+			DateTime? endsUtc = null;
+			if (formModel.EndDate.HasValue || formModel.EndTime.HasValue)
+			{
+				var endDate = formModel.EndDate ?? startDate;
+				var endTime = formModel.EndTime ?? startTime.Add(TimeSpan.FromHours(2));
+				var endLocal = endDate.Date.Add(endTime);
+				endsUtc = DateTime.SpecifyKind(endLocal, DateTimeKind.Local).ToUniversalTime();
+
+				if (endsUtc <= startsUtc)
+				{
+					errorMessage = "End date and time must be after the start time.";
+					isSaving = false;
+					return;
+				}
+			}
+
+			var detailsParts = new List<string>();
+			if (!string.IsNullOrWhiteSpace(formModel.Location))
+			{
+				detailsParts.Add($"Location: {formModel.Location.Trim()}");
+			}
+			if (!string.IsNullOrWhiteSpace(formModel.Description))
+			{
+				detailsParts.Add(formModel.Description.Trim());
+			}
+
+			var newEvent = new Event
+			{
+				CircleId = formModel.CircleId,
+				Title = formModel.Title.Trim(),
+				Details = detailsParts.Count > 0 ? string.Join("\n\n", detailsParts) : null,
+				StartsUtc = startsUtc,
+				EndsUtc = endsUtc,
+				IsRecurring = formModel.IsRecurring,
+				RsvpMode = formModel.IsRecurring ? formModel.RsvpMode : RsvpMode.PerOccurrence,
+				RecurrenceRule = formModel.IsRecurring ? formModel.RecurrenceRule : null
+			};
+
+			var created = await EventRepository.CreateEventAsync(newEvent, CurrentUserId);
+			await OnEventCreated.InvokeAsync(created);
+		}
+		catch (Exception ex)
+		{
+			errorMessage = ex.Message;
+		}
+		finally
+		{
+			isSaving = false;
+		}
+	}
+
+	private async Task CancelAsync()
+	{
+		if (OnCancel.HasDelegate)
+		{
+			await OnCancel.InvokeAsync();
+		}
+	}
+
+	public class EventFormModel
+	{
+		[Required(ErrorMessage = "Title is required.")]
+		[StringLength(200, ErrorMessage = "Title cannot exceed 200 characters.")]
+		public string Title { get; set; } = string.Empty;
+
+		[Range(1, int.MaxValue, ErrorMessage = "Please select a circle.")]
+		public int CircleId { get; set; }
+
+		[StringLength(500, ErrorMessage = "Location cannot exceed 500 characters.")]
+		public string Location { get; set; } = string.Empty;
+
+		[StringLength(1500, ErrorMessage = "Description cannot exceed 1500 characters.")]
+		public string Description { get; set; } = string.Empty;
+
+		[Required(ErrorMessage = "Start date is required.")]
+		public DateTime? StartDate { get; set; } = DateTime.Today;
+
+		public TimeSpan? StartTime { get; set; } = new TimeSpan(18, 0, 0);
+
+		public DateTime? EndDate { get; set; }
+
+		public TimeSpan? EndTime { get; set; }
+
+		public bool IsRecurring { get; set; }
+
+		public RsvpMode RsvpMode { get; set; } = RsvpMode.PerOccurrence;
+
+		public string RecurrenceRule { get; set; } = "Weekly";
+	}
+}

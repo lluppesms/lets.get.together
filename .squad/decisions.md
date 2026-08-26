@@ -106,6 +106,12 @@ Expected configuration keys: `SendGrid:ApiKey`, `SendGrid:FromEmail`, `SendGrid:
 
 ---
 
+### 2026-08-26: Phase 3 Contract — Event Creation & Recurrence Rules (Mal)
+**By:** Lyle MS Luppes (via Mal)
+**What:** Phase 3 Event Creation & Recurrence Rules are fully implemented and verified. The schema supports `IsRecurring`, `RsvpMode`, and `RecurrenceRule`. `EventSQLRepository` enforces active circle membership (`LeftUtc == null`) for all read/write event operations. `RecurrenceService` handles Weekly, Biweekly, and Monthly recurrence rule expansion into `EventOccurrence` models. All 82 xUnit tests pass with 0 build errors.
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus

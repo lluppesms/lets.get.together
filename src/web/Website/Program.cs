@@ -4,6 +4,7 @@ using DadABase.Web.Models.Application;
 using DadABase.Data;
 using DadABase.Data.Models;
 using DadABase.Data.Repositories;
+using DadABase.Data.Services;
 using DadABase.Web.Repositories;
 using Microsoft.OpenApi;
 using DadABase.Web.Helpers;
@@ -121,6 +122,7 @@ if (useSqlDataSource && !string.IsNullOrWhiteSpace(connectionString))
     builder.Services.AddScoped<IInvitationCodeRepository, InvitationCodeSQLRepository>();
     builder.Services.AddScoped<IRsvpRepository, RsvpSQLRepository>();
     builder.Services.AddScoped<IUserRepository, UserSQLRepository>();
+    builder.Services.AddScoped<IRecurrenceService, RecurrenceService>();
 }
 
 // ----- Notification service (SendGrid) ---------------------------------------------------------------
