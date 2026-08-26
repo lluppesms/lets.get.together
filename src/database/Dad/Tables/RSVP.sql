@@ -5,6 +5,7 @@ CREATE TABLE [Dad].[RSVP](
     [UserId] [int] NOT NULL,
     [Status] [nvarchar](32) NOT NULL,
     [Notes] [nvarchar](1000) NULL,
+    [OccurrenceDate] [datetime2](7) NULL,
     [RespondedUtc] [datetime2](7) NOT NULL,
     CONSTRAINT [PK_RSVP] PRIMARY KEY CLUSTERED ([RsvpId] ASC),
     CONSTRAINT [FK_RSVP_Event] FOREIGN KEY ([EventId], [CircleId]) REFERENCES [Dad].[Event] ([EventId], [CircleId]) ON DELETE CASCADE,
