@@ -50,13 +50,8 @@ gh variable set APP_NAME -b 'full-gettogether'
 gh variable set RESOURCE_GROUP_LOCATION -b 'centralus'
 gh variable set RESOURCE_GROUP_PREFIX -b 'rg-gettogether' 
 gh variable set INSTANCE_NUMBER -b 1
-gh variable set API_KEY -b 'somesecretstring'
 
-gh secret set LOGIN_CLIENTID -b '<yourADClientId>'
-gh secret set LOGIN_DOMAIN -b '<yourdomain>.onmicrosoft.com'
-gh secret set LOGIN_INSTANCEENDPOINT -b 'https://login.microsoftonline.com/'
-gh secret set LOGIN_TENANTID -b '<yourTenantId>'
-
+gh variable set CREATE_USER_ASSIGNED_IDENTITY -b 'false'
 gh variable set AI_SERVICE_PROVIDER -b 'CopilotSDK'
 gh variable set OPENAI_CHAT_DEPLOYMENTNAME -b 'gpt-5-mini'
 gh variable set OPENAI_CHAT_MAXTOKENS -b '300'
@@ -64,22 +59,35 @@ gh variable set OPENAI_CHAT_TEMPERATURE -b '0.7'
 gh variable set OPENAI_CHAT_TOPP -b '0.95'
 gh variable set OPENAI_IMAGE_DEPLOYMENTNAME -b 'gpt-image-1.5'
 
-gh variable set SQL_SERVER_NAME_PREFIX -b 'your-gettogether-server'
-gh variable set SQL_DATABASE_NAME -b 'gettogether'
-gh variable set SQLADMIN_LOGIN_USERID -b 'youruser@yourdomain.com'
-gh variable set SQLADMIN_LOGIN_USERSID -b 'yoursid'
-gh variable set SQLADMIN_LOGIN_TENANTID -b 'yourtennant'
+gh secret set --env <ENV-NAME> LOGIN_CLIENTID -b '<yourADClientId>'
+gh secret set --env <ENV-NAME> LOGIN_DOMAIN -b '<yourdomain>.onmicrosoft.com'
+gh secret set --env <ENV-NAME> LOGIN_INSTANCEENDPOINT -b 'https://login.microsoftonline.com/'
+gh secret set --env <ENV-NAME> LOGIN_TENANTID -b '<yourTenantId>'
 
-gh variable set CREATE_USER_ASSIGNED_IDENTITY -b 'false'
-gh variable set ADMIN_USER_LIST -b 'user1@domain.com,user2@domain.com'
+gh variable set --env <ENV-NAME> ADMIN_USER_LIST -b 'user1@domain.com,user2@domain.com'
+gh secret set --env <ENV-NAME> API_KEY -b 'somesecretstring'
 
-gh variable set EXISTING_SERVICEPLAN_NAME -b ''
-gh variable set EXISTING_SERVICEPLAN_RESOURCE_GROUP_NAME -b ''
-gh variable set EXISTING_SQLSERVER_NAME -b ''
-gh variable set EXISTING_SQLDATABASE_NAME -b ''
-gh variable set EXISTING_SQLSERVER_RESOURCE_GROUP_NAME -b ''
-gh variable set EXISTING_LOGANALYTICSWORKSPACE -b ''
-gh variable set EXISTING_LOG_ANALYTICS_WORKSPACE_RESOURCE_GROUP_NAME -b ''
+gh variable set --env <ENV-NAME> OPENAI_IMAGE_ENDPOINT -b https://<your-resource>.openai.azure.com/
+gh secret set --env <ENV-NAME> OPENAI_IMAGE_APIKEY -b <yourKey>
+gh variable set --env <ENV-NAME> OPENAI_CHAT_ENDPOINT -b https://<your-resource>.cognitiveservices.azure.com/
+gh secret set --env <ENV-NAME> OPENAI_CHAT_APIKEY -b <yourKey>
+
+gh secret set --env dev PIPELINE_SERVICE_PRINCIPAL_OBJECT_ID -b 30b3d0e6-82ba-4734-bf01-18a67b54ec99
+
+
+gh variable set --env <ENV-NAME> SQL_SERVER_NAME_PREFIX -b 'your-gettogether-server'
+gh variable set --env <ENV-NAME> SQL_DATABASE_NAME -b 'gettogether'
+gh variable set --env <ENV-NAME> SQLADMIN_LOGIN_USERID -b 'youruser@yourdomain.com'
+gh variable set --env <ENV-NAME> SQLADMIN_LOGIN_USERSID -b 'yoursid'
+gh variable set --env <ENV-NAME> SQLADMIN_LOGIN_TENANTID -b 'yourtennant'
+
+gh variable set --env <ENV-NAME> EXISTING_SERVICEPLAN_NAME -b ''
+gh variable set --env <ENV-NAME> EXISTING_SERVICEPLAN_RESOURCE_GROUP_NAME -b ''
+gh variable set --env <ENV-NAME> EXISTING_SQLSERVER_NAME -b ''
+gh variable set --env <ENV-NAME> EXISTING_SQLDATABASE_NAME -b ''
+gh variable set --env <ENV-NAME> EXISTING_SQLSERVER_RESOURCE_GROUP_NAME -b ''
+gh variable set --env <ENV-NAME> EXISTING_LOGANALYTICSWORKSPACE -b ''
+gh variable set --env <ENV-NAME> EXISTING_LOG_ANALYTICS_WORKSPACE_RESOURCE_GROUP_NAME -b ''
 ```
 
 Leave the `EXISTING_*` variables blank to let Bicep create new resources. To reuse SQL resources, set both `EXISTING_SQLSERVER_NAME` and `EXISTING_SQLDATABASE_NAME`. To reuse an existing Log Analytics Workspace, set `EXISTING_LOGANALYTICSWORKSPACE` to its name and optionally `EXISTING_LOG_ANALYTICS_WORKSPACE_RESOURCE_GROUP_NAME` if it is in a different resource group. Set `CREATE_USER_ASSIGNED_IDENTITY` to `'true'` to provision a separate user-assigned managed identity; leave it `'false'` (default) to use each resource's own system-assigned identity.
