@@ -1,16 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>47cd1b3b-01d3-49e9-a00a-b3a95f479429</UserSecretsId>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>.</DockerfileContext>
     <NoWarn>$(NoWarn);OPENAI001;SKEXP0001;GHCP001</NoWarn>
+    <UserSecretsId>be861d8f-55f0-4298-a7be-30dd1f7fb1ed</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
