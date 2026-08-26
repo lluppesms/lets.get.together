@@ -17,13 +17,6 @@ param deploymentType string = 'webapp'  // ['webapp', 'containerapp', 'functiona
 @description('Deploy only website infrastructure (skip SQL and Function resources).')
 param websiteOnly bool = false
 
-@description('Container image to deploy (required for containerapp deployment type)')
-param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
-
-@description('Container Registry SKU (Basic, Standard, Premium)')
-@allowed(['Basic', 'Standard', 'Premium'])
-param containerRegistrySku string = 'Basic'
-
 @description('Optional Object ID of the Azure DevOps service principal to grant AcrPush on the Container Registry')
 param pipelineServicePrincipalObjectId string = ''
 
@@ -34,8 +27,6 @@ param webAppKind string = 'linux' // 'linux' or 'windows'
 param webSiteSku string = 'B1'
 param webStorageSku string = 'Standard_LRS'
 param webApiKey string = ''
-
-param functionStorageSku string = 'Standard_LRS'
 
 param sqlDatabaseName string = 'gettogether'
 @allowed(['Basic','Standard','Premium','BusinessCritical','GeneralPurpose'])
@@ -95,10 +86,6 @@ param runDateTime string = utcNow()
 
 // --------------------------------------------------------------------------------
 var deploymentSuffix = '-${runDateTime}'
-var defaultContainerImage = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
-var effectiveContainerImage = empty(trim(containerImage)) || contains(containerImage, '#{')
-  ? defaultContainerImage
-  : containerImage
 var existingServicePlanNameEffective = empty(trim(servicePlanName)) || contains(servicePlanName, '#{') ? '' : trim(servicePlanName)
 var existingServicePlanRgNameEffective = empty(trim(servicePlanResourceGroupName)) || contains(servicePlanResourceGroupName, '#{') ? '' : trim(servicePlanResourceGroupName)
 var existingSqlServerNameEffective = empty(trim(existingSqlServerName)) || contains(existingSqlServerName, '#{') ? '' : trim(existingSqlServerName)
@@ -118,13 +105,10 @@ var useSqlDataSource = toUpper(appDataSource) == 'SQL' && !websiteOnly
 var webAppConnectionString = useSqlDataSource ? sqlDbModule!.outputs.identityConnectionString : ''
 var deploymentTypeNormalized = toLower(deploymentType)
 var deployWebAppEffective = contains(['webapp', 'all'], deploymentTypeNormalized)
-var deployWebsiteEffective = deployWebAppEffective || deployContainerAppEffective
-var deployContainerAppEffective = contains(['containerapp', 'all'], deploymentTypeNormalized)
-var deployFunctionEffective = contains(['functionapp', 'all'], deploymentTypeNormalized) && !websiteOnly
+var deployWebsiteEffective = deployWebAppEffective 
 var keyVaultApplicationUserObjectIds = deployWebsiteEffective
   ? concat(
-      deployWebAppEffective ? (createUserAssignedIdentity ? [ webSiteModule!.outputs.userManagedPrincipalId, webSiteModule!.outputs.systemPrincipalId ] : [ webSiteModule!.outputs.systemPrincipalId ]) : [],
-      deployContainerAppEffective ? (createUserAssignedIdentity ? [ containerAppModule!.outputs.userManagedPrincipalId, containerAppModule!.outputs.systemPrincipalId ] : [ containerAppModule!.outputs.systemPrincipalId ]) : [])
+      deployWebAppEffective ? (createUserAssignedIdentity ? [ webSiteModule!.outputs.userManagedPrincipalId, webSiteModule!.outputs.systemPrincipalId ] : [ webSiteModule!.outputs.systemPrincipalId ]) : [])
   : (createUserAssignedIdentity ? [ identity!.outputs.managedIdentityPrincipalId ] : [])
 // var resourceToken = toLower(uniqueString(resourceGroup().id, location))
 
@@ -158,20 +142,7 @@ module storageModule './modules/storage/storageaccount.bicep' = {
     storageAccountName: resourceNames.outputs.storageAccountName
     location: location
     commonTags: commonTags
-    containerNames: ['input', 'output', 'backup-data', 'joke-images']
-  }
-}
-
-module functionStorageModule './modules/storage/storageaccount.bicep' = if (deployFunctionEffective) {
-  name: 'functionstorage${deploymentSuffix}'
-  params: {
-    storageSku: functionStorageSku
-    storageAccountName: resourceNames.outputs.functionApp.storageName
-    location: location
-    commonTags: commonTags
-    allowNetworkAccess: 'Allow'
-    publicNetworkAccess: 'Enabled'
-    addSecurityControlIgnoreTag: true
+    containerNames: ['input', 'output', 'backup-data', 'images']
   }
 }
 
@@ -229,24 +200,6 @@ module appRoleAssignments2 './modules/iam/roleassignments.bicep' = if (addRoleAs
     storageAccountName: storageModule.outputs.name
   }
 }
-// also add rights to the container app storage account (Container Apps only)
-module appRoleAssignments2Container './modules/iam/roleassignments.bicep' = if (addRoleAssignments && deployContainerAppEffective) {
-  name: 'appRoleAssignments-containerapp-storage${deploymentSuffix}'
-  params: {
-    identityPrincipalId: containerAppModule!.outputs.systemPrincipalId
-    principalType: 'ServicePrincipal'
-    storageAccountName: storageModule.outputs.name
-  }
-}
-// also add rights to the function storage account
-module appRoleAssignments3 './modules/iam/roleassignments.bicep' = if (addRoleAssignments && deployFunctionEffective && createUserAssignedIdentity) {
-  name: 'appRoleAssignments-function-storage${deploymentSuffix}'
-  params: {
-    identityPrincipalId: identity!.outputs.managedIdentityPrincipalId
-    principalType: 'ServicePrincipal'
-    storageAccountName: functionStorageModule!.outputs.name
-  }
-}
 
 // --------------------------------------------------------------------------------
 module keyVaultModule './modules/security/keyvault.bicep' = {
@@ -262,88 +215,6 @@ module keyVaultModule './modules/security/keyvault.bicep' = {
     publicNetworkAccess: 'Enabled'
     allowNetworkAccess: 'Allow'
     useRBAC: true
-  }
-}
-
-module keyVaultStorageSecret './modules/security/keyvaultsecretstorageconnection.bicep' = if (deployFunctionEffective) {
-  name: 'keyVaultStorageSecret${deploymentSuffix}'
-  params: {
-    keyVaultName: keyVaultModule.outputs.name
-    secretName: 'azurefilesconnectionstring'
-    storageAccountName: functionStorageModule!.outputs.name
-  }
-}
-
-// --------------------------------------------------------------------------------
-// Container Infrastructure (deployed when deploymentType is containerapp or all)
-// --------------------------------------------------------------------------------
-module containerRegistryModule './modules/container/containerregistry.bicep' = if (deployContainerAppEffective) {
-  name: 'containerRegistry${deploymentSuffix}'
-  params: {
-    containerRegistryName: resourceNames.outputs.containerRegistryName
-    location: location
-    commonTags: commonTags
-    sku: containerRegistrySku
-    adminUserEnabled: true
-    workspaceId: logAnalyticsWorkspaceModule.outputs.id
-    managedIdentityPrincipalId: identity.outputs.managedIdentityPrincipalId
-    pipelineServicePrincipalObjectId: pipelineServicePrincipalObjectId
-  }
-}
-
-module containerAppsEnvironmentModule './modules/container/containerappenvironment.bicep' = if (deployContainerAppEffective) {
-  name: 'containerAppsEnv${deploymentSuffix}'
-  params: {
-    environmentName: resourceNames.outputs.containerAppsEnvironmentName
-    location: location
-    commonTags: commonTags
-    workspaceId: logAnalyticsWorkspaceModule.outputs.id
-  }
-}
-
-module containerAppModule './modules/container/containerapp.bicep' = if (deployContainerAppEffective) {
-  name: 'containerApp${deploymentSuffix}'
-  params: {
-    containerAppName: resourceNames.outputs.containerAppName
-    location: location
-    environmentCode: environmentCode
-    commonTags: commonTags
-    containerAppsEnvironmentId: containerAppsEnvironmentModule!.outputs.id
-    containerImage: effectiveContainerImage
-    containerRegistryServer: containerRegistryModule!.outputs.loginServer
-    managedIdentityId: effectiveManagedIdentityId
-    managedIdentityPrincipalId: effectiveManagedIdentityPrincipalId
-    workspaceId: logAnalyticsWorkspaceModule.outputs.id
-    minReplicas: 1
-    maxReplicas: 3
-    cpu: '0.5'
-    memory: '1Gi'
-    // In Container Apps, environment variables use standard naming (no double underscores needed)
-    customAppSettings: {
-      AppSettings__DefaultConnection: webAppConnectionString
-      AppSettings__ProjectEntities: webAppConnectionString
-      AppSettings__EnvironmentName: environmentCode
-      AppSettings__EnableSwagger: appSwaggerEnabled
-      AppSettings__DataSource: appDataSource
-      AppSettings__ApiKey: webApiKey
-      AppSettings__AdminUserList: adminUserList
-      AppSettings__AiServiceProvider: aiServiceProvider
-      AppSettings__AzureOpenAI__Chat__Endpoint: azureOpenAIChatEndpoint
-      AppSettings__AzureOpenAI__Chat__DeploymentName: azureOpenAIChatDeploymentName
-      AppSettings__AzureOpenAI__Chat__ApiKey: azureOpenAIChatApiKey
-      AppSettings__AzureOpenAI__Chat__MaxTokens: azureOpenAIChatMaxTokens
-      AppSettings__AzureOpenAI__Chat__Temperature: azureOpenAIChatTemperature
-      AppSettings__AzureOpenAI__Chat__TopP: azureOpenAIChatTopP
-      AppSettings__AzureOpenAI__Image__Endpoint: azureOpenAIImageEndpoint
-      AppSettings__AzureOpenAI__Image__DeploymentName: azureOpenAIImageDeploymentName
-      AppSettings__AzureOpenAI__Image__ApiKey: azureOpenAIImageApiKey
-      AppSettings__BlobStorageAccountName: storageModule.outputs.name
-      AzureAD__Instance: adInstance
-      AzureAD__Domain: adDomain
-      AzureAD__TenantId: adTenantId
-      AzureAD__ClientId: adClientId
-      AzureAD__CallbackPath: adCallbackPath
-    }
   }
 }
 
@@ -411,57 +282,8 @@ module webSiteModule './modules/webapp/website.bicep' = if (deployWebAppEffectiv
 }
 
 // --------------------------------------------------------------------------------
-// Function Flex Consumption - Shared Infrastructure (App Service Plan, App Insights, Storage)
-// This is deployed once and shared by all function apps
-// --------------------------------------------------------------------------------
-module flexFunctionResourcesModule 'modules/functions/functionresources.bicep' = if (deployFunctionEffective) {
-  name: 'flexFunctionResources${deploymentSuffix}'
-  params: {
-    functionInsightsName: resourceNames.outputs.functionApp.insightsName
-    functionStorageAccountName: resourceNames.outputs.functionApp.storageName
-    location: location
-    commonTags: commonTags
-    workspaceId: logAnalyticsWorkspaceModule.outputs.id
-  }
-}
-
-//--------------------------------------------------------------------------------
-module functionModule './modules/function/functionflex.bicep' = if (deployFunctionEffective) {
-  name: 'function${deploymentSuffix}'
-  params: {
-    functionAppName: resourceNames.outputs.functionApp.name
-    functionAppServicePlanName: resourceNames.outputs.functionApp.servicePlanName
-    deploymentStorageContainerName: resourceNames.outputs.functionApp.deploymentStorageContainerName
-    functionInsightsName: flexFunctionResourcesModule!.outputs.appInsightsName
-    functionStorageAccountName: flexFunctionResourcesModule!.outputs.storageAccountName
-    // appInsightsName: flexFunctionResourcesModule.outputs.appInsightsName
-    // storageAccountName: flexFunctionResourcesModule.outputs.storageAccountName
-    addRoleAssignments: addRoleAssignments
-    keyVaultName: keyVaultModule.outputs.name
-    location: location
-    commonTags: commonTags
-    deploymentSuffix: deploymentSuffix
-    customAppSettings: {
-      OpenApi__HideSwaggerUI: 'false'
-      OpenApi__HideDocument: 'false'
-      OpenApi__DocTitle: 'Isolated .NET10 Functions Demo APIs'
-      OpenApi__DocDescription: 'This repo is an example of how to use Isolated .NET10 Azure Functions'
-      // OpenAI settings
-      OpenAI__Chat__DeploymentName: azureOpenAIChatDeploymentName
-      OpenAI__Chat__Endpoint: azureOpenAIChatEndpoint
-      // OpenAI__Chat__ApiKey: '@Microsoft.KeyVault(VaultName=${keyVaultModule.outputs.name};SecretName=${keyVaultSecretOpenAI.outputs.secretName})'
-      OpenAI__Chat__ModelName: azureOpenAIImageDeploymentName
-      OpenAI__Chat__Temperature: azureOpenAIChatTemperature
-    }
-  }
-}
-
-// --------------------------------------------------------------------------------
 output SUBSCRIPTION_ID string = subscription().subscriptionId
 output RESOURCE_GROUP_NAME string = resourceGroupName
 output DEPLOYMENT_TYPE string = deploymentTypeNormalized
-output WEB_HOST_NAME string = deployWebAppEffective ? webSiteModule!.outputs.hostName : (deployContainerAppEffective ? containerAppModule!.outputs.fqdn : '')
-output WEB_URL string = deployWebAppEffective ? 'https://${webSiteModule!.outputs.hostName}' : (deployContainerAppEffective ? containerAppModule!.outputs.url : '')
-output CONTAINER_REGISTRY_NAME string = deployContainerAppEffective ? containerRegistryModule!.outputs.name : ''
-output CONTAINER_REGISTRY_LOGIN_SERVER string = deployContainerAppEffective ? containerRegistryModule!.outputs.loginServer : ''
-
+output WEB_HOST_NAME string = deployWebAppEffective ? webSiteModule!.outputs.hostName : ''
+output WEB_URL string = deployWebAppEffective ? 'https://${webSiteModule!.outputs.hostName}' :  ''
