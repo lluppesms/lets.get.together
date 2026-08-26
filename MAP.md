@@ -6,6 +6,10 @@
 >
 > **Last reviewed:** 2026-08-26
 
+### Database build update (2026-08-26)
+
+`src/database/GetTogether.Sql.Database.sqlproj` explicitly targets `net472`. This keeps the Microsoft.Build.Sql SDK restore output compatible with both the .NET CLI and Visual Studio MSBuild; use a normal restore/build after changing SQL project dependencies.
+
 ### Backend Phase 1 update (2026-08-25)
 
 The shared data project now includes the locked Event recurrence model (`IsRecurring`, `RsvpMode`, and `RecurrenceRule`) and the SQL database project includes the Get Together tables under the `Dad` schema. Invitation-code listing preserves the full circle audit trail, while redemption continues to require an active circle member, rejects duplicate active membership, and reactivates a former member's existing membership record.
