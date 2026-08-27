@@ -72,7 +72,7 @@ public class CircleRepository(GetTogetherDbContext context) : ICircleRepository
         {
             CircleId = circle.CircleId,
             UserId = creatorUserId,
-            Role = "Member",
+            Role = "Owner",
             JoinedUtc = DateTime.UtcNow
         };
         _context.CircleMemberships!.Add(membership);

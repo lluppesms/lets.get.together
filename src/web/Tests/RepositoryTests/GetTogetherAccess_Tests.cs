@@ -103,6 +103,21 @@ public class GetTogetherAccess_Tests
     }
 
     [Fact]
+    public async Task CircleRepository_CreateCircle_AssignsOwnerRoleToCreator()
+    {
+        await using var context = CreateContext();
+        AddUser(context, 10);
+        await context.SaveChangesAsync();
+        var repository = new CircleRepository(context);
+
+        var circle = await repository.CreateCircleAsync(new Circle { Name = "New Circle" }, 10);
+
+        var membership = await context.CircleMemberships!
+            .SingleAsync(candidate => candidate.CircleId == circle.CircleId && candidate.UserId == 10);
+        Assert.Equal("Owner", membership.Role);
+    }
+
+    [Fact]
     public async Task CircleRepository_AddMember_RequiresActiveRequesterAndReactivatesMembership()
     {
         await using var context = CreateContext();
