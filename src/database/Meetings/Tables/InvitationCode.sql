@@ -3,6 +3,8 @@ CREATE TABLE [Meetings].[InvitationCode](
     [CircleId] [int] NOT NULL,
     [Code] [nvarchar](64) NOT NULL,
     [CreatedByUserId] [int] NOT NULL,
+    [RecipientEmailAddress] [nvarchar](320) NULL,
+    [NormalizedRecipientEmailAddress] [nvarchar](320) NULL,
     [CreatedUtc] [datetime2](7) NOT NULL,
     [ExpiresUtc] [datetime2](7) NULL,
     [RedeemedByUserId] [int] NULL,

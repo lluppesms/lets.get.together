@@ -26,16 +26,36 @@
                     <span id="microsoft-status" class="provider-status">Not configured</span>
                 </button>
             }
-            <button class="provider-button provider-google" type="button" disabled aria-describedby="google-status">
-                <span class="provider-mark" aria-hidden="true">G</span>
-                <span>Continue with Google</span>
-                <span id="google-status" class="provider-status">Coming soon</span>
-            </button>
-            <button class="provider-button provider-facebook" type="button" disabled aria-describedby="facebook-status">
-                <span class="provider-mark" aria-hidden="true">f</span>
-                <span>Continue with Facebook</span>
-                <span id="facebook-status" class="provider-status">Coming soon</span>
-            </button>
+            @if (GoogleEnabled)
+            {
+                <a class="provider-button provider-google" href="/login/google">
+                    <span class="provider-mark" aria-hidden="true">G</span>
+                    <span>Continue with Google</span>
+                </a>
+            }
+            else
+            {
+                <button class="provider-button provider-google" type="button" disabled aria-describedby="google-status">
+                    <span class="provider-mark" aria-hidden="true">G</span>
+                    <span>Continue with Google</span>
+                    <span id="google-status" class="provider-status">Not configured</span>
+                </button>
+            }
+            @if (FacebookEnabled)
+            {
+                <a class="provider-button provider-facebook" href="/login/facebook">
+                    <span class="provider-mark" aria-hidden="true">f</span>
+                    <span>Continue with Facebook</span>
+                </a>
+            }
+            else
+            {
+                <button class="provider-button provider-facebook" type="button" disabled aria-describedby="facebook-status">
+                    <span class="provider-mark" aria-hidden="true">f</span>
+                    <span>Continue with Facebook</span>
+                    <span id="facebook-status" class="provider-status">Not configured</span>
+                </button>
+            }
         </div>
 
         @if (!EntraEnabled)
@@ -45,11 +65,14 @@
             </p>
         }
 
-        <p class="auth-secondary-action">Have an invitation code? <a href="/signup">Start your signup</a></p>
+        <p class="auth-secondary-action">Received an invitation? <a href="/invite">Verify your invitation email</a></p>
     </section>
 </main>
 
 @code {
     private bool EntraEnabled => !string.IsNullOrWhiteSpace(Configuration["AzureAD:TenantId"]);
+    private bool GoogleEnabled => HasConfiguration("Authentication:Google:ClientId", "Authentication:Google:ClientSecret");
+    private bool FacebookEnabled => HasConfiguration("Authentication:Facebook:AppId", "Authentication:Facebook:AppSecret");
     private string MicrosoftSignInUrl => EntraEnabled ? "/MicrosoftIdentity/Account/SignIn?redirectUri=/" : "/login";
+    private bool HasConfiguration(params string[] keys) => keys.All(key => !string.IsNullOrWhiteSpace(Configuration[key]));
 }

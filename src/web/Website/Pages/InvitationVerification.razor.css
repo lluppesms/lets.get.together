@@ -1,0 +1,8 @@
+.invitation-verification-page .auth-intro {
+    margin-bottom: 1.5rem;
+}
+
+.verification-code {
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}

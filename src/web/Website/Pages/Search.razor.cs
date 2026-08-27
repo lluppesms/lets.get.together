@@ -18,6 +18,7 @@ public partial class Search : ComponentBase
     [Inject] IServiceProvider ServiceProvider { get; set; }
     [Inject] IJSRuntime JsInterop { get; set; }
     [Inject] AuthenticationStateProvider AuthStateProvider { get; set; }
+    [Inject] ICurrentUserResolver CurrentUserResolver { get; set; }
 
     private string SearchTerm = string.Empty;
     private int? SelectedCircleId = null;
@@ -56,18 +57,13 @@ public partial class Search : ComponentBase
     private async Task LoadUserCirclesAsync()
     {
         using var scope = ServiceProvider.CreateScope();
-        var userRepo = scope.ServiceProvider.GetService<IUserRepository>();
         var circleRepo = scope.ServiceProvider.GetService<ICircleRepository>();
 
-        if (userRepo == null || circleRepo == null) return;
+        if (circleRepo == null) return;
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var externalId = authState.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                         ?? authState.User?.Identity?.Name;
-
-        if (string.IsNullOrEmpty(externalId)) return;
-
-        currentUser = await userRepo.FindByExternalIdAsync(externalId);
+        var resolution = await CurrentUserResolver.ResolveAsync(authState.User);
+        currentUser = resolution.User;
         if (currentUser == null) return;
 
         userCircles = (await circleRepo.GetCirclesForUserAsync(currentUser.UserId)).ToList();

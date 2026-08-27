@@ -1,44 +1,125 @@
 @page "/signup-callback"
+@page "/invite/confirmed"
 @namespace GetTogether.Web.Pages
-@inject NavigationManager Navigation
+@using System.Security.Claims
+@using GetTogether.Data.Services
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ICurrentUserResolver CurrentUserResolver
+@inject IServiceProvider ServiceProvider
+@inject IJSRuntime JsRuntime
 
-<PageTitle>Continue signup | Get Together</PageTitle>
+<PageTitle>Invitation confirmed | Get Together</PageTitle>
 
 <main class="auth-page callback-page" aria-labelledby="callback-heading">
     <section class="auth-panel" aria-live="polite">
-        <div class="auth-kicker">One more step</div>
-        <h1 id="callback-heading">Your invitation is ready.</h1>
-        <p class="auth-intro">The invitation code has been captured. Provider sign-in and server-side code validation will finish your onboarding here.</p>
-        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        <div class="auth-kicker">Invitation confirmed</div>
+        <h1 id="callback-heading">Complete your account.</h1>
+        <p class="auth-intro">Your account uses your chosen provider identity, not this email address.</p>
+        @if (!isLoaded)
         {
-            <p class="auth-message auth-message-error" role="alert">@errorMessage</p>
+            <p class="auth-message auth-message-info" role="status">Preparing account setup...</p>
         }
-        else
+        else if (!hasPendingOnboarding)
         {
-            <p class="auth-message auth-message-info" role="status">No account has been created yet.</p>
+            <p class="auth-message auth-message-warning" role="status">Your invitation details are no longer available. Start again to request a new verification code.</p>
+            <div class="callback-actions"><a class="secondary-action" href="/invite">Start invitation verification</a></div>
         }
-        <div class="callback-actions">
-            <a class="primary-action callback-action" href="/login">Choose a sign-in provider</a>
-            <a class="secondary-action" href="/signup">Use a different code</a>
-        </div>
+        else if (!isAuthenticated)
+        {
+            <p class="auth-message auth-message-info" role="status">Choose a configured provider to complete account setup.</p>
+            <div class="callback-actions">
+                <a class="primary-action callback-action" href="/MicrosoftIdentity/Account/SignIn?redirectUri=/signup-callback">Choose a sign-in provider</a>
+                <a class="secondary-action" href="/invite">Use a different email</a>
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(statusMessage))
+        {
+            <p class="auth-message @(isComplete ? "auth-message-info" : "auth-message-warning")" role="status">@statusMessage</p>
+            @if (isComplete)
+            {
+                <div class="callback-actions"><a class="primary-action callback-action" href="/circles">Go to your circles</a></div>
+            }
+        }
     </section>
 </main>
 
 @code {
-    private string errorMessage = string.Empty;
+    private bool hasPendingOnboarding;
+    private bool isAuthenticated;
+    private bool isComplete;
+    private bool isLoaded;
+    private string statusMessage = string.Empty;
 
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(Navigation.ToAbsoluteUri(Navigation.Uri).Query);
-        if (query.TryGetValue("error", out var error))
+        if (!firstRender)
         {
-            errorMessage = error.ToString().ToLowerInvariant() switch
-            {
-                "invalid" => "That invitation code is not valid. Check the code and try again.",
-                "expired" => "That invitation code has expired. Ask your friend for a new code.",
-                "used" => "That invitation code has already been used.",
-                _ => "We could not validate that invitation code. Try again or request a new code."
-            };
+            return;
         }
+
+        var invitationCode = await JsRuntime.InvokeAsync<string>("sessionStorage.getItem", "onboarding.invitationCode");
+        var recipientEmail = await JsRuntime.InvokeAsync<string>("sessionStorage.getItem", "onboarding.recipientEmail");
+        var verificationToken = await JsRuntime.InvokeAsync<string>("sessionStorage.getItem", "onboarding.verificationToken");
+        var displayName = await JsRuntime.InvokeAsync<string>("sessionStorage.getItem", "onboarding.displayName");
+        hasPendingOnboarding = !string.IsNullOrWhiteSpace(invitationCode) && !string.IsNullOrWhiteSpace(recipientEmail)
+            && !string.IsNullOrWhiteSpace(verificationToken) && !string.IsNullOrWhiteSpace(displayName);
+
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authenticationState.User.Identity?.IsAuthenticated == true;
+        if (hasPendingOnboarding && isAuthenticated)
+        {
+            await CompleteOnboardingAsync(authenticationState.User, invitationCode!, recipientEmail!, verificationToken!, displayName!);
+        }
+
+        isLoaded = true;
+        StateHasChanged();
+    }
+
+    private async Task CompleteOnboardingAsync(ClaimsPrincipal principal, string invitationCode, string recipientEmail, string verificationToken, string displayName)
+    {
+        var service = ServiceProvider.GetService<IAccountIdentityService>();
+        var currentUserResolution = await CurrentUserResolver.ResolveAsync(principal);
+        if (service is null || !currentUserResolution.HasRecognizedIdentity || !TryGetIdentity(principal, out var identity))
+        {
+            statusMessage = currentUserResolution.FailureReason ?? "Account setup is unavailable because the onboarding service is unavailable.";
+            return;
+        }
+
+        try
+        {
+            await service.CompleteOnboardingAsync(invitationCode, recipientEmail, verificationToken, displayName, identity);
+            await JsRuntime.InvokeVoidAsync("sessionStorage.removeItem", "onboarding.invitationCode");
+            await JsRuntime.InvokeVoidAsync("sessionStorage.removeItem", "onboarding.recipientEmail");
+            await JsRuntime.InvokeVoidAsync("sessionStorage.removeItem", "onboarding.verificationToken");
+            await JsRuntime.InvokeVoidAsync("sessionStorage.removeItem", "onboarding.displayName");
+            isComplete = true;
+            statusMessage = "Your account has been created and your invitation has been redeemed.";
+        }
+        catch (ArgumentException)
+        {
+            statusMessage = "Account setup could not be completed with the provided information.";
+        }
+        catch (InvalidOperationException)
+        {
+            statusMessage = "Account setup could not be completed. The invitation or verification code may be invalid, expired, or already used.";
+        }
+    }
+
+    private static bool TryGetIdentity(ClaimsPrincipal principal, out ExternalIdentityInput identity)
+    {
+        var providerClaim = principal.FindFirstValue(ExternalIdentityClaimTypes.Provider);
+        var issuer = principal.FindFirstValue("iss");
+        var subject = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Enum.TryParse(providerClaim, ignoreCase: false, out ExternalIdentityProvider provider)
+            || !Enum.IsDefined(provider)
+            || string.IsNullOrWhiteSpace(issuer)
+            || string.IsNullOrWhiteSpace(subject))
+        {
+            identity = null!;
+            return false;
+        }
+
+        identity = new ExternalIdentityInput(provider, issuer, subject);
+        return true;
     }
 }

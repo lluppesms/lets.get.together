@@ -68,7 +68,7 @@
 								<span class="avatar-badge avatar-accept">@(GetInitials(rsvp.User?.DisplayName))</span>
 								<div class="member-details">
 									<span class="member-name">@(rsvp.User?.DisplayName ?? "Circle Member")</span>
-									<span class="member-email">@(rsvp.User?.EmailAddress ?? string.Empty)</span>
+									<span class="member-email">@(rsvp.User?.PrimaryVerifiedEmailAddress ?? string.Empty)</span>
 								</div>
 							</div>
 							@if (!string.IsNullOrWhiteSpace(rsvp.Notes))
@@ -97,7 +97,7 @@
 								<span class="avatar-badge avatar-maybe">@(GetInitials(rsvp.User?.DisplayName))</span>
 								<div class="member-details">
 									<span class="member-name">@(rsvp.User?.DisplayName ?? "Circle Member")</span>
-									<span class="member-email">@(rsvp.User?.EmailAddress ?? string.Empty)</span>
+									<span class="member-email">@(rsvp.User?.PrimaryVerifiedEmailAddress ?? string.Empty)</span>
 								</div>
 							</div>
 							@if (!string.IsNullOrWhiteSpace(rsvp.Notes))
@@ -126,7 +126,7 @@
 								<span class="avatar-badge avatar-decline">@(GetInitials(rsvp.User?.DisplayName))</span>
 								<div class="member-details">
 									<span class="member-name">@(rsvp.User?.DisplayName ?? "Circle Member")</span>
-									<span class="member-email">@(rsvp.User?.EmailAddress ?? string.Empty)</span>
+									<span class="member-email">@(rsvp.User?.PrimaryVerifiedEmailAddress ?? string.Empty)</span>
 								</div>
 							</div>
 							@if (!string.IsNullOrWhiteSpace(rsvp.Notes))
@@ -155,7 +155,7 @@
 								<span class="avatar-badge avatar-undecided">@(GetInitials(member.User?.DisplayName))</span>
 								<div class="member-details">
 									<span class="member-name">@(member.User?.DisplayName ?? "Circle Member")</span>
-									<span class="member-email">@(member.User?.EmailAddress ?? string.Empty)</span>
+									<span class="member-email">@(member.User?.PrimaryVerifiedEmailAddress ?? string.Empty)</span>
 								</div>
 							</div>
 							<span class="status-tag tag-pending">No RSVP Yet</span>
@@ -203,7 +203,7 @@
 		if (string.IsNullOrWhiteSpace(searchTerm)) return items.ToList();
 		var term = searchTerm.Trim();
 		return items.Where(r => (r.User?.DisplayName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
-								(r.User?.EmailAddress?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+								(r.User?.PrimaryVerifiedEmailAddress?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
 								(!string.IsNullOrEmpty(r.Notes) && r.Notes.Contains(term, StringComparison.OrdinalIgnoreCase))).ToList();
 	}
 
@@ -212,7 +212,7 @@
 		if (string.IsNullOrWhiteSpace(searchTerm)) return members.ToList();
 		var term = searchTerm.Trim();
 		return members.Where(m => (m.User?.DisplayName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
-								   (m.User?.EmailAddress?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+								   (m.User?.PrimaryVerifiedEmailAddress?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
 	}
 
 	private List<RSVP> DisplayAccepted => FilterBySearch(AcceptedRsvps);

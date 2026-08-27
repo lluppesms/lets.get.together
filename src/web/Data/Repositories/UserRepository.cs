@@ -18,25 +18,61 @@ public class UserRepository(GetTogetherDbContext context) : IUserRepository
     private readonly GetTogetherDbContext _context = context;
 
     /// <inheritdoc/>
-    public async Task<User?> FindByExternalIdAsync(string externalId)
+    public async Task<User?> FindByIdentityAsync(ExternalIdentityProvider provider, string issuer, string subject)
     {
-        return await _context.Users!.FirstOrDefaultAsync(u => u.ExternalId == externalId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(issuer);
+        ArgumentException.ThrowIfNullOrWhiteSpace(subject);
+
+        return await _context.Users!
+            .Include(user => user.EmailAliases)
+            .SingleOrDefaultAsync(user => user.Identities.Any(identity =>
+                identity.Provider == provider && identity.Issuer == issuer && identity.Subject == subject));
     }
 
     /// <inheritdoc/>
     public async Task<User?> GetByIdAsync(int userId)
     {
-        return await _context.Users!.FindAsync(userId);
+        return await _context.Users!
+            .Include(user => user.EmailAliases)
+            .SingleOrDefaultAsync(user => user.UserId == userId);
     }
 
     /// <inheritdoc/>
-    public async Task<User> CreateUserAsync(User user)
+    public async Task<User> CreateUserAsync(User user, UserIdentity identity, UserEmailAlias emailAlias)
     {
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(identity);
+        ArgumentNullException.ThrowIfNull(emailAlias);
+
         user.CreatedUtc = DateTime.UtcNow;
         user.IsActive = true;
+        identity.CreatedUtc = DateTime.UtcNow;
+        emailAlias.CreatedUtc = DateTime.UtcNow;
         _context.Users!.Add(user);
+        user.Identities.Add(identity);
+        user.EmailAliases.Add(emailAlias);
         await _context.SaveChangesAsync();
         return user;
+    }
+
+    /// <inheritdoc/>
+    public async Task<UserIdentity> AddIdentityAsync(UserIdentity identity)
+    {
+        ArgumentNullException.ThrowIfNull(identity);
+        identity.CreatedUtc = DateTime.UtcNow;
+        _context.UserIdentities!.Add(identity);
+        await _context.SaveChangesAsync();
+        return identity;
+    }
+
+    /// <inheritdoc/>
+    public async Task<UserEmailAlias> AddEmailAliasAsync(UserEmailAlias emailAlias)
+    {
+        ArgumentNullException.ThrowIfNull(emailAlias);
+        emailAlias.CreatedUtc = DateTime.UtcNow;
+        _context.UserEmailAliases!.Add(emailAlias);
+        await _context.SaveChangesAsync();
+        return emailAlias;
     }
 
     /// <inheritdoc/>

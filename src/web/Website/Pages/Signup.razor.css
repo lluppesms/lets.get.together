@@ -20,8 +20,11 @@
     background: rgba(255, 255, 255, 0.72);
     color: var(--text-primary-light);
     font: inherit;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+}
+
+.invitation-email {
+    letter-spacing: normal;
+    text-transform: none;
 }
 
 .form-control:focus {

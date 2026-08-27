@@ -1,0 +1,260 @@
+@page "/account/security"
+@namespace GetTogether.Web.Pages
+@using Microsoft.AspNetCore.Components.Authorization
+@using GetTogether.Data.Services
+@using GetTogether.Web.Services
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ICurrentUserResolver CurrentUserResolver
+@inject IServiceProvider ServiceProvider
+
+<PageTitle>Account security | Get Together</PageTitle>
+
+<main class="account-security-page" aria-labelledby="account-security-heading">
+    <header class="account-security-heading">
+        <div>
+            <p class="account-kicker">Account</p>
+            <h1 id="account-security-heading">Security and notifications</h1>
+            <p>Provider identities secure your account. Verified email aliases are used for invitations and notifications.</p>
+        </div>
+    </header>
+
+    @if (!isLoaded)
+    {
+        <p class="account-status" role="status">Loading account security details...</p>
+    }
+    else if (!isAuthenticated)
+    {
+        <section class="account-panel" aria-labelledby="account-signin-heading">
+            <h2 id="account-signin-heading">Sign in to manage your account</h2>
+            <p>Account security settings are available after you sign in with a supported provider.</p>
+            <a class="account-action account-action-primary" href="/login">Log in</a>
+        </section>
+    }
+    else if (!string.IsNullOrWhiteSpace(failureReason))
+    {
+        <section class="account-panel" aria-labelledby="account-unavailable-heading">
+            <h2 id="account-unavailable-heading">Account details unavailable</h2>
+            <p role="status">@failureReason</p>
+        </section>
+    }
+    else
+    {
+        <section class="account-panel" aria-labelledby="identities-heading" data-testid="linked-identities-panel">
+            <div class="account-panel-heading">
+                <div>
+                    <h2 id="identities-heading">Linked identities</h2>
+                    <p>At least one provider must remain linked to your account.</p>
+                </div>
+                <button class="account-action" type="button" disabled aria-describedby="identity-service-status" data-testid="link-provider-button">Link provider</button>
+            </div>
+            <p id="identity-service-status" class="account-service-note" role="status">Linked-identity records are not available from the current-user read model. Linking and unlinking also require a provider identity input and recent-authentication proof.</p>
+            <ul class="account-list" aria-label="Linked provider identities">
+                <li><span>@currentProvider</span><span class="account-value">Current sign-in identity</span><button type="button" class="account-text-action" disabled>Unlink</button></li>
+            </ul>
+        </section>
+
+        <section class="account-panel" aria-labelledby="aliases-heading" data-testid="email-aliases-panel">
+            <div class="account-panel-heading">
+                <div>
+                    <h2 id="aliases-heading">Email aliases</h2>
+                    <p>Only verified aliases can receive invitations and notifications.</p>
+                </div>
+                <button class="account-action" type="button" @onclick="ShowAddAliasForm" disabled="@isBusy" data-testid="add-email-alias-button">Add email</button>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(statusMessage))
+            {
+                <p class="account-service-note" role="status">@statusMessage</p>
+            }
+            @if (showAddAliasForm)
+            {
+                <EditForm Model="addAliasForm" OnValidSubmit="AddAliasAsync" class="account-form">
+                    <DataAnnotationsValidator />
+                    <label for="new-email-alias">Email address</label>
+                    <InputText id="new-email-alias" class="account-input" @bind-Value="addAliasForm.EmailAddress" autocomplete="email" />
+                    <ValidationMessage For="@(() => addAliasForm.EmailAddress)" />
+                    <button class="account-action account-action-primary" type="submit" disabled="@isBusy">@(isBusy ? "Requesting..." : "Request verification")</button>
+                </EditForm>
+            }
+            @if (currentUser.EmailAliases.Count > 0)
+            {
+                <ul class="account-list" aria-label="Email aliases">
+                    @foreach (var alias in currentUser.EmailAliases)
+                    {
+                        <li>
+                            <span>@alias.EmailAddress</span>
+                            <span class="account-value">@(alias.IsPrimary ? "Primary" : alias.IsVerified ? "Verified" : "Verification pending")</span>
+                            <div class="account-item-actions">
+                                @if (alias.IsVerified)
+                                {
+                                    <button type="button" class="account-text-action" @onclick="() => DesignateAliasAsync(alias.UserEmailAliasId)" disabled="@(isBusy || alias.IsPrimary)">Set primary</button>
+                                }
+                                else
+                                {
+                                    <label class="visually-hidden" for="verification-token-@alias.UserEmailAliasId">Verification code for @alias.EmailAddress</label>
+                                    <input id="verification-token-@alias.UserEmailAliasId" class="account-input account-token-input" @bind="verificationTokens[alias.UserEmailAliasId]" autocomplete="one-time-code" />
+                                    <button type="button" class="account-text-action" @onclick="() => VerifyAliasAsync(alias.UserEmailAliasId)" disabled="@isBusy">Verify</button>
+                                }
+                                <button type="button" class="account-text-action" @onclick="() => RemoveAliasAsync(alias.UserEmailAliasId)" disabled="@isBusy">Remove</button>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="account-empty">No email aliases are available to display yet.</p>
+            }
+        </section>
+    }
+</main>
+
+@code {
+    private readonly AliasForm addAliasForm = new();
+    private readonly Dictionary<int, string> verificationTokens = [];
+    private GetTogether.Data.Models.User currentUser = new();
+    private string failureReason = string.Empty;
+    private string statusMessage = string.Empty;
+    private string currentProvider = "Current authenticated provider";
+    private bool isAuthenticated;
+    private bool isLoaded;
+    private bool isBusy;
+    private bool showAddAliasForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authenticationState.User.Identity?.IsAuthenticated == true;
+        currentProvider = GetProviderName(authenticationState.User.Identity?.AuthenticationType);
+
+        if (isAuthenticated)
+        {
+            var resolution = await CurrentUserResolver.ResolveAsync(authenticationState.User);
+            currentUser = resolution.User;
+            failureReason = resolution.FailureReason ?? (currentUser is null ? "No application account is associated with the current provider identity." : string.Empty);
+        }
+
+        isLoaded = true;
+    }
+
+    private static string GetProviderName(string authenticationType)
+    {
+        return authenticationType switch
+        {
+            "OpenIdConnect" => "Microsoft Entra ID",
+            "Google" => "Google",
+            "Facebook" => "Facebook",
+            _ => "Current authenticated provider"
+        };
+    }
+
+    private void ShowAddAliasForm()
+    {
+        showAddAliasForm = true;
+        statusMessage = string.Empty;
+    }
+
+    private async Task AddAliasAsync()
+    {
+        var service = GetAccountIdentityService();
+        if (service is null || currentUser is null)
+        {
+            return;
+        }
+
+        await ExecuteAliasOperationAsync(async () =>
+        {
+            await service.AddEmailAliasAsync(currentUser.UserId, addAliasForm.EmailAddress);
+            showAddAliasForm = false;
+            addAliasForm.EmailAddress = string.Empty;
+            statusMessage = "A verification challenge was created. Email delivery is not configured in this application, so no verification code was delivered.";
+        });
+    }
+
+    private async Task VerifyAliasAsync(int aliasId)
+    {
+        var service = GetAccountIdentityService();
+        if (service is null || currentUser is null || !verificationTokens.TryGetValue(aliasId, out var token) || string.IsNullOrWhiteSpace(token))
+        {
+            statusMessage = "Enter the verification code for this email address.";
+            return;
+        }
+
+        await ExecuteAliasOperationAsync(async () =>
+        {
+            await service.VerifyEmailAliasAsync(currentUser.UserId, aliasId, token);
+            verificationTokens.Remove(aliasId);
+            statusMessage = "The email address has been verified.";
+        });
+    }
+
+    private async Task DesignateAliasAsync(int aliasId)
+    {
+        var service = GetAccountIdentityService();
+        if (service is null || currentUser is null)
+        {
+            return;
+        }
+
+        await ExecuteAliasOperationAsync(async () =>
+        {
+            await service.DesignateEmailAliasAsync(currentUser.UserId, aliasId);
+            statusMessage = "The primary email address has been updated.";
+        });
+    }
+
+    private async Task RemoveAliasAsync(int aliasId)
+    {
+        var service = GetAccountIdentityService();
+        if (service is null || currentUser is null)
+        {
+            return;
+        }
+
+        await ExecuteAliasOperationAsync(async () =>
+        {
+            await service.RemoveEmailAliasAsync(currentUser.UserId, aliasId);
+            statusMessage = "The email address has been removed.";
+        });
+    }
+
+    private IAccountIdentityService GetAccountIdentityService()
+    {
+        var service = ServiceProvider.GetService<IAccountIdentityService>();
+        if (service is null)
+        {
+            statusMessage = "Email alias management is unavailable because the account identity service is not configured.";
+        }
+
+        return service;
+    }
+
+    private async Task ExecuteAliasOperationAsync(Func<Task> operation)
+    {
+        isBusy = true;
+        try
+        {
+            await operation();
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            currentUser = (await CurrentUserResolver.ResolveAsync(authenticationState.User)).User;
+        }
+        catch (ArgumentException)
+        {
+            statusMessage = "Enter valid email address and verification code values.";
+        }
+        catch (InvalidOperationException)
+        {
+            statusMessage = "The requested email alias action could not be completed.";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private sealed class AliasForm
+    {
+        [Required(ErrorMessage = "Enter an email address.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        public string EmailAddress { get; set; } = string.Empty;
+    }
+}

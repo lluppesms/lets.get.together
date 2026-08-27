@@ -1,0 +1,94 @@
+@page "/invite/verify"
+@namespace GetTogether.Web.Pages
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager Navigation
+@inject IJSRuntime JsRuntime
+@inject IConfiguration Configuration
+
+<PageTitle>Confirm your invitation | Get Together</PageTitle>
+
+<main class="auth-page invitation-verification-page" aria-labelledby="verification-heading">
+    <section class="auth-panel">
+        <div class="auth-kicker">Mailbox verification</div>
+        <h1 id="verification-heading">Confirm your email.</h1>
+        <p class="auth-intro">Enter the single-use verification code for your invitation. This code proves you control the invitation mailbox; it is not a sign-in credential.</p>
+
+        @if (!isLoaded)
+        {
+            <p class="auth-message auth-message-info" role="status">Loading invitation verification...</p>
+        }
+        else if (!hasInvitation)
+        {
+            <p class="auth-message auth-message-warning" role="status" data-testid="invitation-verification-unavailable">Your invitation details are no longer available. Start again to request a new verification code.</p>
+        }
+        else if (!EmailDeliveryConfigured)
+        {
+            <p class="auth-message auth-message-warning" role="status" data-testid="invitation-email-delivery-unavailable">A verification challenge was created, but no code was delivered because email delivery is not configured. Ask the site owner to configure email delivery before continuing.</p>
+        }
+        else
+        {
+        <EditForm Model="form" OnValidSubmit="ContinueToProviderAsync">
+            <DataAnnotationsValidator />
+            <div class="form-field">
+                <label for="display-name">Display name</label>
+                <InputText id="display-name" class="form-control" @bind-Value="form.DisplayName" autocomplete="name" aria-describedby="display-name-validation" data-testid="onboarding-display-name" />
+                <ValidationMessage id="display-name-validation" For="@(() => form.DisplayName)" />
+            </div>
+            <div class="form-field">
+                <label for="verification-code">Verification code</label>
+                <InputText id="verification-code" class="form-control verification-code" @bind-Value="form.Code" autocomplete="one-time-code" inputmode="numeric" aria-describedby="verification-help verification-validation" data-testid="invitation-verification-code" />
+                <div id="verification-help" class="form-help">The code is issued by Get Together and can only be used once.</div>
+                <ValidationMessage id="verification-validation" For="@(() => form.Code)" />
+            </div>
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <p class="auth-message auth-message-warning" role="status" data-testid="invitation-verification-unavailable">@errorMessage</p>
+            }
+            <button class="primary-action" type="submit" data-testid="invitation-verification-submit">Continue to sign in</button>
+        </EditForm>
+        }
+
+        <p class="auth-secondary-action"><a href="/invite">Use a different email</a></p>
+    </section>
+</main>
+
+@code {
+    private readonly VerificationForm form = new();
+    private string errorMessage = string.Empty;
+    private bool hasInvitation;
+    private bool isLoaded;
+
+    private bool EmailDeliveryConfigured => !string.IsNullOrWhiteSpace(Configuration["SendGrid:ApiKey"])
+        && !string.IsNullOrWhiteSpace(Configuration["SendGrid:FromEmail"]);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        hasInvitation = !string.IsNullOrWhiteSpace(await JsRuntime.InvokeAsync<string>("sessionStorage.getItem", "onboarding.invitationCode"))
+            && !string.IsNullOrWhiteSpace(await JsRuntime.InvokeAsync<string>("sessionStorage.getItem", "onboarding.recipientEmail"));
+        isLoaded = true;
+        StateHasChanged();
+    }
+
+    private async Task ContinueToProviderAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("sessionStorage.setItem", "onboarding.verificationToken", form.Code.Trim());
+        await JsRuntime.InvokeVoidAsync("sessionStorage.setItem", "onboarding.displayName", form.DisplayName.Trim());
+        Navigation.NavigateTo("/invite/confirmed");
+    }
+
+    private sealed class VerificationForm
+    {
+        [Required(ErrorMessage = "Enter the name to display to your circle.")]
+        [StringLength(200, ErrorMessage = "Use 200 characters or fewer.")]
+        public string DisplayName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Enter the verification code from your invitation email.")]
+        [StringLength(64, MinimumLength = 4, ErrorMessage = "Enter a valid verification code.")]
+        public string Code { get; set; } = string.Empty;
+    }
+}

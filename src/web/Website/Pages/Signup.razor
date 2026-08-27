@@ -1,29 +1,39 @@
 @page "/signup"
+@page "/invite"
 @namespace GetTogether.Web.Pages
 @using System.ComponentModel.DataAnnotations
+@using GetTogether.Data.Services
 @inject NavigationManager Navigation
+@inject IServiceProvider ServiceProvider
+@inject IJSRuntime JsRuntime
 
-<PageTitle>Join a circle | Get Together</PageTitle>
+<PageTitle>Verify your invitation | Get Together</PageTitle>
 
 <main class="auth-page signup-page" aria-labelledby="signup-heading">
     <section class="auth-panel">
         <div class="auth-kicker">Private by design</div>
-        <h1 id="signup-heading">Join your circle.</h1>
-        <p class="auth-intro">Enter the one-time invitation code from a friend. You will choose a sign-in provider next.</p>
+        <h1 id="signup-heading">Verify your invitation.</h1>
+        <p class="auth-intro">Enter the invitation code and email address where you received it. We will verify mailbox control before you choose a sign-in provider.</p>
 
-        <EditForm Model="form" OnValidSubmit="ContinueToCallback">
+        <EditForm Model="form" OnValidSubmit="BeginVerificationAsync">
             <DataAnnotationsValidator />
             <div class="form-field">
-                <label for="invite-code">Invitation code</label>
-                <InputText id="invite-code" class="form-control" @bind-Value="form.InvitationCode" autocomplete="one-time-code" aria-describedby="invite-help invite-validation" />
-                <div id="invite-help" class="form-help">Codes are single-use and tied to one circle.</div>
-                <ValidationMessage id="invite-validation" For="@(() => form.InvitationCode)" />
+                <label for="invitation-code">Invitation code</label>
+                <InputText id="invitation-code" class="form-control invitation-code" @bind-Value="form.InvitationCode" autocomplete="off" aria-describedby="invitation-code-help invitation-code-validation" data-testid="invitation-code-input" />
+                <div id="invitation-code-help" class="form-help">Use the code included in your invitation.</div>
+                <ValidationMessage id="invitation-code-validation" For="@(() => form.InvitationCode)" />
+            </div>
+            <div class="form-field">
+                <label for="invitation-email">Invitation email</label>
+                <InputText id="invitation-email" class="form-control invitation-email" @bind-Value="form.EmailAddress" autocomplete="email" inputmode="email" aria-describedby="invite-help invite-validation" data-testid="invitation-email-input" />
+                <div id="invite-help" class="form-help">Use the address that received the invitation. It will only be used after verification for invitations and notifications.</div>
+                <ValidationMessage id="invite-validation" For="@(() => form.EmailAddress)" />
             </div>
             @if (!string.IsNullOrWhiteSpace(errorMessage))
             {
                 <p class="auth-message auth-message-error" role="alert">@errorMessage</p>
             }
-            <button class="primary-action" type="submit">Continue</button>
+            <button class="primary-action" type="submit" disabled="@isBusy" data-testid="invitation-email-continue">@(isBusy ? "Requesting code..." : "Continue to verification")</button>
         </EditForm>
 
         <p class="auth-secondary-action">Already have an account? <a href="/login">Log in</a></p>
@@ -33,17 +43,48 @@
 @code {
     private readonly SignupForm form = new();
     private string errorMessage = string.Empty;
+    private bool isBusy;
 
-    private void ContinueToCallback()
+    private async Task BeginVerificationAsync()
     {
-        errorMessage = null;
-        Navigation.NavigateTo($"/signup-callback?invite={Uri.EscapeDataString(form.InvitationCode.Trim())}");
+        errorMessage = string.Empty;
+        var accountIdentityService = ServiceProvider.GetService<IAccountIdentityService>();
+        if (accountIdentityService is null)
+        {
+            errorMessage = "Invitation verification is unavailable because the account onboarding service is not configured.";
+            return;
+        }
+
+        isBusy = true;
+        try
+        {
+            await accountIdentityService.BeginInvitationVerificationAsync(form.InvitationCode, form.EmailAddress);
+            await JsRuntime.InvokeVoidAsync("sessionStorage.setItem", "onboarding.invitationCode", form.InvitationCode.Trim());
+            await JsRuntime.InvokeVoidAsync("sessionStorage.setItem", "onboarding.recipientEmail", form.EmailAddress.Trim());
+            Navigation.NavigateTo("/invite/verify");
+        }
+        catch (ArgumentException)
+        {
+            errorMessage = "Enter a valid invitation code and email address.";
+        }
+        catch (InvalidOperationException)
+        {
+            errorMessage = "Unable to verify this invitation. Check the invitation code and recipient email address.";
+        }
+        finally
+        {
+            isBusy = false;
+        }
     }
 
     private sealed class SignupForm
     {
-        [Required(ErrorMessage = "Enter your invitation code.")]
-        [StringLength(64, MinimumLength = 4, ErrorMessage = "Invitation codes must be between 4 and 64 characters.")]
+        [Required(ErrorMessage = "Enter the invitation code you received.")]
+        [StringLength(200, MinimumLength = 4, ErrorMessage = "Enter a valid invitation code.")]
         public string InvitationCode { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Enter the email address that received your invitation.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        public string EmailAddress { get; set; } = string.Empty;
     }
 }

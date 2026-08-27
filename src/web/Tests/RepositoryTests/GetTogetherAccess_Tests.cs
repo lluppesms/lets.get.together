@@ -107,7 +107,7 @@ public class GetTogetherAccess_Tests
     {
         await using var context = CreateContext();
         SeedCircle(context, circleId: 1, creatorUserId: 10);
-        context.Users!.Add(new User { UserId = 20, ExternalId = "user-20", DisplayName = "User 20" });
+        context.Users!.Add(new User { UserId = 20, DisplayName = "User 20" });
         context.CircleMemberships!.Add(new CircleMembership { CircleId = 1, UserId = 20, LeftUtc = DateTime.UtcNow });
         await context.SaveChangesAsync();
         var repository = new CircleRepository(context);
@@ -124,7 +124,7 @@ public class GetTogetherAccess_Tests
     {
         await using var context = CreateContext();
         SeedCircle(context, circleId: 1, creatorUserId: 10);
-        context.Users!.Add(new User { UserId = 20, ExternalId = "user-20", DisplayName = "User 20" });
+        context.Users!.Add(new User { UserId = 20, DisplayName = "User 20" });
         context.CircleMemberships!.Add(new CircleMembership { CircleId = 1, UserId = 20 });
         context.Events!.Add(new Event { EventId = 1, CircleId = 1, CreatedByUserId = 10, Title = "Event", StartsUtc = DateTime.UtcNow });
         context.Rsvps!.Add(new RSVP { EventId = 1, CircleId = 1, UserId = 20 });
@@ -142,7 +142,7 @@ public class GetTogetherAccess_Tests
     {
         await using var context = CreateContext();
         SeedCircle(context, circleId: 1, creatorUserId: 10);
-        context.Users!.Add(new User { UserId = 20, ExternalId = "user-20", DisplayName = "User 20" });
+        context.Users!.Add(new User { UserId = 20, DisplayName = "User 20" });
         context.CircleMemberships!.Add(new CircleMembership { CircleId = 1, UserId = 20 });
         await context.SaveChangesAsync();
         var repository = new InvitationCodeSQLRepository(context);
@@ -295,18 +295,18 @@ public class GetTogetherAccess_Tests
     {
         await using var context = CreateContext();
         var repository = new UserRepository(context);
-        var existingUser = await repository.CreateUserAsync(new User
-        {
-            ExternalId = "existing-provider-subject",
-            DisplayName = "Existing User",
-            EmailAddress = "existing@example.test"
-        });
+        const string issuer = "https://login.example.test";
+        const string subject = "existing-provider-subject";
+        var existingUser = await repository.CreateUserAsync(
+            new User { DisplayName = "Existing User" },
+            new UserIdentity { Provider = ExternalIdentityProvider.Entra, Issuer = issuer, Subject = subject },
+            new UserEmailAlias { EmailAddress = "existing@example.test", NormalizedEmailAddress = "EXISTING@EXAMPLE.TEST", IsVerified = true });
 
-        var resolvedUser = await repository.FindByExternalIdAsync(existingUser.ExternalId);
+        var resolvedUser = await repository.FindByIdentityAsync(ExternalIdentityProvider.Entra, issuer, subject);
 
         Assert.NotNull(resolvedUser);
         Assert.Equal(existingUser.UserId, resolvedUser!.UserId);
-        Assert.Equal(existingUser.EmailAddress, resolvedUser.EmailAddress);
+        Assert.Equal("existing@example.test", resolvedUser.PrimaryVerifiedEmailAddress);
     }
 
     private static GetTogetherDbContext CreateContext()
@@ -339,9 +339,9 @@ public class GetTogetherAccess_Tests
         context.Users!.Add(new User
         {
             UserId = userId,
-            ExternalId = $"user-{userId}",
             DisplayName = displayName ?? $"User {userId}",
-            EmailAddress = $"user{userId}@example.test"
+            Identities = [new UserIdentity { Provider = ExternalIdentityProvider.Entra, Issuer = "https://login.example.test", Subject = $"user-{userId}" }],
+            EmailAliases = [new UserEmailAlias { EmailAddress = $"user{userId}@example.test", NormalizedEmailAddress = $"USER{userId}@EXAMPLE.TEST", IsVerified = true }]
         });
     }
 }

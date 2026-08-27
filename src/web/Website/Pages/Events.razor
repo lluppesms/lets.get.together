@@ -8,6 +8,7 @@
 @using GetTogether.Web.Components
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IServiceProvider Services
+@inject ICurrentUserResolver CurrentUserResolver
 @inject NavigationManager Navigation
 
 <PageTitle>Events | Get Together</PageTitle>
@@ -267,18 +268,18 @@
 			return;
 		}
 
-		var externalId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
-		if (string.IsNullOrWhiteSpace(externalId) || userRepository is null)
+		if (userRepository is null)
 		{
 			errorMessage = "We could not resolve your application account. Please sign in again.";
 			isLoading = false;
 			return;
 		}
 
-		currentUser = await userRepository.FindByExternalIdAsync(externalId);
+		var resolution = await CurrentUserResolver.ResolveAsync(authState.User);
+		currentUser = resolution.User;
 		if (currentUser is null)
 		{
-			errorMessage = "Application user record not found.";
+			errorMessage = resolution.FailureReason ?? "Application user record not found.";
 			isLoading = false;
 			return;
 		}

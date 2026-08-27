@@ -16,9 +16,9 @@ namespace GetTogether.Data.Repositories;
 public interface IUserRepository
 {
     /// <summary>
-    /// Finds a user by their external identity provider subject identifier, or returns null.
+    /// Finds a user by their provider-qualified external identity, or returns null.
     /// </summary>
-    Task<User?> FindByExternalIdAsync(string externalId);
+    Task<User?> FindByIdentityAsync(ExternalIdentityProvider provider, string issuer, string subject);
 
     /// <summary>
     /// Finds a user by their primary key, or returns null.
@@ -26,13 +26,22 @@ public interface IUserRepository
     Task<User?> GetByIdAsync(int userId);
 
     /// <summary>
-    /// Creates a new user record. Called during first-time onboarding after invite redemption.
-    /// Returns the persisted user.
+    /// Creates a user with their first linked provider identity and email alias.
     /// </summary>
-    Task<User> CreateUserAsync(User user);
+    Task<User> CreateUserAsync(User user, UserIdentity identity, UserEmailAlias emailAlias);
 
     /// <summary>
-    /// Updates display name or email address for the specified user.
+    /// Links a provider identity to an existing user.
+    /// </summary>
+    Task<UserIdentity> AddIdentityAsync(UserIdentity identity);
+
+    /// <summary>
+    /// Adds an email alias to an existing user.
+    /// </summary>
+    Task<UserEmailAlias> AddEmailAliasAsync(UserEmailAlias emailAlias);
+
+    /// <summary>
+    /// Updates the user profile fields.
     /// </summary>
     Task UpdateUserAsync(User user);
 }

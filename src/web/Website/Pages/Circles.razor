@@ -7,6 +7,7 @@
 @using GetTogether.Data.Repositories
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IServiceProvider Services
+@inject ICurrentUserResolver CurrentUserResolver
 @inject NavigationManager Navigation
 
 <PageTitle>Circles | Get Together</PageTitle>
@@ -131,7 +132,7 @@
 								<ul class="member-list">
 									@foreach (var member in members)
 									{
-										<li><span class="member-name">@(member.User?.DisplayName ?? "Member")</span><span class="member-email">@(member.User?.EmailAddress ?? "Email unavailable")</span></li>
+										<li><span class="member-name">@(member.User?.DisplayName ?? "Member")</span><span class="member-email">@(member.User?.PrimaryVerifiedEmailAddress ?? "Email unavailable")</span></li>
 									}
 								</ul>
 							}
@@ -224,8 +225,7 @@
 			return;
 		}
 
-		var externalId = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
-		if (string.IsNullOrWhiteSpace(externalId) || userRepository is null)
+		if (userRepository is null)
 		{
 			errorMessage = "We could not resolve your application account. Please sign in again or contact the site owner.";
 			isLoading = false;
@@ -234,10 +234,11 @@
 
 		try
 		{
-			currentUser = await userRepository.FindByExternalIdAsync(externalId);
+			var resolution = await CurrentUserResolver.ResolveAsync(authenticationState.User);
+			currentUser = resolution.User;
 			if (currentUser is null)
 			{
-				errorMessage = "Your signed-in account is not registered for Get Together.";
+				errorMessage = resolution.FailureReason ?? "Your signed-in account is not registered for Get Together.";
 			}
 			else if (circleRepository is not null)
 			{

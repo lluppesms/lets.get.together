@@ -26,6 +26,9 @@
   <ItemGroup>
     <Build Include="Schemas\Meetings.sql" />
     <Build Include="Meetings\Tables\User.sql" />
+    <Build Include="Meetings\Tables\UserIdentity.sql" />
+    <Build Include="Meetings\Tables\UserEmailAlias.sql" />
+    <Build Include="Meetings\Tables\EmailVerificationToken.sql" />
     <Build Include="Meetings\Tables\Circle.sql" />
     <Build Include="Meetings\Tables\CircleMembership.sql" />
     <Build Include="Meetings\Tables\InvitationCode.sql" />

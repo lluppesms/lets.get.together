@@ -6,8 +6,15 @@ using GetTogether.Data.Models;
 using GetTogether.Data.Repositories;
 using GetTogether.Data.Services;
 using GetTogether.Web.Repositories;
+using GetTogether.Web.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.OpenApi;
 using GetTogether.Web.Helpers;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,10 +86,9 @@ builder.Services.AddSingleton<AppSettings>(settings);
 // ----- Configure Database Context and Repositories -----------------------------------------------------------------
 var configuredDataSource = appSettings["DataSource"];
 var connectionString = appSettings["DefaultConnection"];
-var useSqlDataSource = true;
-//var useSqlDataSource = string.Equals(configuredDataSource, "SQL", StringComparison.OrdinalIgnoreCase)
-//    || string.Equals(configuredDataSource, "SQLDB", StringComparison.OrdinalIgnoreCase)
-//    || string.Equals(configuredDataSource, "DATABASE", StringComparison.OrdinalIgnoreCase);
+var useSqlDataSource = string.Equals(configuredDataSource, "SQL", StringComparison.OrdinalIgnoreCase)
+    || string.Equals(configuredDataSource, "SQLDB", StringComparison.OrdinalIgnoreCase)
+    || string.Equals(configuredDataSource, "DATABASE", StringComparison.OrdinalIgnoreCase);
 
 if (useSqlDataSource && !string.IsNullOrWhiteSpace(connectionString))
 {
@@ -103,6 +109,28 @@ if (useSqlDataSource && !string.IsNullOrWhiteSpace(connectionString))
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IRecurrenceService, RecurrenceService>();
     builder.Services.AddScoped<ICalendarAggregationService, CalendarAggregationService>();
+    builder.Services.AddScoped<IAccountIdentityService, AccountIdentityService>();
+}
+
+var sendGridApiKey = builder.Configuration["SendGrid:ApiKey"];
+var sendGridFromEmail = builder.Configuration["SendGrid:FromEmail"];
+if (!string.IsNullOrWhiteSpace(sendGridApiKey) && !string.IsNullOrWhiteSpace(sendGridFromEmail))
+{
+    builder.Services.AddHttpClient<SendGridVerificationEmailSender>();
+    builder.Services.AddScoped<IVerificationEmailSender, SendGridVerificationEmailSender>();
+}
+else
+{
+    builder.Services.AddScoped<IVerificationEmailSender, NoOpVerificationEmailSender>();
+}
+
+if (useSqlDataSource && !string.IsNullOrWhiteSpace(connectionString))
+{
+    builder.Services.AddScoped<ICurrentUserResolver, CurrentUserResolver>();
+}
+else
+{
+    builder.Services.AddScoped<ICurrentUserResolver, UnavailableCurrentUserResolver>();
 }
 
 // ----- Notification service (SendGrid) ---------------------------------------------------------------
@@ -115,15 +143,65 @@ builder.Services.AddScoped<GetTogether.Web.Repositories.ThemeService>();
 
 // ----- Configure Authentication ---------------------------------------------------------------------
 var authSettings = builder.Configuration.GetSection("AzureAD");
-var enableAuth = !string.IsNullOrEmpty(authSettings["TenantId"]);
+var entraEnabled = !string.IsNullOrWhiteSpace(authSettings["TenantId"]);
+var googleEnabled = HasConfiguration("Authentication:Google:ClientId", "Authentication:Google:ClientSecret");
+var facebookEnabled = HasConfiguration("Authentication:Facebook:AppId", "Authentication:Facebook:AppSecret");
+var enableAuth = entraEnabled || googleEnabled || facebookEnabled;
 
 if (enableAuth)
 {
-    // ----- Configure Authentication ---------------------------------------------------------------------
-    builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-      .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAD"));
-    builder.Services.AddControllersWithViews()
-      .AddMicrosoftIdentityUI();
+    var defaultAuthenticationScheme = entraEnabled
+        ? OpenIdConnectDefaults.AuthenticationScheme
+        : CookieAuthenticationDefaults.AuthenticationScheme;
+    var authentication = builder.Services.AddAuthentication(defaultAuthenticationScheme);
+    if (entraEnabled)
+    {
+        authentication.AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAD"));
+        builder.Services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
+        {
+            options.Events.OnTokenValidated = context => AddIdentityClaims(
+                context.Principal?.Identity as ClaimsIdentity,
+                ExternalIdentityProvider.Entra,
+                null);
+        });
+        builder.Services.AddControllersWithViews()
+          .AddMicrosoftIdentityUI();
+    }
+    else
+    {
+        authentication.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+    }
+
+    if (googleEnabled)
+    {
+        authentication.AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+        {
+            options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
+            options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+            options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "sub");
+            options.Events.OnCreatingTicket = context => AddIdentityClaims(
+                context.Identity,
+                ExternalIdentityProvider.Google,
+                "https://accounts.google.com");
+        });
+    }
+
+    if (facebookEnabled)
+    {
+        authentication.AddFacebook(FacebookDefaults.AuthenticationScheme, options =>
+        {
+            options.AppId = builder.Configuration["Authentication:Facebook:AppId"]!;
+            options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"]!;
+            options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+            options.Events.OnCreatingTicket = context => AddIdentityClaims(
+                context.Identity,
+                ExternalIdentityProvider.Facebook,
+                "https://www.facebook.com");
+        });
+    }
+
     // ----- Configure Authorization ----------------------------------------------------------------------
     // Note: No FallbackPolicy is set, so pages are accessible anonymously by default.
     // Use [Authorize] attribute on pages/components that require authentication.
@@ -233,7 +311,42 @@ System.Globalization.CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
 System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 app.MapControllers();
+if (googleEnabled)
+{
+    app.MapGet("/login/google", (HttpContext context) => Results.Challenge(
+        new AuthenticationProperties { RedirectUri = "/" },
+        [GoogleDefaults.AuthenticationScheme]));
+}
+
+if (facebookEnabled)
+{
+    app.MapGet("/login/facebook", (HttpContext context) => Results.Challenge(
+        new AuthenticationProperties { RedirectUri = "/" },
+        [FacebookDefaults.AuthenticationScheme]));
+}
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
+
+bool HasConfiguration(params string[] keys) => keys.All(key => !string.IsNullOrWhiteSpace(builder.Configuration[key]));
+
+static Task AddIdentityClaims(ClaimsIdentity? identity, ExternalIdentityProvider provider, string? issuer)
+{
+    if (identity is null)
+    {
+        return Task.CompletedTask;
+    }
+
+    if (!string.IsNullOrWhiteSpace(issuer) && identity.FindFirst("iss") is null)
+    {
+        identity.AddClaim(new Claim("iss", issuer));
+    }
+
+    if (identity.FindFirst(ExternalIdentityClaimTypes.Provider) is null)
+    {
+        identity.AddClaim(new Claim(ExternalIdentityClaimTypes.Provider, provider.ToString()));
+    }
+
+    return Task.CompletedTask;
+}

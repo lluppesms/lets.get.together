@@ -26,6 +26,21 @@ public class GetTogetherDbContext(DbContextOptions<GetTogetherDbContext> options
     public DbSet<User>? Users { get; set; }
 
     /// <summary>
+    /// Gets or sets the external provider identities linked to application users.
+    /// </summary>
+    public DbSet<UserIdentity>? UserIdentities { get; set; }
+
+    /// <summary>
+    /// Gets or sets the email aliases linked to application users.
+    /// </summary>
+    public DbSet<UserEmailAlias>? UserEmailAliases { get; set; }
+
+    /// <summary>
+    /// Gets or sets the single-use mailbox verification tokens.
+    /// </summary>
+    public DbSet<EmailVerificationToken>? EmailVerificationTokens { get; set; }
+
+    /// <summary>
     /// Gets or sets the set of circles in the Get Together domain.
     /// </summary>
     public DbSet<Circle>? Circles { get; set; }
@@ -63,13 +78,38 @@ public class GetTogetherDbContext(DbContextOptions<GetTogetherDbContext> options
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.ExternalId)
+        modelBuilder.Entity<UserIdentity>()
+            .HasIndex(identity => new { identity.Provider, identity.Issuer, identity.Subject })
             .IsUnique();
 
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.EmailAddress)
+        modelBuilder.Entity<UserIdentity>()
+            .HasOne(identity => identity.User)
+            .WithMany(user => user.Identities)
+            .HasForeignKey(identity => identity.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserEmailAlias>()
+            .HasIndex(alias => alias.NormalizedEmailAddress)
+            .IsUnique()
+            .HasFilter("[IsVerified] = 1");
+
+        modelBuilder.Entity<UserEmailAlias>()
+            .HasIndex(alias => alias.UserId)
+            .IsUnique()
+            .HasFilter("[IsPrimary] = 1");
+
+        modelBuilder.Entity<UserEmailAlias>()
+            .HasOne(alias => alias.User)
+            .WithMany(user => user.EmailAliases)
+            .HasForeignKey(alias => alias.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EmailVerificationToken>()
+            .HasIndex(token => token.TokenHash)
             .IsUnique();
+
+        modelBuilder.Entity<EmailVerificationToken>()
+            .HasIndex(token => new { token.InvitationCodeId, token.UsedUtc });
 
         modelBuilder.Entity<Circle>()
             .HasOne(c => c.CreatedByUser)

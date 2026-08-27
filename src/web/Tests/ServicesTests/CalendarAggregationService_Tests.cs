@@ -31,9 +31,9 @@ public class CalendarAggregationService_Tests
         context.Users!.Add(new User
         {
             UserId = userId,
-            ExternalId = $"ext_{userId}",
             DisplayName = name,
-            EmailAddress = $"{name.ToLowerInvariant()}@example.com"
+            Identities = [new UserIdentity { Provider = ExternalIdentityProvider.Entra, Issuer = "https://login.example.test", Subject = $"ext_{userId}" }],
+            EmailAliases = [new UserEmailAlias { EmailAddress = $"{name.ToLowerInvariant()}@example.com", NormalizedEmailAddress = $"{name.ToUpperInvariant()}@EXAMPLE.COM", IsVerified = true }]
         });
         context.SaveChanges();
     }

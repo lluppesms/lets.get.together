@@ -22,25 +22,11 @@ public class User
     public int UserId { get; set; }
 
     /// <summary>
-    /// Gets or sets the external identity provider subject identifier.
-    /// </summary>
-    [Required]
-    [StringLength(200)]
-    public string ExternalId { get; set; } = string.Empty;
-
-    /// <summary>
     /// Gets or sets the display name for the user.
     /// </summary>
     [Required]
     [StringLength(200)]
     public string DisplayName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the email address for the user.
-    /// </summary>
-    [Required]
-    [StringLength(320)]
-    public string EmailAddress { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets a value indicating whether the user is active.
@@ -51,6 +37,27 @@ public class User
     /// Gets or sets the UTC date and time when the user was created.
     /// </summary>
     public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets the first verified email alias available for display.
+    /// </summary>
+    [NotMapped]
+    public string? PrimaryVerifiedEmailAddress => EmailAliases
+        .Where(alias => alias.IsVerified)
+        .OrderByDescending(alias => alias.IsPrimary)
+        .ThenBy(alias => alias.CreatedUtc)
+        .Select(alias => alias.EmailAddress)
+        .FirstOrDefault();
+
+    /// <summary>
+    /// Gets external identities linked to this user.
+    /// </summary>
+    public ICollection<UserIdentity> Identities { get; set; } = [];
+
+    /// <summary>
+    /// Gets verified and pending email aliases linked to this user.
+    /// </summary>
+    public ICollection<UserEmailAlias> EmailAliases { get; set; } = [];
 
     /// <summary>
     /// Gets memberships for circles that this user belongs to.

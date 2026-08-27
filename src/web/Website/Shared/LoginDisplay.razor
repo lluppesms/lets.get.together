@@ -6,6 +6,7 @@
     <AuthorizeView>
         <Authorized>
             <span class="login-display-greeting">Hello, @context.User.Identity?.Name!</span>
+            <a class="login-display-action" href="/account/security">Account security</a>
             <a class="login-display-action" href="/MicrosoftIdentity/Account/SignOut">Log out</a>
         </Authorized>
         <NotAuthorized>

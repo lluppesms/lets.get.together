@@ -55,6 +55,24 @@ param adTenantId string = ''
 param adClientId string = ''
 param adCallbackPath string = '/signin-oidc'
 
+@description('Google OAuth client ID. Leave empty to disable Google authentication.')
+param googleClientId string = ''
+@secure()
+@description('Google OAuth client secret. Leave empty to disable Google authentication.')
+param googleClientSecret string = ''
+@description('Facebook OAuth app ID. Leave empty to disable Facebook authentication.')
+param facebookAppId string = ''
+@secure()
+@description('Facebook OAuth app secret. Leave empty to disable Facebook authentication.')
+param facebookAppSecret string = ''
+@secure()
+@description('SendGrid API key used to deliver verification emails. Leave empty for explicit no-op delivery.')
+param sendGridApiKey string = ''
+@description('Verified SendGrid sender address. Leave empty for explicit no-op delivery.')
+param sendGridFromEmail string = ''
+@description('Optional SendGrid sender display name.')
+param sendGridFromName string = 'Get Together'
+
 param adminUserList string = ''
 
 @description('Data source used by the web app. JSON avoids database-backed repository usage.')
@@ -281,6 +299,13 @@ module webSiteModule './modules/webapp/website.bicep' = if (deployWebAppEffectiv
       AzureAD__TenantId: adTenantId
       AzureAD__ClientId: adClientId
       AzureAD__CallbackPath: adCallbackPath
+      Authentication__Google__ClientId: googleClientId
+      Authentication__Google__ClientSecret: googleClientSecret
+      Authentication__Facebook__AppId: facebookAppId
+      Authentication__Facebook__AppSecret: facebookAppSecret
+      SendGrid__ApiKey: sendGridApiKey
+      SendGrid__FromEmail: sendGridFromEmail
+      SendGrid__FromName: sendGridFromName
     }
   }
 }

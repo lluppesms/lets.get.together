@@ -1,0 +1,212 @@
+.account-security-page {
+    width: min(100% - 2rem, 68rem);
+    margin: 0 auto;
+    padding: 3rem 0 5rem;
+}
+
+.account-security-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.account-kicker {
+    margin: 0 0 0.35rem;
+    color: var(--accent-color-strong);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.account-security-heading h1 {
+    margin: 0;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.account-security-heading p:not(.account-kicker) {
+    max-width: 43rem;
+    margin: 0.75rem 0 0;
+    color: var(--text-secondary-light);
+}
+
+.account-panel,
+.account-status {
+    margin-bottom: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--surface-border-light);
+    border-radius: var(--border-radius-tight);
+    background: var(--card-bg-light);
+    box-shadow: var(--shadow-sm);
+}
+
+.account-panel-heading,
+.account-list li,
+.account-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.account-panel-heading {
+    justify-content: space-between;
+}
+
+.account-form {
+    display: grid;
+    gap: 0.6rem;
+    max-width: 32rem;
+    margin: 1rem 0;
+}
+
+.account-panel h2 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.account-panel p {
+    color: var(--text-secondary-light);
+}
+
+.account-service-note,
+.account-empty {
+    margin: 1rem 0;
+    color: var(--text-muted-light) !important;
+    font-size: 0.9rem;
+}
+
+.account-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.account-list li {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--surface-border-light);
+}
+
+.account-value {
+    color: var(--text-muted-light);
+    font-size: 0.9rem;
+}
+
+.account-action,
+.account-text-action {
+    border: 1px solid var(--surface-border-light);
+    border-radius: var(--border-radius-tight);
+    background: transparent;
+    color: var(--accent-color-strong);
+    font: inherit;
+    font-weight: 700;
+}
+
+.account-input {
+    min-height: 2.5rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--surface-border-light);
+    border-radius: var(--border-radius-tight);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+}
+
+.account-token-input {
+    width: min(100%, 12rem);
+}
+
+.account-action {
+    min-height: 2.75rem;
+    padding: 0.55rem 0.9rem;
+}
+
+.account-action-primary {
+    display: inline-grid;
+    place-items: center;
+    margin-top: 0.5rem;
+    background: var(--accent-color);
+    color: var(--text-primary-light);
+    text-decoration: none;
+}
+
+.account-text-action {
+    padding: 0.25rem 0.45rem;
+    border-color: transparent;
+}
+
+.account-action:disabled,
+.account-text-action:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
+.account-action:focus-visible,
+.account-text-action:focus-visible {
+    outline: 0.15rem solid var(--accent-color-strong);
+    outline-offset: 0.15rem;
+}
+
+body[data-bs-theme='dark'] .account-panel,
+.theme-dark .account-panel,
+body[data-bs-theme='dark'] .account-status,
+.theme-dark .account-status {
+    border-color: var(--surface-border-dark);
+    background: var(--card-bg-dark);
+}
+
+body[data-bs-theme='dark'] .account-security-heading p:not(.account-kicker),
+.theme-dark .account-security-heading p:not(.account-kicker),
+body[data-bs-theme='dark'] .account-panel p,
+.theme-dark .account-panel p {
+    color: var(--text-secondary-dark);
+}
+
+body[data-bs-theme='dark'] .account-service-note,
+.theme-dark .account-service-note,
+body[data-bs-theme='dark'] .account-empty,
+.theme-dark .account-empty,
+body[data-bs-theme='dark'] .account-value,
+.theme-dark .account-value {
+    color: var(--text-muted-dark) !important;
+}
+
+body[data-bs-theme='dark'] .account-list li,
+.theme-dark .account-list li,
+body[data-bs-theme='dark'] .account-action,
+.theme-dark .account-action,
+body[data-bs-theme='dark'] .account-input,
+.theme-dark .account-input {
+    border-color: var(--surface-border-dark);
+}
+
+body[data-bs-theme='dark'] .account-action-primary,
+.theme-dark .account-action-primary {
+    color: var(--text-primary-light);
+}
+
+@media (max-width: 42rem) {
+    .account-security-page {
+        padding-top: 1.5rem;
+    }
+
+    .account-security-heading,
+    .account-panel-heading,
+    .account-list li {
+        align-items: start;
+        flex-direction: column;
+    }
+
+    .account-item-actions {
+        width: 100%;
+    }
+}

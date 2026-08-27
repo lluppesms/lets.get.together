@@ -4,15 +4,14 @@
     "AppTitle": "Get Together",
     "AppDescription": "Get Together - An ASP.NET Core web app for simple, private event planning for real friends",
     "EnvironmentName": "Development",
-    "DataSource": "JSON",
+    "DataSource": "SQL",
     "EnableSwagger": true,
     "DetailedErrors": true,
-    "AiServiceProvider": "CopilotSDK", // "AgentFramework","CopilotSDK"
+    "AiServiceProvider": "CopilotSDK",
 
-    "NOTSET-USE-JSON-DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=GetTogether;Trusted_Connection=True;MultipleActiveResultSets=true",
-    "DefaultConnection": "Server=tcp:sql-gettogether.database.windows.net,1433;Initial Catalog=GetTogether;Persist Security Info=False;User ID=sqladmin;Password={your_password};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
-    "AdminUserList": "",
-    "ApiKey": "",
+    "DefaultConnection": "Server=.;Initial Catalog=MySharedDB;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication='Active Directory Default';",
+    "AdminUserList": "me@mydomain.com",
+    "ApiKey": "somekey",
     "BlobStorageAccountName": "",
     "AzureOpenAI": {
       "Chat": {
@@ -48,6 +47,11 @@
       "AppId": "",
       "AppSecret": ""
     }
+  },
+  "SendGrid": {
+    "ApiKey": "",
+    "FromEmail": "",
+    "FromName": "Get Together"
   },
 
   "APPLICATIONINSIGHTS_CONNECTION_STRING": null,

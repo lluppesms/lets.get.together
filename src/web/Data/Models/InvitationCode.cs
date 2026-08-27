@@ -34,6 +34,18 @@ public class InvitationCode
     public string Code { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the mailbox address authorized to use this invitation.
+    /// </summary>
+    [StringLength(320)]
+    public string? RecipientEmailAddress { get; set; }
+
+    /// <summary>
+    /// Gets or sets the normalized recipient mailbox address used for comparison.
+    /// </summary>
+    [StringLength(320)]
+    public string? NormalizedRecipientEmailAddress { get; set; }
+
+    /// <summary>
     /// Gets or sets the user who created the invitation code.
     /// </summary>
     public int CreatedByUserId { get; set; }

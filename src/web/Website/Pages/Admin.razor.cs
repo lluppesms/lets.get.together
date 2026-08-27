@@ -20,6 +20,7 @@ public partial class Admin : ComponentBase
     [Inject] HttpContextAccessor Context { get; set; }
     [Inject] IJSRuntime JsInterop { get; set; }
     [Inject] IServiceProvider Services { get; set; }
+    [Inject] ICurrentUserResolver CurrentUserResolver { get; set; }
     //[Inject] BuildInfoService buildInfoService{ get; set; }
 
     private string userName = string.Empty;
@@ -47,12 +48,10 @@ public partial class Admin : ComponentBase
             await JsInterop.InvokeVoidAsync("syncHeaderTitle");
             var userIdentity = Context.HttpContext.User;
             userName = userIdentity != null ? userIdentity.Identity.Name : string.Empty;
-            var externalId = userIdentity?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var userRepository = Services.GetService<IUserRepository>();
-            if (!string.IsNullOrWhiteSpace(externalId) && userRepository != null)
+            if (userIdentity is not null && CurrentUserResolver is not null)
             {
-                var persistedUser = await userRepository.FindByExternalIdAsync(externalId);
-                userId = persistedUser?.UserId;
+                var resolution = await CurrentUserResolver.ResolveAsync(userIdentity);
+                userId = resolution.User?.UserId;
             }
             isInAdminRole = userIdentity != null && userIdentity.IsInRole("Admin");
             if (isInAdminRole)

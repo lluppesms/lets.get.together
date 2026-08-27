@@ -26,7 +26,7 @@ public class CalendarAggregation_Tests
     public async Task GetUpcomingEventsForUser_AggregatesEventsAcrossMultipleCircles()
     {
         await using var context = CreateContext();
-        
+
         // User 10 (Alice) belongs to Circle 1 ("Pickleball Crew") and Circle 2 ("Coffee Club")
         AddUser(context, 10, "Alice");
         AddUser(context, 20, "Bob");
@@ -320,9 +320,9 @@ public class CalendarAggregation_Tests
         context.Users!.Add(new User
         {
             UserId = userId,
-            ExternalId = $"user-{userId}",
             DisplayName = displayName ?? $"User {userId}",
-            EmailAddress = $"user{userId}@example.com"
+            Identities = [new UserIdentity { Provider = ExternalIdentityProvider.Entra, Issuer = "https://login.example.test", Subject = $"user-{userId}" }],
+            EmailAliases = [new UserEmailAlias { EmailAddress = $"user{userId}@example.com", NormalizedEmailAddress = $"USER{userId}@EXAMPLE.COM", IsVerified = true }]
         });
         context.SaveChanges();
     }

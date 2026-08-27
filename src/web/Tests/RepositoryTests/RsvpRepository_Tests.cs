@@ -355,9 +355,9 @@ public class RsvpRepository_Tests
         context.Users!.Add(new User
         {
             UserId = userId,
-            ExternalId = $"user-{userId}",
             DisplayName = displayName ?? $"User {userId}",
-            EmailAddress = $"user{userId}@example.test"
+            Identities = [new UserIdentity { Provider = ExternalIdentityProvider.Entra, Issuer = "https://login.example.test", Subject = $"user-{userId}" }],
+            EmailAliases = [new UserEmailAlias { EmailAddress = $"user{userId}@example.test", NormalizedEmailAddress = $"USER{userId}@EXAMPLE.TEST", IsVerified = true }]
         });
     }
 }
