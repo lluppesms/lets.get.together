@@ -5,10 +5,12 @@
 @using System.Security.Claims
 @using GetTogether.Data.Models
 @using GetTogether.Data.Repositories
+@using GetTogether.Data.Services
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IServiceProvider Services
 @inject ICurrentUserResolver CurrentUserResolver
 @inject NavigationManager Navigation
+@inject ILogger<Circles> Logger
 
 <PageTitle>Circles | Get Together</PageTitle>
 
@@ -74,8 +76,16 @@
 	{
 		<section class="circle-empty" aria-labelledby="empty-heading">
 			<h2 id="empty-heading">No circles yet</h2>
-			<p>Create a circle for your own group, or wait for someone to invite you to theirs.</p>
-			<button class="circle-action circle-action-primary" type="button" @onclick="ToggleCreateForm">Create circle</button>
+			@if (currentUser is not null)
+			{
+				<p>Create a circle for your own group, or wait for someone to invite you to theirs.</p>
+				<button class="circle-action circle-action-primary" type="button" @onclick="ToggleCreateForm">Create circle</button>
+			}
+			else
+			{
+				<p>Your sign-in could not be linked to a Get Together account. Sign out and sign in again to continue.</p>
+				<a class="circle-action" href="/logout">Sign out</a>
+			}
 		</section>
 	}
 	else
@@ -236,12 +246,22 @@
 		try
 		{
 			var resolution = await CurrentUserResolver.ResolveAsync(authenticationState.User);
+			Logger.LogInformation("Circles identity resolution completed. HasRecognizedIdentity={HasRecognizedIdentity} UserFound={UserFound} FailureReason={FailureReason}", resolution.HasRecognizedIdentity, resolution.User is not null, resolution.FailureReason);
 			currentUser = resolution.User;
 			if (currentUser is null)
 			{
-				errorMessage = resolution.FailureReason ?? "Your signed-in account is not registered for Get Together.";
+				if (resolution.HasRecognizedIdentity && TryGetExternalIdentity(authenticationState.User, out var identity))
+				{
+					Logger.LogInformation("Provisioning first-time application user. Provider={Provider} Issuer={Issuer}", identity.Provider, identity.Issuer);
+					currentUser = await CreateFirstTimeUserAsync(authenticationState.User, identity);
+					Logger.LogInformation("First-time application user provisioned. UserId={UserId} Provider={Provider}", currentUser.UserId, identity.Provider);
+				}
+				else
+				{
+					errorMessage = resolution.FailureReason ?? "Your signed-in account could not be linked to Get Together.";
+				}
 			}
-			else if (circleRepository is not null)
+			if (currentUser is not null && circleRepository is not null)
 			{
 				circles.Clear();
 				circles.AddRange(await circleRepository.GetCirclesForUserAsync(currentUser.UserId));
@@ -259,12 +279,73 @@
 		catch (Exception exception)
 		{
 			errorMessage = "We could not load your circles right now. Please try again.";
-			Console.Error.WriteLine(exception);
+			Logger.LogError(exception, "Circles initialization failed. Authenticated={Authenticated} DataSourceRepositoriesAvailable={RepositoriesAvailable}", authenticationState.User?.Identity?.IsAuthenticated == true, circleRepository is not null && invitationRepository is not null && userRepository is not null);
 		}
 		finally
 		{
 			isLoading = false;
 		}
+	}
+
+	private async Task<User> CreateFirstTimeUserAsync(ClaimsPrincipal principal, ExternalIdentityInput identity)
+	{
+		var displayName = principal.FindFirstValue(ClaimTypes.Name)
+			?? principal.Identity?.Name
+			?? principal.FindFirstValue(ClaimTypes.Email)
+			?? "Get Together member";
+		var email = principal.FindFirstValue(ClaimTypes.Email)
+			?? principal.FindFirstValue("email")
+			?? principal.FindFirstValue("preferred_username");
+		var user = new User { DisplayName = displayName.Trim() };
+		var emailAlias = new UserEmailAlias
+		{
+			EmailAddress = email?.Trim() ?? string.Empty,
+			NormalizedEmailAddress = email?.Trim().ToUpperInvariant() ?? string.Empty,
+			IsVerified = false,
+			IsPrimary = !string.IsNullOrWhiteSpace(email)
+		};
+
+		try
+		{
+			return await userRepository.CreateUserAsync(user, new UserIdentity
+			{
+				Provider = identity.Provider,
+				Issuer = identity.Issuer,
+				Subject = identity.Subject
+			}, emailAlias);
+		}
+		catch (DbUpdateException exception)
+		{
+			Logger.LogWarning(exception, "First-time application user insert failed; checking whether another request created the identity. Provider={Provider} Issuer={Issuer}", identity.Provider, identity.Issuer);
+			var existingUser = await userRepository.FindByIdentityAsync(identity.Provider, identity.Issuer, identity.Subject);
+			if (existingUser is not null)
+			{
+				return existingUser;
+			}
+
+			Logger.LogError(exception, "First-time application user could not be created after duplicate check. Provider={Provider} Issuer={Issuer}", identity.Provider, identity.Issuer);
+			throw new InvalidOperationException("The signed-in account could not be created.", exception);
+		}
+	}
+
+	private static bool TryGetExternalIdentity(ClaimsPrincipal principal, out ExternalIdentityInput identity)
+	{
+		var providerClaim = principal.FindFirstValue(ExternalIdentityClaimTypes.Provider);
+		var issuer = principal.FindFirstValue(ExternalIdentityClaimTypes.Issuer)
+			?? principal.FindFirstValue("iss");
+		var subject = principal.FindFirstValue(ExternalIdentityClaimTypes.Subject)
+			?? principal.FindFirstValue(ClaimTypes.NameIdentifier);
+		if (!Enum.TryParse(providerClaim, ignoreCase: false, out ExternalIdentityProvider provider)
+			|| !Enum.IsDefined(provider)
+			|| string.IsNullOrWhiteSpace(issuer)
+			|| string.IsNullOrWhiteSpace(subject))
+		{
+			identity = null!;
+			return false;
+		}
+
+		identity = new ExternalIdentityInput(provider, issuer, subject);
+		return true;
 	}
 
 	private async Task LoadCircleAsync(int circleId)

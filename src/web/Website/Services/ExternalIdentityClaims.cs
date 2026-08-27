@@ -9,7 +9,7 @@ namespace GetTogether.Web.Services;
 public static class ExternalIdentityClaims
 {
     /// <summary>
-    /// Adds the external provider marker and issuer required to resolve an application identity.
+    /// Adds the external provider marker, issuer, and normalized subject required to resolve an application identity.
     /// </summary>
     public static void EnsureClaims(ClaimsIdentity? identity, ExternalIdentityProvider provider, string? issuer)
     {
@@ -18,9 +18,35 @@ public static class ExternalIdentityClaims
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(issuer) && identity.FindFirst("iss") is null)
+        var validatedIssuer = identity.FindFirst("iss")?.Value ?? issuer;
+        if (!string.IsNullOrWhiteSpace(validatedIssuer))
         {
-            identity.AddClaim(new Claim("iss", issuer));
+            if (identity.FindFirst("iss") is null)
+            {
+                identity.AddClaim(new Claim("iss", validatedIssuer));
+            }
+
+            if (identity.FindFirst(ExternalIdentityClaimTypes.Issuer) is null)
+            {
+                identity.AddClaim(new Claim(ExternalIdentityClaimTypes.Issuer, validatedIssuer));
+            }
+        }
+
+        var subject = identity.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? identity.FindFirst("sub")?.Value
+            ?? identity.FindFirst("oid")?.Value
+            ?? identity.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+        if (!string.IsNullOrWhiteSpace(subject))
+        {
+            if (identity.FindFirst(ClaimTypes.NameIdentifier) is null)
+            {
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, subject));
+            }
+
+            if (identity.FindFirst(ExternalIdentityClaimTypes.Subject) is null)
+            {
+                identity.AddClaim(new Claim(ExternalIdentityClaimTypes.Subject, subject));
+            }
         }
 
         if (identity.FindFirst(ExternalIdentityClaimTypes.Provider) is null)

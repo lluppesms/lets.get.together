@@ -27,4 +27,16 @@ public class ExternalIdentityClaims_Tests
 
         Assert.Equal("https://validated-google-issuer.example.test", identity.FindFirst("iss")?.Value);
     }
+
+    [Theory]
+    [InlineData("sub", "entra-subject")]
+    [InlineData("oid", "entra-object")]
+    public void EnsureClaims_WhenSubjectUsesProviderClaim_NormalizesNameIdentifier(string claimType, string subject)
+    {
+        var identity = new ClaimsIdentity([new Claim(claimType, subject)], "OpenIdConnect");
+
+        ExternalIdentityClaims.EnsureClaims(identity, ExternalIdentityProvider.Entra, "https://login.microsoftonline.com/tenant/v2.0");
+
+        Assert.Equal(subject, identity.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+    }
 }

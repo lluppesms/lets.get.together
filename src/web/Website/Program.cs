@@ -158,7 +158,10 @@ if (enableAuth)
             ? OpenIdConnectDefaults.AuthenticationScheme
             : CookieAuthenticationDefaults.AuthenticationScheme;
     });
-    authentication.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+    if (!entraEnabled)
+    {
+        authentication.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+    }
     if (entraEnabled)
     {
         authentication.AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAD"));
@@ -169,7 +172,7 @@ if (enableAuth)
                 ExternalIdentityClaims.EnsureClaims(
                 context.Principal?.Identity as ClaimsIdentity,
                 ExternalIdentityProvider.Entra,
-                null);
+                context.SecurityToken?.Issuer);
                 return Task.CompletedTask;
             };
         });

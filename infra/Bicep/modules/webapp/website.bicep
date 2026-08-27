@@ -88,8 +88,12 @@ resource webSiteResource 'Microsoft.Web/sites@2024-11-01' = {
       minimumElasticInstanceCount: 1
       appSettings: [
         { 
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'  
           value: appInsightsResource.properties.InstrumentationKey 
+        }
+        {
+          name: 'AppSettings__AppInsights_InstrumentationKey'
+          value: appInsightsResource.properties.InstrumentationKey
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'

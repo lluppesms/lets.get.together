@@ -104,7 +104,7 @@ The repository's deployment flow uses the environment-scoped `GOOGLE_CLIENT_ID` 
 4. Complete Google consent and sign-in.
 5. Confirm the browser returns to the application and the authenticated user can open `/circles`.
 
-A new user still needs to complete the application's invitation-based onboarding at `/invite` before a user record and membership are created. Google authentication identifies the person; it does not bypass invitation, email verification, or circle-membership rules.
+A first-time user who signs in with Google is provisioned with an application user record and can create a circle immediately. The invitation flow at `/invite` remains available for people joining an existing circle; it is not required for someone starting a new circle.
 
 If Google is not shown on `/login`, verify that both the client ID and client secret are non-empty in the running environment. If Google reports a redirect URI mismatch, compare the URL in the error with the exact URI registered in Google Cloud.
 
@@ -202,7 +202,7 @@ https://<host>/signin-oidc
 4. Complete sign-in and consent.
 5. Confirm the browser returns to the application and the authenticated user can open `/circles`.
 
-A new user still follows the invitation and verification onboarding flow. Entra sign-in does not automatically create an application user from an email address.
+A first-time user who signs in with Entra is provisioned with an application user record and can create a circle immediately. The invitation and verification flow remains available for people joining an existing circle. The application still links identities by validated provider, issuer, and subject rather than by email address.
 
 If Microsoft is not shown on `/login`, verify that `AzureAD:TenantId` is non-empty in the running environment. For `AADSTS50011`, compare the redirect URI in the error with the exact `/signin-oidc` URI registered on the app registration.
 
@@ -217,7 +217,8 @@ For each environment, verify:
 - OAuth consent and test-user restrictions allow the account being tested.
 - `/login` shows the intended provider button.
 - A successful callback returns to the application instead of displaying a provider error.
-- A first-time user is directed through `/invite` and email verification before account creation.
+- A first-time user can create an application account and circle immediately after provider sign-in.
+- A user joining an existing circle can complete `/invite` and email verification.
 - An existing user can resolve the same provider-qualified identity on `/circles`.
 
 ## Related Configuration

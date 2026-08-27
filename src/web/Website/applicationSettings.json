@@ -1,4 +1,11 @@
 {
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "GetTogether.Web": "Debug",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
   "AppSettings": {
     "AppVersion": "1.0.0",
     "AppTitle": "Get Together",

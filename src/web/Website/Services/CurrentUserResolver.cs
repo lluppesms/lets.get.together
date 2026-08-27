@@ -29,7 +29,7 @@ public sealed record CurrentUserResolution(User? User, string? FailureReason)
 /// <summary>
 /// Resolves provider-qualified external identities without using mutable profile claims as identity keys.
 /// </summary>
-public sealed class CurrentUserResolver(IUserRepository userRepository) : ICurrentUserResolver
+public sealed class CurrentUserResolver(IUserRepository userRepository, ILogger<CurrentUserResolver>? logger = null) : ICurrentUserResolver
 {
     /// <inheritdoc />
     public async Task<CurrentUserResolution> ResolveAsync(ClaimsPrincipal principal)
@@ -37,24 +37,36 @@ public sealed class CurrentUserResolver(IUserRepository userRepository) : ICurre
         ArgumentNullException.ThrowIfNull(principal);
 
         var identity = principal.Identity;
+        var authenticatedUserName = principal.FindFirstValue(ClaimTypes.Name)
+            ?? principal.Identity?.Name
+            ?? principal.FindFirstValue("name")
+            ?? principal.FindFirstValue("preferred_username")
+            ?? principal.FindFirstValue(ClaimTypes.Email)
+            ?? "(name unavailable)";
         if (identity?.IsAuthenticated != true)
         {
+            logger?.LogWarning("Current user resolution failed for {AuthenticatedUserName}: principal is not authenticated. AuthenticationType={AuthenticationType}", authenticatedUserName, identity?.AuthenticationType);
             return new CurrentUserResolution(null, "The current request is not authenticated.");
         }
 
         if (!TryGetProvider(principal, out var provider))
         {
+            logger?.LogWarning("Current user resolution failed for {AuthenticatedUserName}: provider claim is missing or invalid. AuthenticationType={AuthenticationType} ClaimTypes={ClaimTypes}", authenticatedUserName, identity.AuthenticationType, string.Join(",", principal.Claims.Select(claim => claim.Type).Distinct()));
             return new CurrentUserResolution(null, "The authenticated provider is not recognized.");
         }
 
-        var subject = principal.FindFirstValue(ClaimTypes.NameIdentifier);
-        var issuer = principal.FindFirstValue("iss");
+        var subject = principal.FindFirstValue(ExternalIdentityClaimTypes.Subject)
+            ?? principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        var issuer = principal.FindFirstValue(ExternalIdentityClaimTypes.Issuer)
+            ?? principal.FindFirstValue("iss");
         if (string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(issuer))
         {
+            logger?.LogWarning("Current user resolution failed for {AuthenticatedUserName}: required identity values are missing. Provider={Provider} HasSubject={HasSubject} HasIssuer={HasIssuer} ClaimTypes={ClaimTypes}", authenticatedUserName, provider, !string.IsNullOrWhiteSpace(subject), !string.IsNullOrWhiteSpace(issuer), string.Join(",", principal.Claims.Select(claim => claim.Type).Distinct()));
             return new CurrentUserResolution(null, "The authenticated provider did not supply a valid identity subject and issuer.");
         }
 
         var user = await userRepository.FindByIdentityAsync(provider, issuer, subject);
+        logger?.LogInformation("Current user identity lookup completed. Provider={Provider} Issuer={Issuer} UserFound={UserFound}", provider, issuer, user is not null);
         return new CurrentUserResolution(user, null);
     }
 
