@@ -122,9 +122,9 @@ Authentication__Facebook__AppSecret="..."
 APPLICATIONINSIGHTS_CONNECTION_STRING="..."
 ```
 
-The checked-in `src/web/Website/applicationSettings.json` contains empty placeholders for these provider settings. Supply real values only through App Service environment settings, local User Secrets, or the configured Azure Key Vault. Key Vault configuration names use `:` as `--`, for example `Authentication--Google--ClientSecret`.
+The checked-in `src/web/Website/applicationSettings.json` contains empty placeholders for these provider settings. For local development, use User Secrets or environment variables; set `Authentication__Google__ClientId` and `Authentication__Google__ClientSecret` outside the repository. For App Service, Bicep emits both Google settings. The client ID is a non-secret configuration value and the client secret is a secure Bicep parameter supplied by the environment-scoped `GOOGLE_CLIENT_SECRET` GitHub Secret. A configured Azure Key Vault can also provide provider values; Key Vault configuration names use `:` as `--`, for example `Authentication--Google--ClientSecret`.
 
-The current Bicep deployment wiring emits only the `AzureAD__*` settings. Google and Facebook settings are documented as runtime configuration placeholders but are not yet provisioned by Bicep until application authentication registration is implemented.
+Set `GOOGLE_CLIENT_ID` as an environment-scoped GitHub variable and `GOOGLE_CLIENT_SECRET` as an environment-scoped GitHub Secret before deploying Google authentication. Keep OAuth credentials out of source, pipeline logs, and parameter files after token replacement.
 
 ## Deployment Decision Tree
 

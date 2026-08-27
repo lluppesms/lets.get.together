@@ -68,3 +68,7 @@ The locked decision ledger requires Entra ID, Google, and Facebook in v1. Wash's
 - Externalized the App Service `siteConfig.alwaysOn` setting through the `alwaysOn` boolean parameters in `infra/Bicep/main.bicep` and `modules/webapp/website.bicep`.
 - Added the `#{ALWAYS_ON}#` token to `main.bicepparam`; GitHub Actions token replacement receives the environment-scoped `ALWAYS_ON` secret without a workflow contract change.
 - Documented the secret setup in `.github/CreateGitHubSecrets.md` and validated `az bicep build --file infra/Bicep/main.bicep` with no errors.
+
+## 2026-08-27
+
+- Added the `GOOGLE_CLIENT_SECRET` secure Bicep parameter token so App Service receives the Google OAuth secret through the existing environment-scoped GitHub Secret replacement path; documented local User Secrets/environment-variable and Azure deployment setup without storing credentials.

@@ -106,3 +106,13 @@ The reported `--no-build --no-restore` failure was not reproducible: both focuse
 
 - Added `CurrentUserResolverGuard_Tests.ResolveAsync_WhenApplicationCookieIncludesTrustedProviderMarker_ResolvesThePersistedIdentity`, requiring a `Cookies` principal with issuer, subject, and `get-together:external-identity-provider=Google` to resolve through `IUserRepository.FindByIdentityAsync`.
 - Existing guard coverage continues to reject unauthenticated, incomplete, and unmarked-cookie principals without repository lookup. The focused test command is currently blocked by four unrelated compilation errors in `CurrentUserResolver_Tests.cs`; the production repair must make `CurrentUserResolver` consume the trusted marker when the authentication scheme is the application cookie.
+
+### 2026-08-27 - Google public entry regression coverage
+
+- Added `playwright/smoke-tests/login.smoke.spec.ts`, which verifies the public Google control is either a disabled, non-link unavailable state or an enabled link targeting `/login/google`. The test was discovered successfully by Playwright.
+- Runtime execution is currently blocked before browser discovery by four unrelated compile errors in `ServicesTests/ExternalIdentityClaims_Tests.cs`: the test calls `FindFirstValue` on `ClaimsIdentity`. The existing trusted-provider marker xUnit tests therefore remain blocked until that in-flight test is repaired; no production authentication file was changed.
+
+### 2026-08-27 - Google login component regression coverage retry
+
+- Added `src/web/Tests/ServicesTests/GoogleAuthentication_Tests.cs`, which server-renders `Login.razor` with injected configuration. It verifies that non-empty Google client ID and secret values expose the `/login/google` challenge link, while missing or blank values render a disabled, non-link control.
+- The focused command `dotnet test .\src\web\Tests\GetTogether.Tests.csproj --filter FullyQualifiedName~GoogleAuthentication_Tests` passed 5/5. Existing `ExternalIdentityClaims_Tests.cs` remains the direct test seam for the Google onboarding provider marker.

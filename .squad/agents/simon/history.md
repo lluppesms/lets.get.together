@@ -71,3 +71,8 @@ The locked Phase 1 decisions require multi-provider authentication and adding Ev
 
 - `CurrentUserResolver` now derives every external provider from the protected `get-together:external-identity-provider` marker, rather than the post-sign-in cookie authentication type. This recognizes Entra, Google, and Facebook identities even when the application cookie uses a nonstandard scheme name, while rejecting missing or malformed markers.
 - Added resolver regression coverage for application-cookie authentication and aligned guard fixtures with the external-ticket claim contract. The focused resolver test suite passes.
+
+### 2026-08-27 — Google OAuth session composition
+
+- Configured the application cookie as the default authenticate and sign-in scheme so Google callback tickets remain authenticated after their `/signin-google` return, while Entra remains the default challenge provider when configured.
+- Extracted external ticket claim normalization into `ExternalIdentityClaims`, covered Google issuer/provider claims with focused xUnit tests, and added provider-neutral local sign-out at `/logout`.

@@ -7,7 +7,7 @@
         <Authorized>
             <span class="login-display-greeting">Hello, @context.User.Identity?.Name!</span>
             <a class="login-display-action" href="/account/security">Account security</a>
-            <a class="login-display-action" href="/MicrosoftIdentity/Account/SignOut">Log out</a>
+            <a class="login-display-action" href="/logout">Log out</a>
         </Authorized>
         <NotAuthorized>
             <a class="login-display-action" href="/login">Log in</a>
@@ -16,5 +16,9 @@
 }
 
 @code {
-    private bool IsAuthEnabled => !string.IsNullOrWhiteSpace(Configuration["AzureAD:TenantId"]);
+    private bool IsAuthEnabled => !string.IsNullOrWhiteSpace(Configuration["AzureAD:TenantId"])
+        || HasConfiguration("Authentication:Google:ClientId", "Authentication:Google:ClientSecret")
+        || HasConfiguration("Authentication:Facebook:AppId", "Authentication:Facebook:AppSecret");
+
+    private bool HasConfiguration(params string[] keys) => keys.All(key => !string.IsNullOrWhiteSpace(Configuration[key]));
 }

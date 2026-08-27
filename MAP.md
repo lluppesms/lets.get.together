@@ -12,6 +12,8 @@ The application account is `UserId`; `User` no longer stores a provider subject 
 
 OAuth tickets issued for Entra, Google, and Facebook also include the protected `get-together:external-identity-provider` claim. Once the external handler signs a user into the application cookie, `ICurrentUserResolver` uses this trusted provider marker with the issuer and subject rather than treating the cookie scheme itself as an external provider. SQL-only account and circle services are registered only when `AppSettings:DataSource` selects `SQL`, `SQLDB`, or `DATABASE` and a connection string is present; JSON mode explicitly uses the unavailable current-user resolver.
 
+The application cookie is the default authenticate and sign-in scheme for every configured provider; Entra remains the default challenge scheme when enabled. Google starts at `/login/google`, returns through `/signin-google`, and receives the stable Google issuer plus protected provider marker before the application cookie is issued. Configure `Authentication__Google__ClientId` and `Authentication__Google__ClientSecret` outside source control, and register the deployed `https://{host}/signin-google` redirect URI with Google. `/logout` clears the local application cookie for every provider.
+
 Focused xUnit coverage in `src/web/Tests/ServicesTests/CurrentUserResolverGuard_Tests.cs` and `src/web/Tests/RepositoryTests/UserRepositoryIdentity_Tests.cs` verifies unauthenticated and incomplete-claim rejection, email-claim independence, canonical provider linking, and alias persistence. Playwright-ready page objects and skipped integration contracts are in `playwright/page-objects/invite-signup.page.ts`, `playwright/page-objects/account-security.page.ts`, and `playwright/ui-tests/identity-account-contract.spec.ts`; they remain deferred until invite-email verification, account security UI, and a deterministic authenticated browser fixture are available.
 
 ### Secure onboarding and identity operations update (2026-08-27)
@@ -23,6 +25,8 @@ Focused xUnit coverage in `src/web/Tests/ServicesTests/CurrentUserResolverGuard_
 Invitation onboarding now uses `/invite` (also available at `/signup`) to capture an invitation code plus recipient mailbox and invoke `BeginInvitationVerificationAsync`. `/invite/verify` captures a display name and application-issued single-use verification code; the code, invitation code, recipient mailbox, and display name remain in browser session storage, never URL query parameters or logs. `/invite/confirmed` (also `/signup-callback`) completes onboarding through `CompleteOnboardingAsync` after provider sign-in and clears that state on success. Email delivery currently uses `NoOpVerificationEmailSender`, so the UI accurately reports that a challenge was created but no code was delivered.
 
 The onboarding callback uses `ICurrentUserResolver` and the `get-together:external-identity-provider` claim issued before an external ticket is serialized to a cookie. It never treats the cookie scheme itself as the provider. Anonymous Playwright coverage exercises the invitation entry and no-delivery verification states while asserting invitation details remain out of URLs; live provider sign-in remains an externally configured integration prerequisite.
+
+Focused xUnit coverage in `src/web/Tests/ServicesTests/GoogleAuthentication_Tests.cs` renders the login component with supplied configuration, verifying that complete Google credentials expose the `/login/google` challenge entry while missing or blank credentials keep the Google entry disabled. `ExternalIdentityClaims_Tests.cs` verifies that Google tickets carry the trusted external-provider marker consumed by onboarding.
 
 `/account/security` resolves the current user and presents aliases from the existing current-user read model. It calls the existing add, verify, set-primary, and remove alias commands. Provider link/unlink controls remain disabled because the read model does not return linked identities and the UI has no provider-identity input or recent-authentication proof. `playwright/page-objects/invite-signup.page.ts`, `playwright/page-objects/account-security.page.ts`, and `playwright/ui-tests/identity-account-contract.spec.ts` cover current anonymous route contracts without a global skip; provider completion remains dependent on an authenticated fixture and a real email-delivery adapter.
 
@@ -49,6 +53,10 @@ The repository uses a Firefly-cast Squad team for orchestration. The roster and 
 ### UI presentation update (2026-08-27)
 
 Home (`Pages/Index.razor`) and About (`Pages/About.razor`) use the deployed `/images/Hero-Image.jpg` asset with responsive, accessible hero presentations. Shared app-bar spacing and logo sizing are defined in `Shared/MainLayout.razor.css`; the logo preserves its aspect ratio.
+
+### Authentication setup documentation update (2026-08-27)
+
+`Docs/Authentication-Setup.md` documents the exact Google OAuth client and Microsoft Entra app-registration steps, callback URIs, local User Secrets, and Azure deployment settings for the provider integrations.
 
 ## 1. Project Identity
 
@@ -220,7 +228,7 @@ Web startup loads, in this general order:
 
 Use environment variables, User Secrets, or Key Vault for real credentials. Do not put connection strings, API keys, tenant credentials, or passwords in committed configuration. `DefaultAzureCredential` is the managed identity/default credential boundary. `VisualStudioTenantId` is a local-development override and must not be used as an Azure deployment substitute.
 
-Provider environment names use double underscores: `AzureAD__*`, `Authentication__Google__*`, and `Authentication__Facebook__*`. SendGrid uses `SendGrid__ApiKey`, `SendGrid__FromEmail`, and `SendGrid__FromName`. Key Vault names use double hyphens for nested keys. Bicep wires all these settings with secure secret parameters for OAuth secrets and the SendGrid API key; environment parameter files provide only non-secret placeholder values.
+Provider environment names use double underscores: `AzureAD__*`, `Authentication__Google__*`, and `Authentication__Facebook__*`. Google requires `Authentication__Google__ClientId` and `Authentication__Google__ClientSecret`; its registered callback URI is `https://{host}/signin-google`. SendGrid uses `SendGrid__ApiKey`, `SendGrid__FromEmail`, and `SendGrid__FromName`. Key Vault names use double hyphens for nested keys. Bicep wires all these settings with secure secret parameters for OAuth secrets and the SendGrid API key; `main.bicepparam` accepts `GOOGLE_CLIENT_ID` as a non-secret token and `GOOGLE_CLIENT_SECRET` as a token substituted only from an environment-scoped GitHub Secret.
 
 The function host uses `appsettings.json` if present, environment variables, and User Secrets. Its startup is in `src/function/Function/Program.cs`.
 

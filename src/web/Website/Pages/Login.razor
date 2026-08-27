@@ -58,10 +58,10 @@
             }
         </div>
 
-        @if (!EntraEnabled)
+        @if (!IsAuthEnabled)
         {
             <p class="auth-message auth-message-warning" role="status">
-                Sign-in is not configured in this environment yet. Ask the site owner to configure Microsoft Entra ID.
+            Sign-in is not configured in this environment yet. Ask the site owner to configure an identity provider.
             </p>
         }
 
@@ -73,6 +73,7 @@
     private bool EntraEnabled => !string.IsNullOrWhiteSpace(Configuration["AzureAD:TenantId"]);
     private bool GoogleEnabled => HasConfiguration("Authentication:Google:ClientId", "Authentication:Google:ClientSecret");
     private bool FacebookEnabled => HasConfiguration("Authentication:Facebook:AppId", "Authentication:Facebook:AppSecret");
+    private bool IsAuthEnabled => EntraEnabled || GoogleEnabled || FacebookEnabled;
     private string MicrosoftSignInUrl => EntraEnabled ? "/MicrosoftIdentity/Account/SignIn?redirectUri=/" : "/login";
     private bool HasConfiguration(params string[] keys) => keys.All(key => !string.IsNullOrWhiteSpace(Configuration[key]));
 }

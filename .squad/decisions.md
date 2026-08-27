@@ -183,6 +183,20 @@ Expected configuration keys: `SendGrid:ApiKey`, `SendGrid:FromEmail`, `SendGrid:
 **What:** The circles page exposes new-circle creation to every authenticated, resolved application user when the SQL-backed circle repository is available. The UI submits a `Circle` with name and optional description, passes the resolved persisted user ID as `creatorUserId`, and navigates to `/circles/{CircleId}` on success. No repository or database contract changes are required.
 **Why:** `ICircleRepository.CreateCircleAsync` already creates the circle and its creator's first membership; exposing it in the UI satisfies the organizer flow while retaining the accessible SQL-unavailable state. River can cover the form through the existing `CirclesPage` page object when an authenticated SQL-backed browser fixture is available.
 
+---
+
+### 2026-08-27: Google OAuth Configuration Delivery (Wash)
+**By:** Lyle MS Luppes (via Wash)
+**What:** `Authentication:Google:ClientId` is supplied as a non-secret, environment-scoped GitHub variable. `Authentication:Google:ClientSecret` is supplied as an environment-scoped GitHub Secret and passed through the existing secure `googleClientSecret` Bicep parameter into the App Service nested configuration setting.
+**Why:** This fulfills the existing Bicep app-settings contract without committing OAuth credentials or creating another secret-delivery path. Local development continues to use User Secrets or environment variables; Key Vault remains an optional runtime source.
+
+### 2026-08-27: Google Authentication Public Entry Regression Boundary (River)
+**By:** Lyle MS Luppes (via River)
+**What:** Public Google sign-in coverage verifies an unavailable provider is disabled and non-linkable, or a configured provider is an enabled link to `/login/google`. It does not invoke external Google OAuth.
+**Why:** The deployed browser harness has no isolated provider configuration or external-provider mock. This environment-independent contract detects malformed routes and interactive unavailable states without live credentials.
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus

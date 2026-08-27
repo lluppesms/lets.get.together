@@ -150,26 +150,31 @@ var enableAuth = entraEnabled || googleEnabled || facebookEnabled;
 
 if (enableAuth)
 {
-    var defaultAuthenticationScheme = entraEnabled
-        ? OpenIdConnectDefaults.AuthenticationScheme
-        : CookieAuthenticationDefaults.AuthenticationScheme;
-    var authentication = builder.Services.AddAuthentication(defaultAuthenticationScheme);
+    var authentication = builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = entraEnabled
+            ? OpenIdConnectDefaults.AuthenticationScheme
+            : CookieAuthenticationDefaults.AuthenticationScheme;
+    });
+    authentication.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
     if (entraEnabled)
     {
         authentication.AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAD"));
         builder.Services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
         {
-            options.Events.OnTokenValidated = context => AddIdentityClaims(
+            options.Events.OnTokenValidated = context =>
+            {
+                ExternalIdentityClaims.EnsureClaims(
                 context.Principal?.Identity as ClaimsIdentity,
                 ExternalIdentityProvider.Entra,
                 null);
+                return Task.CompletedTask;
+            };
         });
         builder.Services.AddControllersWithViews()
           .AddMicrosoftIdentityUI();
-    }
-    else
-    {
-        authentication.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
     }
 
     if (googleEnabled)
@@ -180,10 +185,14 @@ if (enableAuth)
             options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
             options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "sub");
-            options.Events.OnCreatingTicket = context => AddIdentityClaims(
-                context.Identity,
-                ExternalIdentityProvider.Google,
-                "https://accounts.google.com");
+            options.Events.OnCreatingTicket = context =>
+            {
+                ExternalIdentityClaims.EnsureClaims(
+                    context.Identity,
+                    ExternalIdentityProvider.Google,
+                    "https://accounts.google.com");
+                return Task.CompletedTask;
+            };
         });
     }
 
@@ -195,10 +204,14 @@ if (enableAuth)
             options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"]!;
             options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
-            options.Events.OnCreatingTicket = context => AddIdentityClaims(
-                context.Identity,
-                ExternalIdentityProvider.Facebook,
-                "https://www.facebook.com");
+            options.Events.OnCreatingTicket = context =>
+            {
+                ExternalIdentityClaims.EnsureClaims(
+                    context.Identity,
+                    ExternalIdentityProvider.Facebook,
+                    "https://www.facebook.com");
+                return Task.CompletedTask;
+            };
         });
     }
 
@@ -324,29 +337,17 @@ if (facebookEnabled)
         new AuthenticationProperties { RedirectUri = "/" },
         [FacebookDefaults.AuthenticationScheme]));
 }
+
+if (enableAuth)
+{
+    app.MapGet("/logout", () => Results.SignOut(
+        new AuthenticationProperties { RedirectUri = "/" },
+        [CookieAuthenticationDefaults.AuthenticationScheme]));
+}
+
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
 
 bool HasConfiguration(params string[] keys) => keys.All(key => !string.IsNullOrWhiteSpace(builder.Configuration[key]));
-
-static Task AddIdentityClaims(ClaimsIdentity? identity, ExternalIdentityProvider provider, string? issuer)
-{
-    if (identity is null)
-    {
-        return Task.CompletedTask;
-    }
-
-    if (!string.IsNullOrWhiteSpace(issuer) && identity.FindFirst("iss") is null)
-    {
-        identity.AddClaim(new Claim("iss", issuer));
-    }
-
-    if (identity.FindFirst(ExternalIdentityClaimTypes.Provider) is null)
-    {
-        identity.AddClaim(new Claim(ExternalIdentityClaimTypes.Provider, provider.ToString()));
-    }
-
-    return Task.CompletedTask;
-}

@@ -11,7 +11,7 @@
                         <p>You are not authorized to access this page.</p>
                         @if (IsAuthEnabled)
                         {
-                            <p><a href="/MicrosoftIdentity/Account/SignIn">Please sign in</a> to continue.</p>
+                            <p><a href="/login">Please sign in</a> to continue.</p>
                         }
                         else
                         {
@@ -40,5 +40,9 @@
 @code {
     [Inject] private IConfiguration Configuration { get; set; } = default!;
 
-    private bool IsAuthEnabled => !string.IsNullOrWhiteSpace(Configuration["AzureAD:TenantId"]);
+    private bool IsAuthEnabled => !string.IsNullOrWhiteSpace(Configuration["AzureAD:TenantId"])
+        || HasConfiguration("Authentication:Google:ClientId", "Authentication:Google:ClientSecret")
+        || HasConfiguration("Authentication:Facebook:AppId", "Authentication:Facebook:AppSecret");
+
+    private bool HasConfiguration(params string[] keys) => keys.All(key => !string.IsNullOrWhiteSpace(Configuration[key]));
 }

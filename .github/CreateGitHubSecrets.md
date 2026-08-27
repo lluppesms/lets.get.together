@@ -63,6 +63,8 @@ gh secret set --env <ENV-NAME> LOGIN_CLIENTID -b '<yourADClientId>'
 gh secret set --env <ENV-NAME> LOGIN_DOMAIN -b '<yourdomain>.onmicrosoft.com'
 gh secret set --env <ENV-NAME> LOGIN_INSTANCEENDPOINT -b 'https://login.microsoftonline.com/'
 gh secret set --env <ENV-NAME> LOGIN_TENANTID -b '<yourTenantId>'
+gh variable set --env <ENV-NAME> GOOGLE_CLIENT_ID -b '<yourGoogleOAuthClientId>'
+gh secret set --env <ENV-NAME> GOOGLE_CLIENT_SECRET -b '<yourGoogleOAuthClientSecret>'
 
 gh variable set --env <ENV-NAME> ADMIN_USER_LIST -b 'user1@domain.com,user2@domain.com'
 gh secret set --env <ENV-NAME> API_KEY -b 'somesecretstring'
@@ -91,7 +93,7 @@ gh variable set --env <ENV-NAME> EXISTING_LOGANALYTICSWORKSPACE -b ''
 gh variable set --env <ENV-NAME> EXISTING_LOG_ANALYTICS_WORKSPACE_RESOURCE_GROUP_NAME -b ''
 ```
 
-Leave the `EXISTING_*` variables blank to let Bicep create new resources. To reuse SQL resources, set both `EXISTING_SQLSERVER_NAME` and `EXISTING_SQLDATABASE_NAME`. To reuse an existing Log Analytics Workspace, set `EXISTING_LOGANALYTICSWORKSPACE` to its name and optionally `EXISTING_LOG_ANALYTICS_WORKSPACE_RESOURCE_GROUP_NAME` if it is in a different resource group. Set `CREATE_USER_ASSIGNED_IDENTITY` to `'true'` to provision a separate user-assigned managed identity; leave it `'false'` (default) to use each resource's own system-assigned identity. Set the environment-scoped `WEB_APP_ALWAYS_ON` secret to `'true'` or `'false'` to control the App Service always-on setting.
+Leave the `EXISTING_*` variables blank to let Bicep create new resources. To reuse SQL resources, set both `EXISTING_SQLSERVER_NAME` and `EXISTING_SQLDATABASE_NAME`. To reuse an existing Log Analytics Workspace, set `EXISTING_LOGANALYTICSWORKSPACE` to its name and optionally `EXISTING_LOG_ANALYTICS_WORKSPACE_RESOURCE_GROUP_NAME` if it is in a different resource group. Set `CREATE_USER_ASSIGNED_IDENTITY` to `'true'` to provision a separate user-assigned managed identity; leave it `'false'` (default) to use each resource's own system-assigned identity. `GOOGLE_CLIENT_ID` is an environment-scoped variable, while `GOOGLE_CLIENT_SECRET` is an environment-scoped secret that the Bicep workflow supplies to its secure parameter. Set the environment-scoped `WEB_APP_ALWAYS_ON` secret to `'true'` or `'false'` to control the App Service always-on setting.
 
 ---
 
