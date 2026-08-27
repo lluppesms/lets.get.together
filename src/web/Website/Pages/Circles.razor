@@ -20,7 +20,15 @@
 		</div>
 		@if (currentUser is not null)
 		{
-			<span class="current-user" title="Signed-in account">@currentUser.DisplayName</span>
+			<div class="circles-header-actions">
+				<span class="current-user" title="Signed-in account">@currentUser.DisplayName</span>
+				@if (!isLoading && circleRepository is not null && userRepository is not null)
+				{
+					<button class="circle-action circle-action-primary" type="button" @onclick="ToggleCreateForm" aria-expanded="@showCreateForm" aria-controls="circle-create-form">
+						@(showCreateForm ? "Close form" : "Create circle")
+					</button>
+				}
+			</div>
 		}
 	</header>
 
@@ -31,6 +39,27 @@
 	else if (!string.IsNullOrWhiteSpace(actionMessage))
 	{
 		<div class="circle-alert circle-alert-success" role="status" aria-live="polite">@actionMessage</div>
+	}
+	@if (showCreateForm && circleRepository is not null && currentUser is not null)
+	{
+		<section id="circle-create-form" class="circle-create" aria-labelledby="create-circle-heading">
+			<div>
+				<h2 id="create-circle-heading">Create a circle</h2>
+				<p class="circle-muted">Start a private group, then invite the people you want to gather with.</p>
+			</div>
+			<EditForm Model="newCircle" OnValidSubmit="CreateCircleAsync">
+				<DataAnnotationsValidator />
+				<label for="new-circle-name">Name</label>
+				<InputText id="new-circle-name" class="circle-input" @bind-Value="newCircle.Name" maxlength="200" autocomplete="organization" />
+				<ValidationMessage For="@(() => newCircle.Name)" />
+				<label for="new-circle-description">Description <span class="circle-optional">Optional</span></label>
+				<InputTextArea id="new-circle-description" class="circle-input" @bind-Value="newCircle.Description" maxlength="1000" rows="3" />
+				<div class="circle-actions">
+					<button class="circle-action circle-action-primary" type="submit" disabled="@isBusy">@(isBusy ? "Creating..." : "Create circle")</button>
+					<button class="circle-action" type="button" @onclick="ToggleCreateForm" disabled="@isBusy">Cancel</button>
+				</div>
+			</EditForm>
+		</section>
 	}
 	else if (isLoading)
 	{
@@ -44,7 +73,7 @@
 	{
 		<section class="circle-empty" aria-labelledby="empty-heading">
 			<h2 id="empty-heading">No circles yet</h2>
-			<p>You will see a circle here when someone invites you.</p>
+			<p>Create a circle for your own group, or wait for someone to invite you to theirs.</p>
 		</section>
 	}
 	else
@@ -170,10 +199,12 @@
 	private readonly List<InvitationCode> inviteCodes = [];
 	private Circle selectedCircle;
 	private Circle settingsModel = new();
+	private Circle newCircle = new();
 	private AuthenticationState authenticationState;
 	private bool isLoading = true;
 	private bool isBusy;
 	private bool showLeaveConfirmation;
+	private bool showCreateForm;
 	private string errorMessage = string.Empty;
 	private string actionMessage = string.Empty;
 	private string generatedCode;
@@ -257,6 +288,17 @@
 		await RunActionAsync(async () => { await circleRepository.UpdateCircleAsync(settingsModel, currentUser.UserId); selectedCircle.Name = settingsModel.Name; selectedCircle.Description = settingsModel.Description; actionMessage = "Circle settings saved."; });
 	}
 
+	private async Task CreateCircleAsync()
+	{
+		await RunActionAsync(async () =>
+		{
+			var createdCircle = await circleRepository.CreateCircleAsync(newCircle, currentUser.UserId);
+			showCreateForm = false;
+			newCircle = new Circle();
+			Navigation.NavigateTo($"/circles/{createdCircle.CircleId}", replace: true);
+		});
+	}
+
 	private async Task GenerateInviteAsync()
 	{
 		await RunActionAsync(async () => { var invite = await invitationRepository.CreateCodeAsync(selectedCircle.CircleId, currentUser.UserId, DateTime.UtcNow.AddDays(expirationDays)); inviteCodes.Insert(0, invite); generatedCode = invite.Code; });
@@ -284,6 +326,14 @@
 
 	private void RequestLeave() => showLeaveConfirmation = true;
 	private void CancelLeave() => showLeaveConfirmation = false;
+	private void ToggleCreateForm()
+	{
+		showCreateForm = !showCreateForm;
+		if (!showCreateForm)
+		{
+			newCircle = new Circle();
+		}
+	}
 
 	private static string GetInviteStatus(InvitationCode invite) => invite.RevokedUtc is not null ? "Revoked" : invite.RedeemedByUserId is not null || invite.RedeemedUtc is not null ? "Consumed" : invite.ExpiresUtc is not null && invite.ExpiresUtc <= DateTime.UtcNow ? "Expired" : "Active";
 	private static string FormatDate(DateTime? date) => date?.ToLocalTime().ToString("g") ?? "Never";

@@ -6,15 +6,22 @@
 
 <div class="page-container">
     <MudContainer MaxWidth="MaxWidth.Large">
-        <div class="home-heading">
-            <h1>@(isNinetiesTheme ? "The Grand Get Together" : "Get Together")</h1>
-            <p class="lead text-muted">Simple, private event planning for real friends.</p>
-        </div>
+        <section class="home-hero" aria-labelledby="home-hero-title">
+            <div class="home-hero-content">
+                <p class="home-kicker">Private plans, shared easily</p>
+                <h1 id="home-hero-title">@(isNinetiesTheme ? "The Grand Get Together" : "Get Together")</h1>
+                <p class="lead">Simple, private event planning for real friends.</p>
+                <p class="home-hero-copy">
+                    Organize informal gatherings without the bloat of public event platforms. Create a circle, post a thing to do, and everyone taps Accept, Decline, or Maybe.
+                </p>
+            </div>
+            <img class="home-hero-image" src="/images/Hero-Image.jpg" alt="Friends gathering together outdoors" />
+        </section>
 
         <div class="hero-card mb-5 p-4 rounded-3 shadow-sm">
-            <h2 class="h4 mb-3">Welcome to Get Together</h2>
+            <h2 class="h4 mb-3">Make room for the good stuff</h2>
             <p class="mb-0">
-                Organize informal gatherings — pickleball, movie nights, standing coffee dates, or volunteer shifts — without the bloat of public event platforms. Create a circle of friends, post a thing to do, and everyone taps Accept, Decline, or Maybe. That's it!
+                Keep the details in one calm, private place so the people who matter can quickly see what's happening and respond.
             </p>
         </div>
 

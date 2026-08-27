@@ -26,6 +26,10 @@ Circle repositories now support active-member listing, active-only rosters, add/
 
 The repository uses a Firefly-cast Squad team for orchestration. The roster and routing authority are `.squad/team.md` and `.squad/routing.md`; agent charters live under `.squad/agents/`. `prd.md` is the current product requirements source and remains pending owner approval.
 
+### UI presentation update (2026-08-27)
+
+Home (`Pages/Index.razor`) and About (`Pages/About.razor`) use the deployed `/images/Hero-Image.jpg` asset with responsive, accessible hero presentations. Shared app-bar spacing and logo sizing are defined in `Shared/MainLayout.razor.css`; the logo preserves its aspect ratio.
+
 ## 1. Project Identity
 
 **Get Together** is transitioning from its inherited joke-domain implementation. The codebase remains a .NET 10 demonstration and working application for storing, browsing, searching, rating, exporting, and administering humor content, while preserving existing behavior during phased rebrand work. It also demonstrates Azure hosting, infrastructure as code, SQL schema delivery, CI/CD, Playwright testing, AI integrations, Azure Functions, command-line tooling, and MCP servers.
@@ -71,7 +75,7 @@ The normal request path is:
 5. Optional AI helpers call Azure OpenAI / Microsoft Agent or Copilot SDK integrations and can use Blob Storage for generated images.
 6. Optional OpenTelemetry/Azure Monitor configuration emits application telemetry.
 
-Phase 2 circle management is implemented at `src/web/Website/Pages/Circles.razor` with scoped responsive styling in `Circles.razor.css`. The authenticated page supports `/circles` and `/circles/{CircleId:int}`, circle switching/detail/member roster, member-editable settings, leave confirmation, and invite generation/history/revocation with locally derived active/consumed/expired/revoked status. It resolves the persisted app user from the authenticated external subject before every circle-scoped repository call and shows an unavailable state when SQL-only repositories are not registered.
+Phase 2 circle management is implemented at `src/web/Website/Pages/Circles.razor` with scoped responsive styling in `Circles.razor.css`. The authenticated page supports `/circles` and `/circles/{CircleId:int}`; an authenticated, SQL-backed user can create a circle from `/circles` using the inline validated form and is taken to it after creation. It also supports circle switching/detail/member roster, member-editable settings, leave confirmation, and invite generation/history/revocation with locally derived active/consumed/expired/revoked status. It resolves the persisted app user from the authenticated external subject before every circle-scoped repository call and shows an unavailable state when SQL-only repositories are not registered.
 
 Phase 1 authentication UI surfaces now include `/login`, `/signup`, and `/signup-callback` under `src/web/Website/Pages/`. The shared `LoginDisplay` links anonymous users to `/login`; Microsoft Entra uses the existing Microsoft Identity UI when `AzureAD:TenantId` is configured, while Google and Facebook are displayed as pending providers until backend OAuth registration exists. Signup currently validates invitation-code shape and carries the code to the callback route; server-side validation and redemption remain a contract boundary.
 

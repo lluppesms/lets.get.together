@@ -6,6 +6,16 @@
 
 ## Learnings
 
+### 2026-08-27 - Home/About hero and shared header spacing
+
+- Home and About use the exact deployed `/images/Hero-Image.jpg` path with scoped responsive styles and useful alt text.
+- `Shared/MainLayout.razor.css` owns app-bar gap, logo dimensions, and aspect-ratio-preserving image sizing; the deployed logo path is `/images/favicon.png`.
+
+### 2026-08-27 - Circle creation flow
+
+- `Pages/Circles.razor` now exposes the existing `ICircleRepository.CreateCircleAsync` contract through an inline, validated create-circle form that is available for both empty and populated circle lists.
+- Successful creation navigates the member directly to the new circle; SQL-unavailable environments retain the existing accessible warning state.
+
 📌 Team update (2026-08-26T00:00:00Z): The SQL schema is now `Meetings` (renamed from `Dad`) — decided by Simon. Table scripts moved to `src/database/Meetings/`, EF Core model `Schema` attributes updated to match. Affects deployment scripts and any UI/data assumptions referencing the old `Dad` schema name.
 - **Owner:** Lyle MS Luppes
 - **Stack:** .NET 10 Blazor Server with responsive web UI, EF Core/Azure SQL, Playwright
@@ -14,6 +24,8 @@
 ## Learnings
 
 Squad initialized with Firefly casting on 2026-08-25.
+
+- The authorized Admin page resolves the persisted application user from the authenticated `ClaimTypes.NameIdentifier` with optional `IUserRepository` resolution, so non-SQL startup and a missing user record remain non-throwing.
 
 - Phase 1 auth UI lives in `src/web/Website/Pages/Login.razor`, `Signup.razor`, and `SignupCallback.razor`, with matching scoped CSS files.
 - `Shared/LoginDisplay.razor` is the global anonymous entry point; route it to `/login` so provider readiness is decided in one place.

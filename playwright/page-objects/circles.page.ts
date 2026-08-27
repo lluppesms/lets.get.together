@@ -23,6 +23,10 @@ export class CirclesPage {
     readonly inviteTable: Locator;
     readonly warningAlert: Locator;
     readonly emptyState: Locator;
+    readonly createCircleButton: Locator;
+    readonly createCircleForm: Locator;
+    readonly newCircleNameInput: Locator;
+    readonly newCircleDescriptionInput: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -47,6 +51,10 @@ export class CirclesPage {
         this.inviteTable = page.locator('table.invite-table');
         this.warningAlert = page.locator('.circle-alert-warning');
         this.emptyState = page.locator('.circle-empty');
+        this.createCircleButton = page.getByRole('button', { name: 'Create circle', exact: true });
+        this.createCircleForm = page.locator('#circle-create-form');
+        this.newCircleNameInput = page.locator('#new-circle-name');
+        this.newCircleDescriptionInput = page.locator('#new-circle-description');
     }
 
     async goto(): Promise<void> {

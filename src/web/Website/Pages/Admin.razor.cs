@@ -19,9 +19,11 @@ public partial class Admin : ComponentBase
     [Inject] IConfiguration Configuration { get; set; }
     [Inject] HttpContextAccessor Context { get; set; }
     [Inject] IJSRuntime JsInterop { get; set; }
+    [Inject] IServiceProvider Services { get; set; }
     //[Inject] BuildInfoService buildInfoService{ get; set; }
 
     private string userName = string.Empty;
+    private int? userId;
     private string dataSource = string.Empty;
     private string apiKeyInfo = string.Empty;
     private string aiChatInfo = string.Empty;
@@ -45,6 +47,13 @@ public partial class Admin : ComponentBase
             await JsInterop.InvokeVoidAsync("syncHeaderTitle");
             var userIdentity = Context.HttpContext.User;
             userName = userIdentity != null ? userIdentity.Identity.Name : string.Empty;
+            var externalId = userIdentity?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userRepository = Services.GetService<IUserRepository>();
+            if (!string.IsNullOrWhiteSpace(externalId) && userRepository != null)
+            {
+                var persistedUser = await userRepository.FindByExternalIdAsync(externalId);
+                userId = persistedUser?.UserId;
+            }
             isInAdminRole = userIdentity != null && userIdentity.IsInRole("Admin");
             if (isInAdminRole)
             {

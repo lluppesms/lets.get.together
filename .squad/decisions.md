@@ -169,6 +169,20 @@ Expected configuration keys: `SendGrid:ApiKey`, `SendGrid:FromEmail`, `SendGrid:
 
 ---
 
+---
+
+### 2026-08-27: Home/About hero imagery and shared header spacing (Kaylee)
+**By:** Lyle MS Luppes (via Kaylee)
+**What:** Home and About use the exact deployed `/images/Hero-Image.jpg` asset. Shared app-bar spacing and aspect-ratio-preserving logo sizing remain owned by `Shared/MainLayout.razor.css`.
+**Why:** Keeps the two public presentation pages visually intentional and responsive while preventing header/logo distortion and preserving theme-variable styling.
+
+---
+
+### 2026-08-27: Circle Creation UI Handoff (Kaylee)
+**By:** Lyle MS Luppes (via Kaylee)
+**What:** The circles page exposes new-circle creation to every authenticated, resolved application user when the SQL-backed circle repository is available. The UI submits a `Circle` with name and optional description, passes the resolved persisted user ID as `creatorUserId`, and navigates to `/circles/{CircleId}` on success. No repository or database contract changes are required.
+**Why:** `ICircleRepository.CreateCircleAsync` already creates the circle and its creator's first membership; exposing it in the UI satisfies the organizer flow while retaining the accessible SQL-unavailable state. River can cover the form through the existing `CirclesPage` page object when an authenticated SQL-backed browser fixture is available.
+
 ## Governance
 
 - All meaningful changes require team consensus

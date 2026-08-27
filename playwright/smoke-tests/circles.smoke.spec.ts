@@ -41,6 +41,19 @@ test.describe('Circles Smoke Tests', () => {
         }
     });
 
+    test('reveals the circle creation form when circle data is available', async ({ circlesPage, page }) => {
+        if (!page.url().toLowerCase().includes('/login')) {
+            const hasWarning = await circlesPage.warningAlert.isVisible().catch(() => false);
+            if (!hasWarning) {
+                await expect(circlesPage.createCircleButton).toBeVisible();
+                await circlesPage.createCircleButton.click();
+                await expect(circlesPage.createCircleForm).toBeVisible();
+                await expect(circlesPage.newCircleNameInput).toBeVisible();
+                await expect(circlesPage.newCircleDescriptionInput).toBeVisible();
+            }
+        }
+    });
+
     test('circle detail panels are structured correctly when layout is present', async ({ circlesPage, page }) => {
         const hasLayout = await page.locator('.circle-layout').isVisible().catch(() => false);
         if (hasLayout) {

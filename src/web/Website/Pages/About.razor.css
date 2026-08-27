@@ -1,8 +1,35 @@
 .about-container {
     padding: 3rem 2rem;
-    max-width: 900px;
+    max-width: 1080px;
     margin: 0 auto;
     animation: fadeInScale 0.6s ease-out;
+}
+
+.about-hero {
+    margin: 0 0 1.5rem;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+}
+
+.about-hero-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 6;
+    object-fit: cover;
+}
+
+.about-hero figcaption {
+    position: absolute;
+    right: 1rem;
+    bottom: 0.85rem;
+    max-width: calc(100% - 2rem);
+    padding: 0.45rem 0.7rem;
+    border-radius: var(--border-radius-tight);
+    background: var(--card-bg-dark);
+    color: var(--text-primary-dark);
+    font-size: 0.9rem;
 }
 
 @keyframes fadeInScale {
@@ -25,6 +52,13 @@
     border: 1px solid var(--surface-border-light);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
+}
+
+.about-list {
+    margin: 0;
+    padding-left: 1.5rem;
+    line-height: 1.8;
+    text-align: left;
 }
 
 body[data-bs-theme='dark'] .about-card,
@@ -72,4 +106,25 @@ body[data-bs-theme='dark'] .about-subtitle,
 body[data-bs-theme='dark'] .about-description,
 .theme-dark .about-description {
     color: var(--text-secondary-dark);
+}
+
+@media (max-width: 700px) {
+    .about-container {
+        padding: 2rem 1rem;
+    }
+
+    .about-hero-image {
+        aspect-ratio: 4 / 3;
+    }
+
+    .about-hero figcaption {
+        position: static;
+        max-width: none;
+        border-radius: 0;
+        text-align: center;
+    }
+
+    .about-card {
+        padding: 1.5rem;
+    }
 }
