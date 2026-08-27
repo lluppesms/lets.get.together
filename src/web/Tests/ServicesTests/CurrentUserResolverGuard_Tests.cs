@@ -30,7 +30,10 @@ public class CurrentUserResolverGuard_Tests
     {
         var repository = new Mock<IUserRepository>(MockBehavior.Strict);
         var resolver = new CurrentUserResolver(repository.Object);
-        var claims = new List<Claim>();
+        var claims = new List<Claim>
+        {
+            new(ExternalIdentityClaimTypes.Provider, ExternalIdentityProvider.Google.ToString())
+        };
         if (issuer is not null)
         {
             claims.Add(new Claim("iss", issuer));
@@ -61,12 +64,36 @@ public class CurrentUserResolverGuard_Tests
         [
             new Claim(ClaimTypes.NameIdentifier, "stable-subject"),
             new Claim("iss", "https://accounts.google.com"),
+            new Claim(ExternalIdentityClaimTypes.Provider, ExternalIdentityProvider.Google.ToString()),
             new Claim(ClaimTypes.Email, "changed-address@example.test")
         ], "Google"));
 
         var resolution = await resolver.ResolveAsync(principal);
 
         Assert.Null(resolution.User);
+        Assert.Null(resolution.FailureReason);
+        repository.Verify(repository => repository.FindByIdentityAsync(ExternalIdentityProvider.Google, "https://accounts.google.com", "stable-subject"), Times.Once);
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WhenApplicationCookieIncludesTrustedProviderMarker_ResolvesThePersistedIdentity()
+    {
+        var user = new User { UserId = 42 };
+        var repository = new Mock<IUserRepository>(MockBehavior.Strict);
+        repository
+            .Setup(repository => repository.FindByIdentityAsync(ExternalIdentityProvider.Google, "https://accounts.google.com", "stable-subject"))
+            .ReturnsAsync(user);
+        var resolver = new CurrentUserResolver(repository.Object);
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim(ClaimTypes.NameIdentifier, "stable-subject"),
+            new Claim("iss", "https://accounts.google.com"),
+            new Claim("get-together:external-identity-provider", "Google")
+        ], "Cookies"));
+
+        var resolution = await resolver.ResolveAsync(principal);
+
+        Assert.Same(user, resolution.User);
         Assert.Null(resolution.FailureReason);
         repository.Verify(repository => repository.FindByIdentityAsync(ExternalIdentityProvider.Google, "https://accounts.google.com", "stable-subject"), Times.Once);
     }

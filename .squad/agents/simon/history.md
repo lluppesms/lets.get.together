@@ -66,3 +66,8 @@ The locked Phase 1 decisions require multi-provider authentication and adding Ev
 - **Schema & DACPAC Matching**: Updated `src/database/Dad/Tables/RSVP.sql` to include `[OccurrenceDate] [datetime2](7) NULL`, ensuring 100% alignment between `GetTogetherDbContext` model definitions (`Circle`, `CircleMembership`, `Event`, `RSVP`, `User`, `InvitationCode`, `ReminderLog`) and DACPAC table scripts.
 - **Program.cs Service Registrations**: Verified startup registrations for SQL data source mode (`GetTogetherDbContext`, `ApplicationDbContext`), scoped domain repositories (`CircleSQLRepository`, `EventSQLRepository`, `InvitationCodeSQLRepository`, `RsvpSQLRepository`, `UserSQLRepository`), core services (`RecurrenceService`, `CalendarAggregationService`), and notification service (`SendGridNotificationService`).
 - **Build & Test Verification**: `GetTogether.Sql.Database.sln` builds cleanly in 6.1s. `gettogether.web.sln` builds with 0 errors. All 74 unit tests in `GetTogether.Tests.csproj` pass with 100% success rate.
+
+### 2026-08-27 — First-login provider resolution
+
+- `CurrentUserResolver` now derives every external provider from the protected `get-together:external-identity-provider` marker, rather than the post-sign-in cookie authentication type. This recognizes Entra, Google, and Facebook identities even when the application cookie uses a nonstandard scheme name, while rejecting missing or malformed markers.
+- Added resolver regression coverage for application-cookie authentication and aligned guard fixtures with the external-ticket claim contract. The focused resolver test suite passes.

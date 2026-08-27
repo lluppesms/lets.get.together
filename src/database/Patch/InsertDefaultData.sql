@@ -41,7 +41,7 @@ PRINT '';
 PRINT 'Inserting sample users, identities, and aliases...';
 INSERT INTO [Meetings].[User] (DisplayName, IsActive, CreatedUtc)
 VALUES
-    ('Lyle Luppes', 1, GETUTCDATE()), 
+    ('Sammy Jordon', 1, GETUTCDATE()), 
     ('Marcus Lee', 1, GETUTCDATE()), 
     ('Priya Patel', 1, GETUTCDATE()),
     ('Jordan Smith', 1, GETUTCDATE()), 
@@ -52,7 +52,7 @@ VALUES
 INSERT INTO [Meetings].[UserIdentity] (UserId, Provider, Issuer, Subject, CreatedUtc)
 SELECT u.UserId, v.Provider, v.Issuer, v.Subject, GETUTCDATE()
 FROM (VALUES
-    ('Lyle Luppes', 1, 'https://login.microsoftonline.com/sample-tenant/v2.0', 'sample-entra-lyle-luppes'),
+    ('Sammy Jordon', 1, 'https://login.microsoftonline.com/sample-tenant/v2.0', 'sample-entra-sammy-jordon'),
     ('Marcus Lee', 2, 'https://accounts.google.com', 'sample-google-marcus-lee'),
     ('Priya Patel', 3, 'https://www.facebook.com', 'sample-facebook-priya-patel'),
     ('Jordan Smith', 1, 'https://login.microsoftonline.com/sample-tenant/v2.0', 'sample-entra-jordan-smith'),
@@ -65,7 +65,7 @@ INNER JOIN [Meetings].[User] AS u ON u.DisplayName = v.DisplayName;
 INSERT INTO [Meetings].[UserEmailAlias] (UserId, EmailAddress, NormalizedEmailAddress, IsVerified, VerifiedUtc, IsPrimary, CreatedUtc)
 SELECT u.UserId, v.EmailAddress, UPPER(v.EmailAddress), 1, GETUTCDATE(), 1, GETUTCDATE()
 FROM (VALUES
-    ('Lyle Luppes', 'lyle.luppes@microsoft.com'), 
+    ('Sammy Jordon', 'sammy.jordon@example.com'), 
     ('Marcus Lee', 'marcus.lee@example.com'), 
     ('Priya Patel', 'priya.patel@example.com'),
     ('Jordan Smith', 'jordan.smith@example.com'), 
@@ -80,7 +80,7 @@ PRINT 'Inserting sample circles and memberships...';
 INSERT INTO [Meetings].[Circle] (Name, Description, CreatedByUserId, CreatedUtc, IsArchived)
 SELECT v.Name, v.Description, i.UserId, GETUTCDATE(), 0
 FROM (VALUES
-    ('Neighborhood Book Club', 'Monthly book discussion for neighbors on Elm Street.', 'sample-entra-lyle-luppes'),
+    ('Neighborhood Book Club', 'Monthly book discussion for neighbors on Elm Street.', 'sample-entra-sammy-jordon'),
     ('Weekend Hikers', 'Casual weekend hiking group for local trails.', 'sample-google-marcus-lee'),
     ('Family Game Night', 'Recurring family-friendly board and card game gathering.', 'sample-facebook-priya-patel')
 ) AS v(Name, Description, CreatedBySubject)
@@ -89,7 +89,7 @@ INNER JOIN [Meetings].[UserIdentity] AS i ON i.Subject = v.CreatedBySubject;
 INSERT INTO [Meetings].[CircleMembership] (CircleId, UserId, Role, JoinedUtc, LeftUtc)
 SELECT c.CircleId, i.UserId, v.Role, GETUTCDATE(), NULL
 FROM (VALUES
-    ('Neighborhood Book Club', 'sample-entra-lyle-luppes', 'Owner'), 
+    ('Neighborhood Book Club', 'sample-entra-sammy-jordon', 'Owner'), 
     ('Neighborhood Book Club', 'sample-google-marcus-lee', 'Member'),
     ('Neighborhood Book Club', 'sample-facebook-priya-patel', 'Member'), 
     ('Neighborhood Book Club', 'sample-google-sofia-rodriguez', 'Member'),
@@ -98,7 +98,7 @@ FROM (VALUES
     ('Weekend Hikers', 'sample-facebook-ben-okafor', 'Member'), 
     ('Weekend Hikers', 'sample-entra-grace-kim', 'Member'),
     ('Family Game Night', 'sample-facebook-priya-patel', 'Owner'),
-    ('Family Game Night', 'sample-entra-lyle-luppes', 'Member'),
+    ('Family Game Night', 'sample-entra-sammy-jordon', 'Member'),
     ('Family Game Night', 'sample-entra-jordan-smith', 'Member'), 
     ('Family Game Night', 'sample-facebook-ben-okafor', 'Member')
 ) AS v(CircleName, UserSubject, Role)
@@ -110,7 +110,7 @@ PRINT 'Inserting recipient-bound sample invitations and verification challenges.
 INSERT INTO [Meetings].[InvitationCode] (CircleId, Code, CreatedByUserId, RecipientEmailAddress, NormalizedRecipientEmailAddress, CreatedUtc, ExpiresUtc)
 SELECT c.CircleId, v.Code, i.UserId, v.RecipientEmailAddress, UPPER(v.RecipientEmailAddress), GETUTCDATE(), DATEADD(DAY, 30, GETUTCDATE())
 FROM (VALUES
-    ('Neighborhood Book Club', 'BOOK-CLUB-24X7', 'sample-entra-lyle-luppes', 'bookclub.guest@example.com'),
+    ('Neighborhood Book Club', 'BOOK-CLUB-24X7', 'sample-entra-sammy-jordon', 'bookclub.guest@example.com'),
     ('Weekend Hikers', 'HIKE-CREW-88ZQ', 'sample-google-marcus-lee', 'hiker.guest@example.com'),
     ('Family Game Night', 'GAME-NIGHT-5F2K', 'sample-facebook-priya-patel', 'gamenight.guest@example.com')
 ) AS v(CircleName, Code, CreatedBySubject, RecipientEmailAddress)
@@ -127,8 +127,8 @@ PRINT 'Inserting sample events...';
 INSERT INTO [Meetings].[Event] (CircleId, Title, Details, StartsUtc, EndsUtc, IsRecurring, RsvpMode, RecurrenceRule, CreatedByUserId, CreatedUtc)
 SELECT c.CircleId, v.Title, v.Details, v.StartsUtc, v.EndsUtc, v.IsRecurring, v.RsvpMode, v.RecurrenceRule, i.UserId, GETUTCDATE()
 FROM (VALUES
-    ('Neighborhood Book Club', 'September Book Discussion', 'Discussing "The Midnight Library" over coffee.', DATEADD(DAY, 7, GETUTCDATE()), DATEADD(MINUTE, 90, DATEADD(DAY, 7, GETUTCDATE())), 0, 0, NULL, 'sample-entra-lyle-luppes'),
-    ('Neighborhood Book Club', 'October Book Discussion', 'Book TBD - vote in the group chat.', DATEADD(DAY, 37, GETUTCDATE()), DATEADD(MINUTE, 90, DATEADD(DAY, 37, GETUTCDATE())), 0, 0, NULL, 'sample-entra-lyle-luppes'),
+    ('Neighborhood Book Club', 'September Book Discussion', 'Discussing "The Midnight Library" over coffee.', DATEADD(DAY, 7, GETUTCDATE()), DATEADD(MINUTE, 90, DATEADD(DAY, 7, GETUTCDATE())), 0, 0, NULL, 'sample-entra-sammy-jordon'),
+    ('Neighborhood Book Club', 'October Book Discussion', 'Book TBD - vote in the group chat.', DATEADD(DAY, 37, GETUTCDATE()), DATEADD(MINUTE, 90, DATEADD(DAY, 37, GETUTCDATE())), 0, 0, NULL, 'sample-entra-sammy-jordon'),
     ('Weekend Hikers', 'Ridge Trail Hike', 'Moderate 6-mile loop, bring water.', DATEADD(DAY, 3, GETUTCDATE()), DATEADD(HOUR, 3, DATEADD(DAY, 3, GETUTCDATE())), 0, 0, NULL, 'sample-google-marcus-lee'),
     ('Weekend Hikers', 'Sunset Ridge Series', 'Weekly sunset hikes all summer.', DATEADD(DAY, 10, GETUTCDATE()), DATEADD(HOUR, 2, DATEADD(DAY, 10, GETUTCDATE())), 1, 1, 'FREQ=WEEKLY;BYDAY=SA', 'sample-google-marcus-lee'),
     ('Weekend Hikers', 'Waterfall Trailhead Meetup', 'Short scenic hike with a picnic after.', DATEADD(DAY, 21, GETUTCDATE()), DATEADD(HOUR, 4, DATEADD(DAY, 21, GETUTCDATE())), 0, 0, NULL, 'sample-facebook-ben-okafor'),
@@ -144,7 +144,7 @@ PRINT 'Inserting sample RSVPs...';
 INSERT INTO [Meetings].[RSVP] (EventId, CircleId, UserId, Status, Notes, OccurrenceDate, RespondedUtc)
 SELECT e.EventId, e.CircleId, i.UserId, v.Status, v.Notes, NULL, GETUTCDATE()
 FROM (VALUES
-    ('September Book Discussion', 'sample-entra-lyle-luppes', 'Accepted', 'Bringing snacks.'),
+    ('September Book Discussion', 'sample-entra-sammy-jordon', 'Accepted', 'Bringing snacks.'),
     ('September Book Discussion', 'sample-google-marcus-lee', 'Accepted', NULL),
     ('September Book Discussion', 'sample-facebook-priya-patel', 'Declined', 'Out of town that week.'),
     ('September Book Discussion', 'sample-google-sofia-rodriguez', 'Pending', NULL),
@@ -152,7 +152,7 @@ FROM (VALUES
     ('Ridge Trail Hike', 'sample-entra-jordan-smith', 'Accepted', 'Bringing trekking poles.'),
     ('Ridge Trail Hike', 'sample-facebook-ben-okafor', 'Declined', 'Recovering from a cold.'),
     ('Board Game Bonanza', 'sample-facebook-priya-patel', 'Accepted', NULL),
-    ('Board Game Bonanza', 'sample-entra-lyle-luppes', 'Accepted', 'Bringing Catan.'),
+    ('Board Game Bonanza', 'sample-entra-sammy-jordon', 'Accepted', 'Bringing Catan.'),
     ('Board Game Bonanza', 'sample-entra-jordan-smith', 'Pending', NULL)
 ) AS v(EventTitle, UserSubject, Status, Notes)
 INNER JOIN [Meetings].[Event] AS e ON e.Title = v.EventTitle

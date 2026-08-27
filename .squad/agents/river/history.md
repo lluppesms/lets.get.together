@@ -101,3 +101,8 @@ The reported `--no-build --no-restore` failure was not reproducible: both focuse
 ### 2026-08-27 - Public UI review
 
 - Reviewed Kaylee's Home/About hero imagery and shared header/logo spacing changes; approved with no material findings. Browser visual verification remains a residual gap.
+
+### 2026-08-27 - First-login application-cookie coverage
+
+- Added `CurrentUserResolverGuard_Tests.ResolveAsync_WhenApplicationCookieIncludesTrustedProviderMarker_ResolvesThePersistedIdentity`, requiring a `Cookies` principal with issuer, subject, and `get-together:external-identity-provider=Google` to resolve through `IUserRepository.FindByIdentityAsync`.
+- Existing guard coverage continues to reject unauthenticated, incomplete, and unmarked-cookie principals without repository lookup. The focused test command is currently blocked by four unrelated compilation errors in `CurrentUserResolver_Tests.cs`; the production repair must make `CurrentUserResolver` consume the trusted marker when the authentication scheme is the application cookie.

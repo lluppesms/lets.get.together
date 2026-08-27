@@ -9,7 +9,7 @@ namespace GetTogether.Tests;
 public class CurrentUserResolver_Tests
 {
     [Fact]
-    public async Task ResolveAsync_UsesSchemeQualifiedProviderForGoogleAndFacebook()
+    public async Task ResolveAsync_UsesTrustedProviderClaimForGoogleAndFacebook()
     {
         var googleUser = new User { UserId = 101, DisplayName = "Google User" };
         var facebookUser = new User { UserId = 202, DisplayName = "Facebook User" };
@@ -22,8 +22,8 @@ public class CurrentUserResolver_Tests
             .ReturnsAsync(facebookUser);
         var resolver = new CurrentUserResolver(repository.Object);
 
-        var googleResolution = await resolver.ResolveAsync(CreatePrincipal("Google", "https://accounts.google.com", "google-subject"));
-        var facebookResolution = await resolver.ResolveAsync(CreatePrincipal("Facebook", "https://www.facebook.com", "facebook-subject"));
+        var googleResolution = await resolver.ResolveAsync(CreatePrincipal("Google", ExternalIdentityProvider.Google, "https://accounts.google.com", "google-subject"));
+        var facebookResolution = await resolver.ResolveAsync(CreatePrincipal("Facebook", ExternalIdentityProvider.Facebook, "https://www.facebook.com", "facebook-subject"));
 
         Assert.Equal(googleUser.UserId, googleResolution.User?.UserId);
         Assert.Equal(facebookUser.UserId, facebookResolution.User?.UserId);
@@ -33,7 +33,7 @@ public class CurrentUserResolver_Tests
     }
 
     [Fact]
-    public async Task ResolveAsync_UsesSchemeQualifiedProviderForEntra()
+    public async Task ResolveAsync_UsesTrustedProviderClaimForEntra()
     {
         var entraUser = new User { UserId = 303, DisplayName = "Entra User" };
         var repository = new Mock<IUserRepository>(MockBehavior.Strict);
@@ -42,7 +42,7 @@ public class CurrentUserResolver_Tests
             .ReturnsAsync(entraUser);
         var resolver = new CurrentUserResolver(repository.Object);
 
-        var resolution = await resolver.ResolveAsync(CreatePrincipal("OpenIdConnect", "https://login.microsoftonline.com/tenant-id/v2.0", "entra-subject"));
+        var resolution = await resolver.ResolveAsync(CreatePrincipal("OpenIdConnect", ExternalIdentityProvider.Entra, "https://login.microsoftonline.com/tenant-id/v2.0", "entra-subject"));
 
         Assert.Equal(entraUser.UserId, resolution.User?.UserId);
         repository.Verify(repository => repository.FindByIdentityAsync(ExternalIdentityProvider.Entra, "https://login.microsoftonline.com/tenant-id/v2.0", "entra-subject"), Times.Once);
@@ -65,7 +65,7 @@ public class CurrentUserResolver_Tests
             new Claim(ClaimTypes.NameIdentifier, subject),
             new Claim("iss", issuer),
             new Claim(ExternalIdentityClaimTypes.Provider, provider.ToString())
-        ], "Cookies"));
+        ], "Identity.Application"));
 
         var resolution = await resolver.ResolveAsync(principal);
 
@@ -79,20 +79,26 @@ public class CurrentUserResolver_Tests
         var repository = new Mock<IUserRepository>(MockBehavior.Strict);
         var resolver = new CurrentUserResolver(repository.Object);
 
-        var resolution = await resolver.ResolveAsync(CreatePrincipal("Untrusted", "https://issuer.example.test", "subject"));
+        var resolution = await resolver.ResolveAsync(CreatePrincipal("Untrusted", null, "https://issuer.example.test", "subject"));
 
         Assert.Null(resolution.User);
         Assert.Equal("The authenticated provider is not recognized.", resolution.FailureReason);
     }
 
-    private static ClaimsPrincipal CreatePrincipal(string authenticationType, string issuer, string subject)
+    private static ClaimsPrincipal CreatePrincipal(string authenticationType, ExternalIdentityProvider? provider, string issuer, string subject)
     {
-        var identity = new ClaimsIdentity(
-        [
+        var claims = new List<Claim>
+        {
             new Claim(ClaimTypes.NameIdentifier, subject),
             new Claim("iss", issuer)
-        ],
-        authenticationType);
+        };
+
+        if (provider is not null)
+        {
+            claims.Add(new Claim(ExternalIdentityClaimTypes.Provider, provider.Value.ToString()));
+        }
+
+        var identity = new ClaimsIdentity(claims, authenticationType);
 
         return new ClaimsPrincipal(identity);
     }

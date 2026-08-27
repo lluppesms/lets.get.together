@@ -1,8 +1,6 @@
 using System.Security.Claims;
 using GetTogether.Data.Models;
 using GetTogether.Data.Repositories;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 namespace GetTogether.Web.Services;
 
@@ -44,7 +42,7 @@ public sealed class CurrentUserResolver(IUserRepository userRepository) : ICurre
             return new CurrentUserResolution(null, "The current request is not authenticated.");
         }
 
-        if (!TryGetProvider(principal, identity.AuthenticationType, out var provider))
+        if (!TryGetProvider(principal, out var provider))
         {
             return new CurrentUserResolution(null, "The authenticated provider is not recognized.");
         }
@@ -60,23 +58,10 @@ public sealed class CurrentUserResolver(IUserRepository userRepository) : ICurre
         return new CurrentUserResolution(user, null);
     }
 
-    private static bool TryGetProvider(ClaimsPrincipal principal, string? authenticationType, out ExternalIdentityProvider provider)
+    private static bool TryGetProvider(ClaimsPrincipal principal, out ExternalIdentityProvider provider)
     {
-        if (authenticationType == CookieAuthenticationDefaults.AuthenticationScheme)
-        {
-            return Enum.TryParse(principal.FindFirstValue(ExternalIdentityClaimTypes.Provider), ignoreCase: false, out provider)
-                && Enum.IsDefined(provider);
-        }
-
-        provider = authenticationType switch
-        {
-            OpenIdConnectDefaults.AuthenticationScheme => ExternalIdentityProvider.Entra,
-            "Google" => ExternalIdentityProvider.Google,
-            "Facebook" => ExternalIdentityProvider.Facebook,
-            _ => default
-        };
-
-        return authenticationType is OpenIdConnectDefaults.AuthenticationScheme or "Google" or "Facebook";
+        return Enum.TryParse(principal.FindFirstValue(ExternalIdentityClaimTypes.Provider), ignoreCase: false, out provider)
+            && Enum.IsDefined(provider);
     }
 }
 
