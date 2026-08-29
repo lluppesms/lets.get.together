@@ -275,7 +275,6 @@ module webSiteModule './modules/webapp/website.bicep' = if (deployWebAppEffectiv
     // In other words, any : should be replaced by __ (double underscore).
     // NOTE: See https://learn.microsoft.com/en-us/azure/app-service/configure-common?tabs=portal
     customAppSettings: {
-      AppSettings__AppInsights_InstrumentationKey: '' // Will be set by base settings
       AppSettings__DefaultConnection: webAppConnectionString
       AppSettings__ProjectEntities: webAppConnectionString
       AppSettings__EnvironmentName: environmentCode

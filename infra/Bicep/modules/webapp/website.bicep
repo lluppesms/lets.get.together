@@ -92,7 +92,7 @@ resource webSiteResource 'Microsoft.Web/sites@2024-11-01' = {
           value: appInsightsResource.properties.InstrumentationKey 
         }
         {
-          name: 'AppSettings__AppInsights_InstrumentationKey'
+          name: 'APPSETTINGS__APPINSIGHTS_INSTRUMENTATIONKEY'
           value: appInsightsResource.properties.InstrumentationKey
         }
         {
