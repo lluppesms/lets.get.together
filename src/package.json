@@ -12,6 +12,6 @@
     "@azure/playwright": "^1.0.0",
     "@playwright/test": "^1.58.2",
     "@types/node": "^26.0.0",
-    "dotenv": "^17.2.1"
+    "dotenv": "^18.0.2"
   }
 }
